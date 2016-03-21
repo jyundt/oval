@@ -60,3 +60,9 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#Excluding my venv
+venv
+#Exclude my DB Migrations
+migrations
+
