@@ -3,7 +3,8 @@ from . import db
 class Official(db.Model):
     __tablename__ = 'official'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True)
+    name = db.Column(db.String(200), unique=True, nullable=False)
+    races = db.relationship('RaceOfficial', backref='official')
 
     def __repr__(self):
         return '<Official %r>' % self.name
@@ -11,7 +12,7 @@ class Official(db.Model):
 class Marshal(db.Model):
     __tablename__ = 'marshal'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True)
+    name = db.Column(db.String(200), unique=True, nullable=False)
 
     def __repr__(self):
         return '<Marshal %r>' % self.name
@@ -19,15 +20,12 @@ class Marshal(db.Model):
 class RaceClass(db.Model):
     __tablename__ = 'race_class'
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(200), unique=True)
-    #I'm not sure if this is how backrefs are supposed to work
-    #also, I wanted to call this 'class', but couldn't because of
-    #the reserved word
-    race_class = db.relationship('Race', backref='class')
+    description = db.Column(db.String(200), unique=True, nullable=False)
+    races = db.relationship('Race', backref='race_class')
     
 
     def __repr__(self):
-        return '<RaceClass %r>' % self.name
+        return '<RaceClass %r>' % self.description
 
 class Racer(db.Model):
     __tablename__ = 'racer'
@@ -35,6 +33,7 @@ class Racer(db.Model):
     name = db.Column(db.String(200), unique=True)
     usac_license = db.Column(db.Integer, unique=True)
     birthdate = db.Column(db.Date)
+    participants = db.relationship('Participant', backref='racer')
 
     def __repr__(self):
         return '<Racer %r>' % self.name
@@ -43,7 +42,8 @@ class Racer(db.Model):
 class Team(db.Model):
     __tablename__ = 'team'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True)
+    name = db.Column(db.String(200), unique=True, nullable=False)
+    participants = db.relationship('Participant', backref='team')
 
     def __repr__(self):
         return '<Racer %r>' % self.name
@@ -60,10 +60,12 @@ class Race(db.Model):
     weather = db.Column(db.String(200))
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
+    participants= db.relationship('Participant', backref='race')
+    officials = db.relationship('RaceOfficial', backref='race')
 
 
     def __repr__(self):
-        return '<Race %r>' % self.name
+        return '<Race %r>' % self.date
 
 class Participant(db.Model):
     ___tablename__ = 'participant'
@@ -73,7 +75,7 @@ class Participant(db.Model):
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
 
     def __repr__(self):
-        return '<Participant %r>' % self.name
+        return '<Participant %r>' % self.id
 
 
 class RaceOfficial(db.Model):
@@ -83,7 +85,7 @@ class RaceOfficial(db.Model):
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
 
     def __repr__(self):
-        return '<RaceOfficial %r>' % self.name
+        return '<RaceOfficial %r>' % self.id
 
 
 class RaceMarshal(db.Model):
@@ -93,7 +95,7 @@ class RaceMarshal(db.Model):
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
 
     def __repr__(self):
-        return '<RaceMarshal %r>' % self.name
+        return '<RaceMarshal %r>' % self.id
 
 class Prime(db.Model):
     ___tablename__ = 'prime'
@@ -102,7 +104,7 @@ class Prime(db.Model):
     description = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
-        return '<Prime %r>' % self.name
+        return '<Prime %r>' % self.description
 
 class Result(db.Model):
     __tablename__ = 'result'
@@ -120,4 +122,4 @@ class Result(db.Model):
     disqualified = db.Column(db.Boolean, default=False)
     
     def __repr__(self):
-        return '<Result %r>' % self.name
+        return '<Result %r>' % self.id
