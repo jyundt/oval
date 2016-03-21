@@ -13,6 +13,7 @@ class Marshal(db.Model):
     __tablename__ = 'marshal'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
+    races = db.relationship('RaceMarshal', backref='marshal')
 
     def __repr__(self):
         return '<Marshal %r>' % self.name
@@ -46,7 +47,7 @@ class Team(db.Model):
     participants = db.relationship('Participant', backref='team')
 
     def __repr__(self):
-        return '<Racer %r>' % self.name
+        return '<Team %r>' % self.name
 
 class Race(db.Model):
     __tablename__ = 'race'
@@ -62,6 +63,7 @@ class Race(db.Model):
     laps = db.Column(db.Integer)
     participants= db.relationship('Participant', backref='race')
     officials = db.relationship('RaceOfficial', backref='race')
+    marshals = db.relationship('RaceMarshal', backref='race')
 
 
     def __repr__(self):
@@ -73,6 +75,8 @@ class Participant(db.Model):
     racer_id = db.Column(db.Integer, db.ForeignKey('racer.id'))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
+    primes = db.relationship('Prime', backref='participant')
+    result = db.relationship('Result',backref='participant')
 
     def __repr__(self):
         return '<Participant %r>' % self.id
