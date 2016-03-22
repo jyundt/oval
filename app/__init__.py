@@ -24,4 +24,8 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
+    from .results import results as results_blueprint
+    app.register_blueprint(results_blueprint, url_prefix='/results') 
+    
+
     return app

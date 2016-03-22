@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Standings{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Do standings things here</h1>
+</div>
+{{ seasons }}
+{% for season in seasons %}
+<li>{{ item }}</li>
+{% endfor %}
+{% endblock %}
