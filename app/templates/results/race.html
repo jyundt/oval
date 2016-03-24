@@ -20,18 +20,22 @@
 </tr>
 </thead>
 <tbody>
-{% for participant in race.participants %}
+{% for participant in participants  %}
 <tr>
-<td> {{ participant.result[0].place }}</td>
-<td><a href="{{url_for('results.racer_results', id=participant.racer.id)}}"> {{ participant.racer.name }}</a></td>
+{% if participant.result.place is not none %}
+<td> {{ participant.result.place }}</td>
+{% else %}
+<td></td>
+{%endif%}
+<td><a href="{{url_for('results.racer_results', id=participant.racer.id)}}">{{ participant.racer.name }}</a></td>
 <td> {{ participant.team.name }}</td>
-{% if participant.result[0].points is not none %}
-<td> {{ participant.result[0].points }}</td>
+{% if participant.result.points is not none %}
+<td> {{ participant.result.points }}</td>
 {% else %}
 <td></td>
 {%endif %}
-{% if participant.result[0].team_points is not none %}
-<td> {{ participant.result[0].team_points }}</td>
+{% if participant.result.team_points is not none %}
+<td> {{ participant.result.team_points }}</td>
 {% else %}
 <td></td>
 {%endif %}

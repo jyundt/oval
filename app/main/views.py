@@ -26,8 +26,8 @@ def generate_standings(year,race_class):
     for race in races:
         for participant in race.participants:
             print participant.racer.name
-            print participant.result[0].place
-            print participant.result[0].points
+            print participant.result.place
+            print participant.result.points
            
             
     return races

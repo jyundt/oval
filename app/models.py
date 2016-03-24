@@ -76,7 +76,8 @@ class Participant(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
     primes = db.relationship('Prime', backref='participant')
-    result = db.relationship('Result',backref='participant')
+    #result = db.relationship('Result',backref='participant')
+    result = db.relationship('Result',uselist=False,backref='participant')
 
     def __repr__(self):
         return '<Participant %r>' % self.id
