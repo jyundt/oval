@@ -5,10 +5,40 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Results</h1>
+    <h1>Results for {{ race.date.strftime('%m/%d/%Y') }} </h1>
 </div>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
+<h2>Class: {{ race.race_class.description}}</h2>
+<div class="table-responsive">
+<table class="table table-striped">
+<thead>
+<tr>
+<th>Place</th>
+<th>Name</th>
+<th>Team</th>
+<th>Points</th>
+<th>Team Points</th>
+</tr>
+</thead>
+<tbody>
+{% for participant in race.participants %}
+<tr>
+<td> {{ participant.result[0].place }}</td>
+<td><a href="{{url_for('results.racer_results', id=participant.racer.id)}}"> {{ participant.racer.name }}</a></td>
+<td> {{ participant.team.name }}</td>
+{% if participant.result[0].points is not none %}
+<td> {{ participant.result[0].points }}</td>
+{% else %}
+<td></td>
+{%endif %}
+{% if participant.result[0].team_points is not none %}
+<td> {{ participant.result[0].team_points }}</td>
+{% else %}
+<td></td>
+{%endif %}
+</tr>
+{% endfor %}
+</tbody>
+</table>
 </div>
 {% endblock %}
 
