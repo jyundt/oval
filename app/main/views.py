@@ -1,11 +1,11 @@
-from flask import render_template, session, redirect, url_for, current_app
+from flask import render_template, session, redirect, url_for, current_app,flash
 from sqlalchemy import extract
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime,Result
 #from ..email import send_email
 from . import main
-#from .forms import NameForm
+from .forms import RaceClassForm
 
 
 #The goal of this function is return a table for the current standings for
@@ -44,3 +44,20 @@ def standings():
         seasons.append(race.date.year)
     #return render_template('standings.html', seasons=sorted(set(seasons)))
     return render_template('standings.html', seasons=sorted(set(races)))
+
+@main.route('/race_class', methods=['GET', 'POST'])
+def race_class():
+    form = RaceClassForm()
+    if form.validate_on_submit():
+        if RaceClass.query.filter_by(description=\
+                                     form.race_class_description.data).first():
+            flash('Error: that race type already exists!')
+        else:
+            race_category=RaceClass(description=\
+                                    form.race_class_description.data)
+            db.session.add(race_category)
+            db.session.commit()
+        return redirect(url_for('main.race_class'))
+    #I guess let's start by displaying the existing Race classe?
+    race_classes = RaceClass.query.all()
+    return render_template('race_class.html', race_classes=race_classes, form=form)

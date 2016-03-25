@@ -1,5 +1,7 @@
 {% extends "bootstrap/base.html" %}
 
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% block title %}The Oval The App{%endblock %}
 
 {% block navbar %}
@@ -19,6 +21,7 @@
                 <li><a href="{{ url_for('main.index') }}">Home</a></li>
                 <li><a href="{{ url_for('main.standings') }}">Standings</a></li>
                 <li><a href="{{ url_for('results.race_results', id=1) }}">Results</a></li> 
+                <li><a href="{{ url_for('main.race_class') }}">Race Types</a></li> 
             </ul>
         </div>
     </div>
