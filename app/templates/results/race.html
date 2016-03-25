@@ -17,6 +17,7 @@
 <th>Team</th>
 <th>Points</th>
 <th>Team Points</th>
+<th>Primes</th>
 </tr>
 </thead>
 <tbody>
@@ -43,10 +44,26 @@
 {% else %}
 <td>-</td>
 {%endif %}
+{%if participant.primes|length ==0 %}
+{#<button type="button" class="btn" data-toggle="popover" title="test" data-content="test content">Button</button> #}
+<td></td>
+{%else%}
+<td><button type="button" class="btn btn-sm" data-container="body" data-toggle="popover" title="Primes - {{participant.racer.name}}" data-content="{% for prime in participant.primes %}{{prime.description}}{%endfor%}"><span class="glyphicon glyphicon-plus"></span></button></td> 
+{% endif %}
 </tr>
 {% endfor %}
 </tbody>
 </table>
 </div>
+{# this is some clunky code to get popups to work #}
+{%block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function(){
+    $('[data-toggle="popover"]').popover(); 
+});
+</script>
+
 {% endblock %}
 
+{% endblock %}
