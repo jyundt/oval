@@ -59,5 +59,5 @@ def race_class():
             db.session.commit()
         return redirect(url_for('main.race_class'))
     #I guess let's start by displaying the existing Race classe?
-    race_classes = RaceClass.query.all()
+    race_classes = RaceClass.query.order_by(RaceClass.description).all()
     return render_template('race_class.html', race_classes=race_classes, form=form)
