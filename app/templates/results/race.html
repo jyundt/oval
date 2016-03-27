@@ -56,6 +56,7 @@
 </table>
 </div>
 {# this is some clunky code to get popups to work #}
+{# disabling the popovers
 {%block scripts %}
 {{ super() }}
 <script>
@@ -65,5 +66,6 @@ $(document).ready(function(){
 </script>
 
 {% endblock %}
+#}
 
 {% endblock %}
