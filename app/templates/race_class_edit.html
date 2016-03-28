@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if race_class is defined %}
+EDIT {{race_class.description}} Race Details
+{% else %}
+Add Race Type
+{% endif %}
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+{% if race_class is defined %}
+    <h1>Edit Details for Category: {{race_class.description}}</h1>
+{% else %}
+    <h1>Add New Race Category</h1>
+{% endif %}
+</div>
+<div class="col-md-4">
+{{wtf.quick_form(form)}}
+</div>
+{% endblock %}
