@@ -30,7 +30,7 @@
 {% for participant in racer.participants %}
 <tr>
 <td><a href="{{ url_for('results.race_results', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
-<td>{{participant.race.race_class.description}}</td>
+<td>{{participant.race.race_class.name}}</td>
 {% if participant.result.place is not none %}
 <td>{{participant.result.place}}</td>
 {% else %}

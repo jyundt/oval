@@ -1,11 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if race_class is defined %}
-EDIT {{race_class.description}} Race Details
-{% else %}
-Add Race Type
-{% endif %}
+EDIT {{race_class.name}} Race Details
 {% endblock %}
 
 {% block page_content %}

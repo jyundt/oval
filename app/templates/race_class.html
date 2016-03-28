@@ -17,22 +17,11 @@
 <tbody>
 {% for race_class in race_classes %}
 <tr>
-<td>{{ race_class.description}}</td> 
+<td><a href="{{url_for('main.race_class_details',id=race_class.id)}}">{{ race_class.name}}</a></td> 
 <td>{{ race_class.races|length}}</td>
 </tr>
 {% endfor %}
-{#Dropping out fancy bootstrap stuff
-<tr>
-<td>
-<div class="input-group"> 
- {{form.race_class_description(placeholder="Add new race type...",class="form-control")}}<span class="input-group-btn"><button type="submit" class="btn">Add</button></span> 
-</td>
-</div> 
-<td></td>
-</tr>#}
 </tbody>
 </table>
 </div>
-<h3>Add a new race type?</h3>
-{{ wtf.quick_form(form) }}
 {% endblock %}

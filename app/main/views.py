@@ -13,7 +13,7 @@ from .forms import RaceClassAddForm, RaceClassEditForm
 #e.g. Place Name Team Points
 def generate_standings(year,race_class):
     #This is clunky, but I need to get the class_id for this race class
-    race_class_id = RaceClass.query.filter_by(description='C').first().id
+    race_class_id = RaceClass.query.filter_by(name='C').first().id
 
     #Generate a list of races for us to calculate standings
     races = Race.query.filter(extract('year',Race.date)==2015,\
@@ -45,22 +45,10 @@ def standings():
     #return render_template('standings.html', seasons=sorted(set(seasons)))
     return render_template('standings.html', seasons=sorted(set(races)))
 
-@main.route('/race_class/', methods=['GET', 'POST'])
+@main.route('/race_class/')
 def race_class():
-    form = RaceClassAddForm()
-    if form.validate_on_submit():
-        if RaceClass.query.filter(RaceClass.description.ilike(
-                                  form.race_class_description.data)).first():
-            flash('Error: that race type already exists!')
-        else:
-            race_category=RaceClass(description=\
-                                    form.race_class_description.data)
-            db.session.add(race_category)
-            db.session.commit()
-        return redirect(url_for('main.race_class'))
-    #I guess let's start by displaying the existing Race classe?
-    race_classes = RaceClass.query.order_by(RaceClass.description).all()
-    return render_template('race_class.html', race_classes=race_classes, form=form)
+    race_classes = RaceClass.query.order_by(RaceClass.name).all()
+    return render_template('race_class.html', race_classes=race_classes)
 
 
 @main.route('/race_class/<int:id>')
@@ -69,42 +57,41 @@ def race_class_details(id):
 
     return render_template('race_class_details.html', race_class=race_class)
 
-@main.route('/race_class/edit/<int:id>', methods=['GET', 'POST'])
-@main.route('/race_class/edit/', defaults={'id': None}, methods=['GET', 'POST'])
-def race_class_edit(id):
-    form=RaceClassEditForm()
-    if id != None:
-        race_class = RaceClass.query.get_or_404(id)
+@main.route('/race_class/add/', methods=['GET', 'POST'])
+def race_class_add():
+    form=RaceClassAddForm()
     if form.validate_on_submit():
-        failed = False
-        if RaceClass.query.get(form.race_class_id.data):
-            flash('Error: that race type DB ID already exists!')
-            failed = True
-        if RaceClass.query.filter(RaceClass.description.ilike(
-                                  form.race_class_description.data)).first():
-            flash('Error: that race type already exists!')
-            failed = True
+        race_class_name = form.race_class_name.data
+        race_class_id = form.race_class_id.data
+        race_class=RaceClass(id=race_class_id,name=race_class_name)
+        db.session.add(race_class)
+        db.session.commit()
+        flash('Race type ' + race_class.name + ' created!')
+        return redirect(url_for('main.race_class'))
 
-        if failed and id == None:
-            return render_template('race_class_edit.html',form=form)
-        elif failed:
-            return render_template('race_class_edit.html',
-                                   race_class=race_class,form=form)
-        else:
-            race_class=RaceClass(id=form.race_class_id.data,
-                                 description=form.race_class_description.data)
-            db.session.add(race_class)
-            db.session.commit()
-            return redirect(url_for('main.race_class'))
+
+    return render_template('add.html',form=form,type='race class')
+
+@main.route('/race_class/edit/<int:id>', methods=['GET', 'POST'])
+def race_class_edit(id):
+    race_class = RaceClass.query.get_or_404(id)
+    form=RaceClassEditForm()
+    
+    if form.validate_on_submit():
+        race_class_name = form.race_class_name.data
+        race_class.name = race_class_name
+        db.session.commit()
+        flash('Race type ' + race_class.name + ' updated!')
+        return redirect(url_for('main.race_class'))
         
-    if id != None:
-        form.race_class_id.data = race_class.id
-        form.race_class_description.data = race_class.description
-        return render_template('race_class_edit.html',
-                               race_class=race_class,form=form)
-    else:
-        form.submit.label.text='Add'
-        return render_template('race_class_edit.html',form=form)
-    #if form.validate_on_submit():
-    #    if RaceClass.query.get(form.race_class_id.data).first():
-    #        flash('Error: that race type DB ID already exists!')
+    form.race_class_name.data = race_class.name
+    return render_template('edit.html',
+                           item=race_class,form=form,type='race class')
+
+@main.route('/race_class/delete/<int:id>', methods=['POST'])
+def race_class_delete(id):
+    race_class = RaceClass.query.get_or_404(id)
+    flash('Race type ' + race_class.name + ' deleted!')
+    db.session.delete(race_class)
+    db.session.commit()
+    return redirect(url_for('main.race_class'))

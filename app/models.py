@@ -21,12 +21,12 @@ class Marshal(db.Model):
 class RaceClass(db.Model):
     __tablename__ = 'race_class'
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(200), unique=True, nullable=False)
+    name = db.Column(db.String(200), unique=True, nullable=False)
     races = db.relationship('Race', backref='race_class')
     
 
     def __repr__(self):
-        return '<RaceClass %r>' % self.description
+        return '<RaceClass %r>' % self.name
 
 class Racer(db.Model):
     __tablename__ = 'racer'
@@ -106,10 +106,10 @@ class Prime(db.Model):
     ___tablename__ = 'prime'
     id = db.Column(db.Integer, primary_key=True)
     participant_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
-    description = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
-        return '<Prime %r>' % self.description
+        return '<Prime %r>' % self.name
 
 class Result(db.Model):
     __tablename__ = 'result'

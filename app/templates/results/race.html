@@ -7,7 +7,7 @@
 <div class="page-header">
     <h1>Results for {{ race.date.strftime('%m/%d/%Y') }} </h1>
 </div>
-<h2>Class: {{ race.race_class.description}}</h2>
+<h2>Class: {{ race.race_class.name}}</h2>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
 <thead>
@@ -48,7 +48,7 @@
 {#<button type="button" class="btn" data-toggle="popover" title="test" data-content="test content">Button</button> #}
 <td></td>
 {%else%}
-<td><button type="button" class="btn btn-sm" data-container="body" data-toggle="popover" title="Primes - {{participant.racer.name}}" data-content="{% for prime in participant.primes %}{{prime.description}}{%endfor%}"><span class="glyphicon glyphicon-plus"></span></button></td> 
+<td><button type="button" class="btn btn-sm" data-container="body" data-toggle="popover" title="Primes - {{participant.racer.name}}" data-content="{% for prime in participant.primes %}{{prime.name}}{%endfor%}"><span class="glyphicon glyphicon-plus"></span></button></td> 
 {% endif %}
 </tr>
 {% endfor %}
