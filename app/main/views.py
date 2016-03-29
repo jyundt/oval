@@ -62,8 +62,9 @@ def race_class_add():
     form=RaceClassAddForm()
     if form.validate_on_submit():
         race_class_name = form.race_class_name.data
-        race_class_id = form.race_class_id.data
-        race_class=RaceClass(id=race_class_id,name=race_class_name)
+        #race_class_id = form.race_class_id.data
+        #race_class=RaceClass(id=race_class_id,name=race_class_name)
+        race_class=RaceClass(name=race_class_name)
         db.session.add(race_class)
         db.session.commit()
         flash('Race type ' + race_class.name + ' created!')
@@ -88,10 +89,10 @@ def race_class_edit(id):
     return render_template('edit.html',
                            item=race_class,form=form,type='race class')
 
-@main.route('/race_class/delete/<int:id>', methods=['POST'])
+@main.route('/race_class/delete/<int:id>')
 def race_class_delete(id):
     race_class = RaceClass.query.get_or_404(id)
-    flash('Race type ' + race_class.name + ' deleted!')
     db.session.delete(race_class)
     db.session.commit()
+    flash('Race type ' + race_class.name + ' deleted!')
     return redirect(url_for('main.race_class'))

@@ -14,13 +14,13 @@ class RaceClassEditForm(Form):
             raise ValidationError('Race class name already in use.')
 
 class RaceClassAddForm(Form):
-    race_class_id = IntegerField('Database ID', validators=[Required()])
+    #race_class_id = IntegerField('Database ID', validators=[Required()])
     race_class_name = StringField('Name', validators=[Required()])
     submit = SubmitField('Add')
 
-    def validate_race_class_id(self, field):
-        if RaceClass.query.get(field.data):
-            raise ValidationError('Race class ID already in use.')
+    #def validate_race_class_id(self, field):
+    #    if RaceClass.query.get(field.data):
+    #        raise ValidationError('Race class ID already in use.')
 
     def validate_race_class_name(self, field):
         if RaceClass.query.filter(RaceClass.name.ilike(
