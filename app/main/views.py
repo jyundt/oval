@@ -5,7 +5,7 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime,Result
 #from ..email import send_email
 from . import main
-from .forms import RaceClassAddForm, RaceClassEditForm
+from .forms import RaceClassForm, RacerForm, TeamForm
 
 
 #The goal of this function is return a table for the current standings for
@@ -59,12 +59,11 @@ def race_class_details(id):
 
 @main.route('/race_class/add/', methods=['GET', 'POST'])
 def race_class_add():
-    form=RaceClassAddForm()
+    form=RaceClassForm()
+    form.submit.label.text='Add'
     if form.validate_on_submit():
-        race_class_name = form.race_class_name.data
-        #race_class_id = form.race_class_id.data
-        #race_class=RaceClass(id=race_class_id,name=race_class_name)
-        race_class=RaceClass(name=race_class_name)
+        name = form.name.data
+        race_class=RaceClass(name=name)
         db.session.add(race_class)
         db.session.commit()
         flash('Race type ' + race_class.name + ' created!')
@@ -76,16 +75,17 @@ def race_class_add():
 @main.route('/race_class/edit/<int:id>', methods=['GET', 'POST'])
 def race_class_edit(id):
     race_class = RaceClass.query.get_or_404(id)
-    form=RaceClassEditForm()
+    form=RaceClassForm()
+    form.submit.label.text='Save'
     
     if form.validate_on_submit():
-        race_class_name = form.race_class_name.data
-        race_class.name = race_class_name
+        name = form.name.data
+        race_class.name = name
         db.session.commit()
         flash('Race type ' + race_class.name + ' updated!')
         return redirect(url_for('main.race_class'))
         
-    form.race_class_name.data = race_class.name
+    form.name.data = race_class.name
     return render_template('edit.html',
                            item=race_class,form=form,type='race class')
 
@@ -96,3 +96,114 @@ def race_class_delete(id):
     db.session.commit()
     flash('Race type ' + race_class.name + ' deleted!')
     return redirect(url_for('main.race_class'))
+
+@main.route('/racer/')
+def racer():
+    racers = Racer.query.order_by(Racer.name).all()
+    return render_template('racer.html', racers=racers)
+
+
+@main.route('/racer/<int:id>')
+def racer_details(id):
+    racer = Racer.query.get_or_404(id)
+
+    return render_template('racer_details.html', racer=racer)
+
+@main.route('/racer/add/', methods=['GET', 'POST'])
+def racer_add():
+    form=RacerForm()
+    form.submit.label.text='Add'
+    if form.validate_on_submit():
+        name = form.name.data
+        usac_license = form.usac_license.data
+        birthdate = form.birthdate.data
+        racer=Racer(name=name, usac_license=usac_license,birthdate=birthdate)
+        db.session.add(racer)
+        db.session.commit()
+        flash('Racer ' + racer.name + ' created!')
+        return redirect(url_for('main.racer'))
+
+
+    return render_template('add.html',form=form,type='racer')
+
+@main.route('/racer/edit/<int:id>', methods=['GET', 'POST'])
+def racer_edit(id):
+    racer = Racer.query.get_or_404(id)
+    form=RacerForm()
+    form.submit.label.text='Save'
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        racer.name = name
+        usac_license = form.usac_license.data
+        racer.usac_license = usac_license
+        birthdate = form.birthdate.data
+        racer.birthdate = birthdate
+        db.session.commit()
+        flash('Racer ' + racer.name + ' updated!')
+        return redirect(url_for('main.racer'))
+        
+    form.name.data = racer.name
+    form.usac_license.data = racer.usac_license
+    form.birthdate.data = racer.birthdate
+    return render_template('edit.html',
+                           item=racer,form=form,type='racer')
+
+@main.route('/racer/delete/<int:id>')
+def racer_delete(id):
+    racer = Racer.query.get_or_404(id)
+    db.session.delete(racer)
+    db.session.commit()
+    flash('Racer ' + racer.name + ' deleted!')
+    return redirect(url_for('main.racer'))
+
+@main.route('/team/')
+def team():
+    teams = Team.query.order_by(Team.name).all()
+    return render_template('team.html', teams=teams)
+
+
+@main.route('/team/<int:id>')
+def team_details(id):
+    team = Team.query.get_or_404(id)
+
+    return render_template('team_details.html', team=team)
+
+@main.route('/team/add/', methods=['GET', 'POST'])
+def team_add():
+    form=TeamForm()
+    form.submit.label.text='Add'
+    if form.validate_on_submit():
+        name = form.name.data
+        team=Team(name=name)
+        db.session.add(team)
+        db.session.commit()
+        flash('Team ' + team.name + ' created!')
+        return redirect(url_for('main.team'))
+
+
+    return render_template('add.html',form=form,type='team')
+
+@main.route('/team/edit/<int:id>', methods=['GET', 'POST'])
+def team_edit(id):
+    team = Team.query.get_or_404(id)
+    form=TeamForm()
+    form.submit.label.text='Save'
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        team.name = name
+        db.session.commit()
+        flash('Team ' + team.name + ' updated!')
+        return redirect(url_for('main.team'))
+        
+    form.name.data = team.name
+    return render_template('edit.html', item=team,form=form,type='team')
+
+@main.route('/team/delete/<int:id>')
+def team_delete(id):
+    team = Team.query.get_or_404(id)
+    db.session.delete(team)
+    db.session.commit()
+    flash('Team ' + team.name + ' deleted!')
+    return redirect(url_for('main.team'))

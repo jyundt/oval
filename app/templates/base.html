@@ -1,9 +1,16 @@
 {% extends "bootstrap/base.html" %}
 
 {% import "bootstrap/wtf.html" as wtf %}
+{% import "macros.html" as macros %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
 
 {% block title %}The Oval The App{%endblock %}
-
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 {% block navbar %}
 <div class="navbar navbar-inverse" role="navigation">
     <div class="container">
@@ -22,6 +29,8 @@
                 <li><a href="{{ url_for('main.standings') }}">Standings</a></li>
                 <li><a href="{{ url_for('results.race_results', id=1) }}">Results</a></li> 
                 <li><a href="{{ url_for('main.race_class') }}">Race Types</a></li> 
+                <li><a href="{{ url_for('main.racer') }}">Racers</a></li> 
+                <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
             </ul>
         </div>
     </div>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Racers{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Racers</h1>
+<a class="btn btn-default" href="{{url_for('main.racer_add')}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
+</div>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+    <th>Name</th>
+    <th>USAC License</th>
+    <th>Birthdate</th>
+</tr>
+</thead>
+<tbody>
+{% for racer in racers %}
+<tr>
+<td><a href="{{url_for('main.racer_details',id=racer.id)}}">{{ racer.name}}</a></td> 
+{%if racer.usac_license is not none %}
+<td>{{racer.usac_license}}</td>
+{%else%}
+<td></td>
+{%endif%}
+{%if racer.birthdate is not none %}
+<td>{{racer.birthdate.strftime('%m/%d/%Y')}}</td>
+{% else %}
+<td></td>
+{%endif%}
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

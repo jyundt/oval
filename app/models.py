@@ -31,7 +31,7 @@ class RaceClass(db.Model):
 class Racer(db.Model):
     __tablename__ = 'racer'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), unique=True)
+    name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     birthdate = db.Column(db.Date)
     participants = db.relationship('Participant', backref='racer')

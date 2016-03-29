@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{racer.name}} Racer Details
+{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Details for Racer: {{racer.name}}</h1>
+</div>
+<h2>insert info here2</h2>
+<h3>insert info here3</h3>
+<h4>insert info here4</h4>
+<a class="btn btn-default" href="{{ url_for('main.racer_edit',id=racer.id)}}">Edit</a>
+<button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete">Delete</button>
+{{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
+{% endblock %}

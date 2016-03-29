@@ -1,0 +1,18 @@
+{% macro confirm_delete_modal(object,endpoint) %}
+<div class="modal fade" id="delete" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete {{object.__class__.__name__}} {{object.name}}. Are you sure you want to continue? (This may cause irreparable damage to the database.)</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-danger" href="{{ url_for(endpoint,id=object.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
