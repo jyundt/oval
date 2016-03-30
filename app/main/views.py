@@ -209,6 +209,18 @@ def team_delete(id):
     flash('Team ' + team.name + ' deleted!')
     return redirect(url_for('main.team'))
 
+@main.route('/race/')
+def race():
+    races = Race.query.order_by(Race.date).all()
+    return render_template('race.html', races=races)
+
+@main.route('/race/<int:id>')
+def race_details(id):
+    race = Race.query.get_or_404(id)
+
+    return render_template('race_details.html', race=race)
+
+
 @main.route('/race/add/', methods=['GET', 'POST'])
 def race_add():
     form=RaceForm()
@@ -244,9 +256,65 @@ def race_add():
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
-        return redirect(url_for('main.team'))
+        return redirect(url_for('main.race'))
 
 
     form.submit.label.text='Add'
     form.date.data=datetime.today()
     return render_template('add.html',form=form,type='race')
+
+@main.route('/race/edit/<int:id>', methods=['GET', 'POST'])
+def race_edit(id):
+    race = Race.query.get_or_404(id)
+    form=RaceForm()
+    form.submit.label.text='Save'
+    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
+                            RaceClass.query.order_by('name')]
+    
+    if form.validate_on_submit():
+        date = form.date.data
+        if form.fast_lap.data is not None:
+            fast_lap = timedelta(0, form.fast_lap.data.minute * 60
+                                 + form.fast_lap.data.second)
+        else:
+            fast_lap = form.fast_lap.data
+        
+        if form.average_lap.data is not None:
+            average_lap = timedelta(0, form.average_lap.data.minute * 60
+                                    + form.average_lap.data.second)
+        else:
+            average_lap = form.average_lap.data
+        if form.slow_lap.data is not None:
+            slow_lap = timedelta(0, form.slow_lap.data.minute * 60
+                                 + form.slow_lap.data.second)
+        else:
+            slow_lap = form.slow_lap.data
+
+        weather = form.weather.data
+        class_id = form.class_id.data
+        usac_permit = form.usac_permit.data
+        laps = form.laps.data
+
+        race.date=date
+        race.fast_lap=fast_lap
+        race.average_lap=average_lap
+        race.slow_lap=slow_lap
+        race.weather = weather
+        race.class_id=class_id
+        race.usac_permit=usac_permit
+        race.laps=laps
+        db.session.commit()
+        flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
+        return redirect(url_for('main.race'))
+        
+    form.date.data = race.date
+    form.class_id.data=race.class_id
+    return render_template('edit.html', item=race,form=form,type='race')
+
+@main.route('/race/delete/<int:id>')
+def race_delete(id):
+    race = Race.query.get_or_404(id)
+    db.session.delete(race)
+    db.session.commit()
+    flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' delete!')
+    return redirect(url_for('main.race'))

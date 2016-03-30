@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Races{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Races</h1>
+<a class="btn btn-default" href="{{url_for('main.race_add')}}"><span class="glyphicon glyphicon-plus"></span> Add a race</a>
+</div>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+    <th>Date</th>
+    <th>Class</th>
+    <th>Participants</th>
+</tr>
+</thead>
+<tbody>
+{% for race in races %}
+<tr>
+<td><a href="{{url_for('main.race_details',id=race.id)}}">{{ race.date}}</a></td> 
+<td><a href="{{url_for('main.race_class_details',id=race.race_class.id)}}">{{ race.race_class.name}}</a></td> 
+<td>{{race.participants|length}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

@@ -26,11 +26,12 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li><a href="{{ url_for('main.index') }}">Home</a></li>
-                <li><a href="{{ url_for('main.standings') }}">Standings</a></li>
-                <li><a href="{{ url_for('results.race_results', id=1) }}">Results</a></li> 
+                {# <li><a href="{{ url_for('main.standings') }}">Standings</a></li> 
+                <li><a href="{{ url_for('results.race_results', id=1) }}">Results</a></li>  #}
                 <li><a href="{{ url_for('main.race_class') }}">Race Types</a></li> 
                 <li><a href="{{ url_for('main.racer') }}">Racers</a></li> 
                 <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
+                <li><a href="{{ url_for('main.race') }}">Races</a></li> 
             </ul>
         </div>
     </div>
