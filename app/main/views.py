@@ -5,7 +5,8 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime,Result
 #from ..email import send_email
 from . import main
-from .forms import RaceClassForm, RacerForm, TeamForm
+from .forms import RaceClassForm, RacerForm, TeamForm, RaceForm
+from datetime import timedelta,datetime
 
 
 #The goal of this function is return a table for the current standings for
@@ -207,3 +208,34 @@ def team_delete(id):
     db.session.commit()
     flash('Team ' + team.name + ' deleted!')
     return redirect(url_for('main.team'))
+
+@main.route('/race/add/', methods=['GET', 'POST'])
+def race_add():
+    form=RaceForm()
+    if form.validate_on_submit():
+        date = form.date.data
+        fast_lap = timedelta(0, form.fast_lap.data.minute * 60
+                             + form.fast_lap.data.second)
+        average_lap = timedelta(0, form.average_lap.data.minute * 60
+                             + form.average_lap.data.second)
+        slow_lap = timedelta(0, form.slow_lap.data.minute * 60
+                             + form.slow_lap.data.second)
+        weather = form.weather.data
+        class_id = form.class_id.data
+        usac_permit = form.usac_permit.data
+        laps = form.laps.data
+
+        race=Race(date=date,fast_lap=fast_lap, average_lap=average_lap,
+                  slow_lap=slow_lap, weather=weather, class_id=class_id,
+                  usac_permit=usac_permit, laps=laps)
+        db.session.add(race)
+        db.session.commit()
+        flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
+        return redirect(url_for('main.team'))
+
+
+    form.submit.label.text='Add'
+    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
+                            RaceClass.query.order_by('name')]
+    form.date.data=datetime.today()
+    return render_template('add.html',form=form,type='race')
