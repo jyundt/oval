@@ -40,13 +40,13 @@ class RaceForm(Form):
                      format='%m/%d/%Y')
     class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
     fast_lap = DateTimeField('Fast Lap', validators=[Optional()],
-                             description='mm:ss',
+                             description='mm:ss',default=None,
                              format='%M:%S')
     slow_lap = DateTimeField('Slow Lap', validators=[Optional()],
-                             description='mm:ss',
+                             description='mm:ss',default=None,
                              format='%M:%S')
     average_lap = DateTimeField('Average Lap', validators=[Optional()],
-                             description='mm:ss',
+                             description='mm:ss',default=None,
                              format='%M:%S')
     weather = StringField('Weather',validators=[Optional()])
     usac_permit = StringField('USAC Permit',validators=[Optional()])

@@ -212,14 +212,27 @@ def team_delete(id):
 @main.route('/race/add/', methods=['GET', 'POST'])
 def race_add():
     form=RaceForm()
+    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
+                            RaceClass.query.order_by('name')]
     if form.validate_on_submit():
         date = form.date.data
-        fast_lap = timedelta(0, form.fast_lap.data.minute * 60
-                             + form.fast_lap.data.second)
-        average_lap = timedelta(0, form.average_lap.data.minute * 60
-                             + form.average_lap.data.second)
-        slow_lap = timedelta(0, form.slow_lap.data.minute * 60
-                             + form.slow_lap.data.second)
+        if form.fast_lap.data is not None:
+            fast_lap = timedelta(0, form.fast_lap.data.minute * 60
+                                 + form.fast_lap.data.second)
+        else:
+            fast_lap = form.fast_lap.data
+        
+        if form.average_lap.data is not None:
+            average_lap = timedelta(0, form.average_lap.data.minute * 60
+                                    + form.average_lap.data.second)
+        else:
+            average_lap = form.average_lap.data
+        if form.slow_lap.data is not None:
+            slow_lap = timedelta(0, form.slow_lap.data.minute * 60
+                                 + form.slow_lap.data.second)
+        else:
+            slow_lap = form.slow_lap.data
+
         weather = form.weather.data
         class_id = form.class_id.data
         usac_permit = form.usac_permit.data
@@ -235,7 +248,5 @@ def race_add():
 
 
     form.submit.label.text='Add'
-    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
-                            RaceClass.query.order_by('name')]
     form.date.data=datetime.today()
     return render_template('add.html',form=form,type='race')
