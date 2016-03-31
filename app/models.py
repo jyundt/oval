@@ -76,8 +76,16 @@ class Participant(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
     primes = db.relationship('Prime', backref='participant')
-    #result = db.relationship('Result',backref='participant')
-    result = db.relationship('Result',uselist=False,backref='participant')
+    place = db.Column(db.Integer)
+    points = db.Column(db.Integer)
+    team_points = db.Column(db.Integer)
+    mar_points = db.Column(db.Integer)
+    mar_place = db.Column(db.Integer)
+    point_prime = db.Column(db.Boolean, default=False)
+    dnf = db.Column(db.Boolean, default=False)
+    dns = db.Column(db.Boolean, default=False)
+    relegated = db.Column(db.Boolean, default=False)
+    disqualified = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<Participant %r>' % self.id
@@ -111,20 +119,3 @@ class Prime(db.Model):
     def __repr__(self):
         return '<Prime %r>' % self.name
 
-class Result(db.Model):
-    __tablename__ = 'result'
-    id = db.Column(db.Integer, primary_key=True)
-    participant_id = db.Column(db.Integer, db.ForeignKey('participant.id'))
-    place = db.Column(db.Integer)
-    points = db.Column(db.Integer)
-    team_points = db.Column(db.Integer)
-    mar_points = db.Column(db.Integer)
-    mar_place = db.Column(db.Integer)
-    point_prime = db.Column(db.Boolean, default=False)
-    dnf = db.Column(db.Boolean, default=False)
-    dns = db.Column(db.Boolean, default=False)
-    relegated = db.Column(db.Boolean, default=False)
-    disqualified = db.Column(db.Boolean, default=False)
-    
-    def __repr__(self):
-        return '<Result %r>' % self.id

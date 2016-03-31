@@ -28,19 +28,19 @@
 <tr>
 <td><a href="{{ url_for('main.race_details', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
 <td>{{participant.race.race_class.name}}</td>
-{% if participant.result.place is not none %}
-<td>{{participant.result.place}}</td>
+{% if participant.place is not none %}
+<td>{{participant.place}}</td>
 {% else %}
 <td>-</td>
 {% endif %}
 <td>{{participant.team.name}}</td>
-{% if participant.result.points is not none %}
-<td> {{ participant.result.points }}</td>
+{% if participant.points is not none %}
+<td> {{ participant.points }}</td>
 {% else %}
 <td>-</td>
 {%endif %}
-{% if participant.result.team_points is not none %}
-<td> {{ participant.result.team_points }}</td>
+{% if participant.team_points is not none %}
+<td> {{ participant.team_points }}</td>
 {% else %}
 <td>-</td>
 {%endif %}

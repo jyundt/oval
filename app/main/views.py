@@ -1,8 +1,8 @@
 from flask import render_template, session, redirect, url_for, current_app,flash
-from sqlalchemy import extract
+from sqlalchemy import extract, desc
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
-    Participant,RaceOfficial,RaceMarshal,Prime,Result
+    Participant,RaceOfficial,RaceMarshal,Prime
 #from ..email import send_email
 from . import main
 from .forms import RaceClassForm, RacerForm, TeamForm, RaceForm
@@ -27,8 +27,8 @@ def generate_standings(year,race_class):
     for race in races:
         for participant in race.participants:
             print participant.racer.name
-            print participant.result.place
-            print participant.result.points
+            print participant.place
+            print participant.points
            
             
     return races
@@ -211,7 +211,7 @@ def team_delete(id):
 
 @main.route('/race/')
 def race():
-    races = Race.query.order_by(Race.date).all()
+    races = Race.query.order_by(desc(Race.date)).all()
     return render_template('race.html', races=races)
 
 @main.route('/race/<int:id>')
@@ -316,5 +316,5 @@ def race_delete(id):
     race = Race.query.get_or_404(id)
     db.session.delete(race)
     db.session.commit()
-    flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' delete!')
+    flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' deleted!')
     return redirect(url_for('main.race'))
