@@ -3,6 +3,8 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% import "macros.html" as macros %}
 
+{% block html_attribs %} lang="en" {% endblock %}
+
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">

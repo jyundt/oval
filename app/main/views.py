@@ -5,7 +5,8 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime
 #from ..email import send_email
 from . import main
-from .forms import RaceClassForm, RacerForm, TeamForm, RaceForm
+from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
+                   RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm
 from datetime import timedelta,datetime
 
 
@@ -60,8 +61,7 @@ def race_class_details(id):
 
 @main.route('/race_class/add/', methods=['GET', 'POST'])
 def race_class_add():
-    form=RaceClassForm()
-    form.submit.label.text='Add'
+    form=RaceClassAddForm()
     if form.validate_on_submit():
         name = form.name.data
         race_class=RaceClass(name=name)
@@ -76,8 +76,7 @@ def race_class_add():
 @main.route('/race_class/edit/<int:id>', methods=['GET', 'POST'])
 def race_class_edit(id):
     race_class = RaceClass.query.get_or_404(id)
-    form=RaceClassForm()
-    form.submit.label.text='Save'
+    form=RaceClassEditForm(race_class)
     
     if form.validate_on_submit():
         name = form.name.data
@@ -172,8 +171,7 @@ def team_details(id):
 
 @main.route('/team/add/', methods=['GET', 'POST'])
 def team_add():
-    form=TeamForm()
-    form.submit.label.text='Add'
+    form=TeamAddForm()
     if form.validate_on_submit():
         name = form.name.data
         team=Team(name=name)
@@ -188,7 +186,7 @@ def team_add():
 @main.route('/team/edit/<int:id>', methods=['GET', 'POST'])
 def team_edit(id):
     team = Team.query.get_or_404(id)
-    form=TeamForm()
+    form=TeamEditForm(team)
     form.submit.label.text='Save'
     
     if form.validate_on_submit():
@@ -223,7 +221,7 @@ def race_details(id):
 
 @main.route('/race/add/', methods=['GET', 'POST'])
 def race_add():
-    form=RaceForm()
+    form=RaceAddForm()
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                             RaceClass.query.order_by('name')]
     if form.validate_on_submit():
@@ -266,7 +264,7 @@ def race_add():
 @main.route('/race/edit/<int:id>', methods=['GET', 'POST'])
 def race_edit(id):
     race = Race.query.get_or_404(id)
-    form=RaceForm()
+    form=RaceEditForm(race)
     form.submit.label.text='Save'
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                             RaceClass.query.order_by('name')]
@@ -318,3 +316,18 @@ def race_delete(id):
     db.session.commit()
     flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' deleted!')
     return redirect(url_for('main.race'))
+
+@main.route('/participant/<int:id>')
+def participant_details(id):
+    participant = Participant.query.get_or_404(id)
+
+    return render_template('participant_details.html', participant=participant)
+
+
+@main.route('/participant/add/', methods=['GET', 'POST'])
+def participant_add():
+    form=ParticipantForm()
+    form.submit.label.text='Add'
+    if form.validate_on_submit():
+        return "Hi"
+    return render_template('add.html',form=form,type='participant')
