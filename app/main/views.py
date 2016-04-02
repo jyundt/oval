@@ -6,7 +6,8 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
 #from ..email import send_email
 from . import main
 from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
-                   RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm
+                   RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
+                   ParticipantAddForm
 from datetime import timedelta,datetime
 
 
@@ -53,7 +54,7 @@ def race_class():
     return render_template('race_class.html', race_classes=race_classes)
 
 
-@main.route('/race_class/<int:id>')
+@main.route('/race_class/<int:id>/')
 def race_class_details(id):
     race_class = RaceClass.query.get_or_404(id)
 
@@ -73,7 +74,7 @@ def race_class_add():
 
     return render_template('add.html',form=form,type='race class')
 
-@main.route('/race_class/edit/<int:id>', methods=['GET', 'POST'])
+@main.route('/race_class/edit/<int:id>/', methods=['GET', 'POST'])
 def race_class_edit(id):
     race_class = RaceClass.query.get_or_404(id)
     form=RaceClassEditForm(race_class)
@@ -89,7 +90,7 @@ def race_class_edit(id):
     return render_template('edit.html',
                            item=race_class,form=form,type='race class')
 
-@main.route('/race_class/delete/<int:id>')
+@main.route('/race_class/delete/<int:id>/')
 def race_class_delete(id):
     race_class = RaceClass.query.get_or_404(id)
     db.session.delete(race_class)
@@ -103,7 +104,7 @@ def racer():
     return render_template('racer.html', racers=racers)
 
 
-@main.route('/racer/<int:id>')
+@main.route('/racer/<int:id>/')
 def racer_details(id):
     racer = Racer.query.get_or_404(id)
 
@@ -126,7 +127,7 @@ def racer_add():
 
     return render_template('add.html',form=form,type='racer')
 
-@main.route('/racer/edit/<int:id>', methods=['GET', 'POST'])
+@main.route('/racer/edit/<int:id>/', methods=['GET', 'POST'])
 def racer_edit(id):
     racer = Racer.query.get_or_404(id)
     form=RacerForm()
@@ -149,7 +150,7 @@ def racer_edit(id):
     return render_template('edit.html',
                            item=racer,form=form,type='racer')
 
-@main.route('/racer/delete/<int:id>')
+@main.route('/racer/delete/<int:id>/')
 def racer_delete(id):
     racer = Racer.query.get_or_404(id)
     db.session.delete(racer)
@@ -163,7 +164,7 @@ def team():
     return render_template('team.html', teams=teams)
 
 
-@main.route('/team/<int:id>')
+@main.route('/team/<int:id>/')
 def team_details(id):
     team = Team.query.get_or_404(id)
 
@@ -183,7 +184,7 @@ def team_add():
 
     return render_template('add.html',form=form,type='team')
 
-@main.route('/team/edit/<int:id>', methods=['GET', 'POST'])
+@main.route('/team/edit/<int:id>/', methods=['GET', 'POST'])
 def team_edit(id):
     team = Team.query.get_or_404(id)
     form=TeamEditForm(team)
@@ -199,7 +200,7 @@ def team_edit(id):
     form.name.data = team.name
     return render_template('edit.html', item=team,form=form,type='team')
 
-@main.route('/team/delete/<int:id>')
+@main.route('/team/delete/<int:id>/')
 def team_delete(id):
     team = Team.query.get_or_404(id)
     db.session.delete(team)
@@ -212,7 +213,7 @@ def race():
     races = Race.query.order_by(desc(Race.date)).all()
     return render_template('race.html', races=races)
 
-@main.route('/race/<int:id>')
+@main.route('/race/<int:id>/')
 def race_details(id):
     race = Race.query.get_or_404(id)
 
@@ -261,7 +262,7 @@ def race_add():
     form.date.data=datetime.today()
     return render_template('add.html',form=form,type='race')
 
-@main.route('/race/edit/<int:id>', methods=['GET', 'POST'])
+@main.route('/race/edit/<int:id>/', methods=['GET', 'POST'])
 def race_edit(id):
     race = Race.query.get_or_404(id)
     form=RaceEditForm(race)
@@ -307,9 +308,20 @@ def race_edit(id):
         
     form.date.data = race.date
     form.class_id.data=race.class_id
+    #This is so clunky :(
+    if race.fast_lap is not None:
+        form.fast_lap.data=datetime.strptime(str(race.fast_lap), '%H:%M:%S')
+    if race.average_lap is not None:
+        form.average_lap.data=datetime.strptime(str(race.average_lap),
+                                                    '%H:%M:%S')
+    if race.slow_lap is not None:
+        form.slow_lap.data=datetime.strptime(str(race.slow_lap), '%H:%M:%S')
+    form.weather.data=race.weather
+    form.usac_permit.data=race.usac_permit
+    form.laps.data=race.laps
     return render_template('edit.html', item=race,form=form,type='race')
 
-@main.route('/race/delete/<int:id>')
+@main.route('/race/delete/<int:id>/')
 def race_delete(id):
     race = Race.query.get_or_404(id)
     db.session.delete(race)
@@ -317,7 +329,18 @@ def race_delete(id):
     flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' deleted!')
     return redirect(url_for('main.race'))
 
-@main.route('/participant/<int:id>')
+@main.route('/race/<int:id>/participant/add/', methods=['GET', 'POST'])
+def race_participant_add(id):
+    race = Race.query.get_or_404(id)
+    form=ParticipantForm(race)
+    if form.validate_on_submit():
+        return "Hi"
+    return render_template('add.html',form=form,type='participant')
+
+    
+
+
+@main.route('/participant/<int:id>/')
 def participant_details(id):
     participant = Participant.query.get_or_404(id)
 
@@ -326,8 +349,7 @@ def participant_details(id):
 
 @main.route('/participant/add/', methods=['GET', 'POST'])
 def participant_add():
-    form=ParticipantForm()
-    form.submit.label.text='Add'
+    form=ParticipantAddForm()
     if form.validate_on_submit():
         return "Hi"
     return render_template('add.html',form=form,type='participant')
