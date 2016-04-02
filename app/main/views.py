@@ -330,11 +330,38 @@ def race_delete(id):
     return redirect(url_for('main.race'))
 
 @main.route('/race/<int:id>/participant/add/', methods=['GET', 'POST'])
-def race_participant_add(id):
+def race_add_participant(id):
     race = Race.query.get_or_404(id)
     form=ParticipantForm(race)
     if form.validate_on_submit():
-        return "Hi"
+        race_id = race.id
+        racer_id=Racer.query.filter_by(name=form.name.data).first().id
+        if Team.query.filter_by(name=form.team_name.data).first():
+            team_id=Team.query.filter_by(name=form.team_name.data).first().id
+        else:
+            team_id=None
+
+        place = form.place.data
+        points = form.points.data
+        team_points = form.team_points.data
+        mar_place = form.mar_place.data
+        mar_points = form.mar_points.data
+        point_prime = form.point_prime.data
+        dnf = form.dnf.data
+        dns = form.dns.data
+        relegated = form.relegated.data        
+        disqualified = form.disqualified.data        
+        participant = Participant(racer_id=racer_id,team_id=team_id,
+                                  points=points,team_points=team_points,
+                                  mar_place=mar_place,mar_points=mar_points,
+                                  point_prime=point_prime,dnf=dnf,dns=dns,
+                                  relegated=relegated,
+                                  disqualified=disqualified,
+                                  race_id=race_id,place=place)
+        db.session.add(participant)
+        db.session.commit()
+        return redirect(url_for('main.race_details',id=race.id))
+        
     return render_template('add.html',form=form,type='participant')
 
     

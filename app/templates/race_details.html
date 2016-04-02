@@ -10,6 +10,7 @@
     <a class="btn btn-default" href="{{ url_for('main.race_edit',id=race.id)}}">Edit</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete">Delete</button>
     {{ macros.confirm_delete_modal(race,'main.race_delete')}}
+    <a class="btn btn-default" href="{{url_for('main.race_add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant to this race</a>
 </div>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
