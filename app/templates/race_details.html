@@ -25,12 +25,12 @@
 </tr>
 </thead>
 <tbody>
-{% for participant in race.participants|sort(attribute='place') %}
+{% for participant in participants %}
 <tr>
 {% if participant.place is not none %}
-<td> {{ participant.place }}</td>
+<td><a href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}">{{ participant.place }}</a></td>
 {% else %}
-<td>-</td>
+<td><a href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}">-</a></td>
 {%endif%}
 <td><a href="{{url_for('main.racer_details', id=participant.racer.id)}}">{{ participant.racer.name }}</a></td>
 {%if participant.team.name is not none %}

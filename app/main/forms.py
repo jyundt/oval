@@ -2,7 +2,7 @@ from flask_wtf import Form
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     SelectField, DateTimeField, BooleanField
 from wtforms import ValidationError
-from wtforms.validators import Required,EqualTo,Optional
+from wtforms.validators import Required,EqualTo,Optional,NumberRange
 from ..models import RaceClass, Racer, Team, Race
 from sqlalchemy import and_
 
@@ -124,11 +124,15 @@ class RaceEditForm(RaceForm):
     
 
 class ParticipantForm(Form):
-    place = IntegerField('Place',validators=[Optional()])
+    place = IntegerField('Place',validators=[Optional(),NumberRange(min=1)])
     name = StringField('Racer Name',validators=[Required()])
     team_name = StringField('Team Name',validators=[Optional()])
-    points = IntegerField('Points',validators=[Optional()])
-    team_points = IntegerField('Team Points',validators=[Optional()])
+    points = IntegerField('Points',validators=[Optional(),
+                          NumberRange(min=0,max=11,
+                                      message='Invalid amount of points')])
+    team_points = IntegerField('Team Points',validators=[Optional(),
+                          NumberRange(min=0,max=11,
+                                      message='Invalid amount of team points')])
     mar_place = IntegerField('MAR Place',validators=[Optional()])
     mar_points = IntegerField('MAR Points',validators=[Optional()])
     point_prime = BooleanField('Point Prime',validators=[Optional()])
@@ -137,7 +141,6 @@ class ParticipantForm(Form):
     relegated = BooleanField('Relegated',validators=[Optional()])
     disqualified = BooleanField('Disqualified',validators=[Optional()])
 
-    submit = SubmitField('Add')
     def __init__(self, race, *args, **kwargs):
         super(ParticipantForm, self).__init__(*args, **kwargs)
         self.race = race
@@ -152,3 +155,6 @@ class ParticipantForm(Form):
 
 class ParticipantAddForm(ParticipantForm):
     submit = SubmitField('Add')
+
+class ParticipantEditForm(ParticipantForm):
+    submit = SubmitField('Save')

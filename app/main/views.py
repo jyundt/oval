@@ -1,4 +1,5 @@
-from flask import render_template, session, redirect, url_for, current_app,flash
+from flask import render_template, session, redirect, url_for, current_app,\
+                  flash, abort
 from sqlalchemy import extract, desc
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
@@ -7,7 +8,7 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
 from . import main
 from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
-                   ParticipantAddForm
+                   ParticipantAddForm, ParticipantEditForm
 from datetime import timedelta,datetime
 
 
@@ -216,8 +217,11 @@ def race():
 @main.route('/race/<int:id>/')
 def race_details(id):
     race = Race.query.get_or_404(id)
+    #I had to do this sort because jinja doesn't support lambas
+    participants = sorted(race.participants, key=lambda x: (x.place is None, x.place))
 
-    return render_template('race_details.html', race=race)
+    return render_template('race_details.html', race=race,
+                           participants=participants)
 
 
 @main.route('/race/add/', methods=['GET', 'POST'])
@@ -332,7 +336,7 @@ def race_delete(id):
 @main.route('/race/<int:id>/participant/add/', methods=['GET', 'POST'])
 def race_add_participant(id):
     race = Race.query.get_or_404(id)
-    form=ParticipantForm(race)
+    form=ParticipantAddForm(race)
     if form.validate_on_submit():
         race_id = race.id
         racer_id=Racer.query.filter_by(name=form.name.data).first().id
@@ -365,18 +369,61 @@ def race_add_participant(id):
     return render_template('add.html',form=form,type='participant')
 
     
-
-
-@main.route('/participant/<int:id>/')
-def participant_details(id):
-    participant = Participant.query.get_or_404(id)
-
-    return render_template('participant_details.html', participant=participant)
-
-
-@main.route('/participant/add/', methods=['GET', 'POST'])
-def participant_add():
-    form=ParticipantAddForm()
+@main.route('/race/<int:race_id>/participant/edit/<int:participant_id>', methods=['GET', 'POST'])
+def race_edit_participant(race_id,participant_id):
+    race = Race.query.get_or_404(race_id)
+    participant = Participant.query.get_or_404(participant_id)
+    if participant.race_id != race_id:
+        abort(404) 
+    form=ParticipantEditForm(race)
     if form.validate_on_submit():
-        return "Hi"
-    return render_template('add.html',form=form,type='participant')
+        race_id = race.id
+        racer_id=Racer.query.filter_by(name=form.name.data).first().id
+        if Team.query.filter_by(name=form.team_name.data).first():
+            team_id=Team.query.filter_by(name=form.team_name.data).first().id
+        else:
+            team_id=None
+
+        place = form.place.data
+        points = form.points.data
+        team_points = form.team_points.data
+        mar_place = form.mar_place.data
+        mar_points = form.mar_points.data
+        point_prime = form.point_prime.data
+        dnf = form.dnf.data
+        dns = form.dns.data
+        relegated = form.relegated.data        
+        disqualified = form.disqualified.data        
+        participant.racer_id=racer_id 
+        participant.team_id=team_id
+        participant.place=place
+        participant.points=points
+        participant.team_points = team_points
+        participant.mar_place = mar_place
+        participant.mar_points= mar_points
+        participant.point_prime = point_prime
+        participant.dnf = dnf
+        participant.dns = dns
+        participant.relegated = relegated
+        participant.disqualified = disqualified
+        db.session.commit()
+        return redirect(url_for('main.race_details',id=race.id))
+
+    form.place.data = participant.place
+    form.points.data = participant.points
+    form.team_points.data = participant.team_points
+    form.name.data = participant.racer.name
+    form.mar_place.data = participant.mar_place
+    form.mar_points.data = participant.mar_points
+    form.point_prime.data = participant.point_prime
+    form.dnf.data = participant.dnf
+    form.dns.data = participant.dns
+    form.relegated.data = participant.relegated
+    form.disqualified.data = participant.disqualified
+    if participant.team is not None:
+        form.team_name.data = participant.team.name
+        
+    return render_template('edit.html', item=participant,form=form,
+                           type='participant')
+
+    
