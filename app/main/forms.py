@@ -162,3 +162,13 @@ class ParticipantAddForm(ParticipantForm):
 
 class ParticipantEditForm(ParticipantForm):
     submit = SubmitField('Save')
+
+class PrimeForm(Form):
+    name = StringField('Prime', validators=[Required()])
+
+class PrimeAddForm(PrimeForm):
+    participant_id = SelectField(u'Racer', coerce=int, validators=[Required()])
+    submit = SubmitField('Add')
+
+class PrimeEditForm(PrimeForm):
+    submit = SubmitField('Save')

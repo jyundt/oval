@@ -22,7 +22,7 @@ class RaceClass(db.Model):
     __tablename__ = 'race_class'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
-    races = db.relationship('Race', backref='race_class')
+    races = db.relationship('Race', cascade='all,delete', backref='race_class')
     
 
     def __repr__(self):
@@ -34,7 +34,8 @@ class Racer(db.Model):
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     birthdate = db.Column(db.Date)
-    participants = db.relationship('Participant', backref='racer')
+    participants = db.relationship('Participant', cascade='all,delete', 
+                                   backref='racer')
 
     def __repr__(self):
         return '<Racer %r>' % self.name
@@ -61,7 +62,8 @@ class Race(db.Model):
     weather = db.Column(db.String(200))
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
-    participants= db.relationship('Participant', backref='race')
+    participants= db.relationship('Participant', cascade='all,delete',
+                                   backref='race')
     officials = db.relationship('RaceOfficial', backref='race')
     marshals = db.relationship('RaceMarshal', backref='race')
 
@@ -75,7 +77,8 @@ class Participant(db.Model):
     racer_id = db.Column(db.Integer, db.ForeignKey('racer.id'))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
-    primes = db.relationship('Prime', backref='participant')
+    primes = db.relationship('Prime', cascade='all,delete', 
+                             backref='participant')
     place = db.Column(db.Integer)
     points = db.Column(db.Integer)
     team_points = db.Column(db.Integer)

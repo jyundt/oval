@@ -11,6 +11,7 @@
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
     {{ macros.confirm_delete_modal(race,'main.race_delete')}}
     <a class="btn btn-default" href="{{url_for('main.race_add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant to this race</a>
+    <a class="btn btn-default" href="{{url_for('main.race_add_prime',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a prime to this race</a>
 </div>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
@@ -32,7 +33,7 @@
 
 
 <a role="button" class="btn btn-default btn-xs"  href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
-<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#{{participant.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#participant{{participant.id}}"><span class="glyphicon glyphicon-remove"></span></button>
 {{ macros.confirm_delete_participant_modal(participant,race,'main.race_delete_participant')}}
 
 </td>
@@ -64,7 +65,13 @@
 <td>
 <ul>
 {% for prime in participant.primes %}
-<li>{{prime.name}}</li>
+<li>
+{{prime.name}}
+<a role="button" class="btn btn-default btn-xs" href="{{url_for('main.race_edit_prime',race_id=race.id,prime_id=prime.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
+
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#prime{{prime.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_prime_modal(prime,race,'main.race_delete_prime')}}
+</li>
 {%endfor%}
 </ul>
 </td>

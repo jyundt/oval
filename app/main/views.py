@@ -8,7 +8,8 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
 from . import main
 from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
-                   ParticipantAddForm, ParticipantEditForm
+                   ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
+                   PrimeEditForm
 from datetime import timedelta,datetime
 
 
@@ -437,3 +438,48 @@ def race_delete_participant(race_id,participant_id):
     flash('Racer ' + participant.racer.name + ' deleted from race!')
     return redirect(url_for('main.race_details',id=race.id))
     
+@main.route('/race/<int:id>/prime/add/', methods=['GET', 'POST'])
+def race_add_prime(id):
+    race = Race.query.get_or_404(id)
+    form=PrimeAddForm()
+    form.participant_id.choices = [(participant_id.id, 
+                                   participant_id.racer.name)
+                                   for participant_id in 
+                                   Race.query.get(id).participants]
+    if form.validate_on_submit():
+        participant_id = form.participant_id.data
+        name = form.name.data
+        prime=Prime(name=name,participant_id=participant_id)
+        db.session.add(prime)
+        db.session.commit()
+        flash('Prime for ' + prime.participant.racer.name + ' added!')
+        return redirect(url_for('main.race_details',id=race.id))
+    return render_template('add.html',form=form,type='prime')
+
+@main.route('/race/<int:race_id>/prime/edit/<int:prime_id>/', methods=['GET',
+                                                              'POST'])
+def race_edit_prime(race_id,prime_id):
+    race = Race.query.get_or_404(race_id)
+    prime = Prime.query.get_or_404(prime_id)
+    if prime.participant.race.id != race_id:
+        abort(404) 
+    form=PrimeEditForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        prime.name = name
+        db.session.commit()
+        flash('Prime for ' + prime.participant.racer.name + ' updated!')
+        return redirect(url_for('main.race_details',id=race.id))
+
+    form.name.data = prime.name
+    return render_template('edit.html',item=prime,form=form,type='prime')
+
+@main.route('/race/<int:race_id>/prime/delete/<int:prime_id>')
+def race_delete_prime(race_id,prime_id):
+    race = Race.query.get_or_404(race_id)
+    prime = Prime.query.get_or_404(prime_id)
+    if prime.participant.race.id != race_id:
+        abort(404) 
+    db.session.delete(prime)
+    flash('Prime for ' + prime.participant.racer.name + ' deleted from race!')
+    return redirect(url_for('main.race_details',id=race.id))
