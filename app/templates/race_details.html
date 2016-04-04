@@ -32,16 +32,15 @@
 
 
 <a role="button" class="btn btn-default btn-xs"  href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
-{#<a role="button" class="btn btn-danger btn-xs" href="#"><span class="glyphicon glyphicon-remove"></span</a>#}
 <button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#{{participant.id}}"><span class="glyphicon glyphicon-remove"></span></button>
 {{ macros.confirm_delete_participant_modal(participant,race,'main.race_delete_participant')}}
 
 </td>
 
 {% if participant.place is not none %}
-<td><a href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}">{{ participant.place }}</a></td>
+<td>{{ participant.place }}</td>
 {% else %}
-<td><a href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}">-</a></td>
+<td>-</td>
 {%endif%}
 <td><a href="{{url_for('main.racer_details', id=participant.racer.id)}}">{{ participant.racer.name }}</a></td>
 {%if participant.team.name is not none %}
