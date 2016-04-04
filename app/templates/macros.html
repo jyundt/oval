@@ -16,3 +16,22 @@
   </div>
 </div>
 {% endmacro %}
+
+{% macro confirm_delete_participant_modal(participant,race,endpoint) %}
+<div class="modal fade" id="{{participant.id}}" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete {{participant.racer.name}} from this race. Are you sure you want to continue? (This may cause irreparable damage to the database.)</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-danger" href="{{ url_for(endpoint,race_id=race.id,participant_id=participant.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}

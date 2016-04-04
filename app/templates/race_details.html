@@ -7,8 +7,8 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Details for Race: {{race.date}} - {{race.race_class.name}}</h1>
-    <a class="btn btn-default" href="{{ url_for('main.race_edit',id=race.id)}}">Edit</a>
-    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete">Delete</button>
+    <a class="btn btn-default" href="{{ url_for('main.race_edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
+    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
     {{ macros.confirm_delete_modal(race,'main.race_delete')}}
     <a class="btn btn-default" href="{{url_for('main.race_add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant to this race</a>
 </div>
@@ -16,6 +16,7 @@
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
+<th></th>
 <th>Place</th>
 <th>Name</th>
 <th>Team</th>
@@ -27,6 +28,16 @@
 <tbody>
 {% for participant in participants %}
 <tr>
+<td class="col-md-1" >
+
+
+<a role="button" class="btn btn-default btn-xs"  href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
+{#<a role="button" class="btn btn-danger btn-xs" href="#"><span class="glyphicon glyphicon-remove"></span</a>#}
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#{{participant.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_participant_modal(participant,race,'main.race_delete_participant')}}
+
+</td>
+
 {% if participant.place is not none %}
 <td><a href="{{url_for('main.race_edit_participant',race_id=race.id,participant_id=participant.id)}}">{{ participant.place }}</a></td>
 {% else %}

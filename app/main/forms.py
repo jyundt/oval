@@ -128,13 +128,17 @@ class ParticipantForm(Form):
     name = StringField('Racer Name',validators=[Required()])
     team_name = StringField('Team Name',validators=[Optional()])
     points = IntegerField('Points',validators=[Optional(),
-                          NumberRange(min=0,max=11,
+                          NumberRange(min=1,max=11,
                                       message='Invalid amount of points')])
     team_points = IntegerField('Team Points',validators=[Optional(),
-                          NumberRange(min=0,max=11,
+                               NumberRange(min=1,max=10,
                                       message='Invalid amount of team points')])
-    mar_place = IntegerField('MAR Place',validators=[Optional()])
-    mar_points = IntegerField('MAR Points',validators=[Optional()])
+    mar_place = IntegerField('MAR Place',validators=[Optional(),
+                              NumberRange(min=1,max=3,
+                                          message='Invalid MAR place!')])
+    mar_points = IntegerField('MAR Points',validators=[Optional(),
+                              NumberRange(min=1,max=3,
+                                          message='Invalid MAR points!')])
     point_prime = BooleanField('Point Prime',validators=[Optional()])
     dnf = BooleanField('DNF',validators=[Optional()])
     dns = BooleanField('DNS',validators=[Optional()])

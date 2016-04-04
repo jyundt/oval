@@ -427,3 +427,13 @@ def race_edit_participant(race_id,participant_id):
                            type='participant')
 
     
+@main.route('/race/<int:race_id>/participant/delete/<int:participant_id>')
+def race_delete_participant(race_id,participant_id):
+    race = Race.query.get_or_404(race_id)
+    participant = Participant.query.get_or_404(participant_id)
+    if participant.race_id != race_id:
+        abort(404) 
+    db.session.delete(participant)
+    flash('Racer ' + participant.racer.name + ' deleted from race!')
+    return redirect(url_for('main.race_details',id=race.id))
+    
