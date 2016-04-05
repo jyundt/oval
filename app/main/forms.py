@@ -1,8 +1,9 @@
 from flask_wtf import Form
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
-                    SelectField, DateTimeField, BooleanField
+                    SelectField, DateTimeField, BooleanField, PasswordField
 from wtforms import ValidationError
-from wtforms.validators import Required,EqualTo,Optional,NumberRange
+from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
+                               Email
 from ..models import RaceClass, Racer, Team, Race
 from sqlalchemy import and_
 
@@ -172,3 +173,4 @@ class PrimeAddForm(PrimeForm):
 
 class PrimeEditForm(PrimeForm):
     submit = SubmitField('Save')
+

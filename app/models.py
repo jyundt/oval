@@ -1,4 +1,8 @@
 from . import db
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from . import login_manager
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -121,4 +125,34 @@ class Prime(db.Model):
 
     def __repr__(self):
         return '<Prime %r>' % self.name
+
+
+class Admin(UserMixin, db.Model):
+    __tablename = 'admin'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), unique=True)
+    username = db.Column(db.String(200), unique=True)
+    password_hash = db.Column(db.String(128))
+    confirmed = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(200))
+
+
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+ 
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return '<Admin %r>' % self.username
+
+
+@login_manager.user_loader
+def load_user(admin_id):
+    return Admin.query.get(int(admin_id))
 

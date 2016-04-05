@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}The Oval The App - Admin Login{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Admin Login</h1>
+</div>
+<div class="col-md-4">
+{{wtf.quick_form(form)}}
+</div>
+{% endblock %}

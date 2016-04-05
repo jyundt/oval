@@ -7,16 +7,16 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Details for Racer: {{racer.name}}</h1>
-    <a class="btn btn-default" href="{{ url_for('main.racer_edit',id=racer.id)}}">Edit</a>
-    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete">Delete</button>
+    <a class="btn btn-default" href="{{ url_for('main.racer_edit',id=racer.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit racer details</a>
+    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete racer</button>
     {{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
 </div>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-<th>Date</th>
-<th>Race Class</th>
+<th>Race Date</th>
+<th>Category</th>
 <th>Place</th>
 <th>Team</th>
 <th>Points</th>
@@ -24,16 +24,20 @@
 </tr>
 </thead>
 <tbody>
-{% for participant in racer.participants %}
+{% for participant in racer.participants|sort(attribute='race.date',reverse = True) %}
 <tr>
 <td><a href="{{ url_for('main.race_details', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
-<td>{{participant.race.race_class.name}}</td>
+<td><a href="{{url_for('main.race_class_details', id=participant.race.race_class.id)}}">{{participant.race.race_class.name}}</a></td>
 {% if participant.place is not none %}
 <td>{{participant.place}}</td>
 {% else %}
 <td>-</td>
 {% endif %}
-<td>{{participant.team.name}}</td>
+{%if participant.team is not none %}
+<td><a href="{{url_for('main.team_details', id=participant.team.id)}}">{{ participant.team.name }}</a></td>
+{%else%}
+<td>-</td>
+{%endif%}
 {% if participant.points is not none %}
 <td> {{ participant.points }}</td>
 {% else %}

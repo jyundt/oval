@@ -11,6 +11,7 @@ from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm
 from datetime import timedelta,datetime
+from flask_login import login_required
 
 
 #The goal of this function is return a table for the current standings for
@@ -103,6 +104,8 @@ def race_class_delete(id):
 @main.route('/racer/')
 def racer():
     racers = Racer.query.order_by(Racer.name).all()
+    #racers = sorted(racers, key=lambda x: x.name.split()[1])
+    
     return render_template('racer.html', racers=racers)
 
 
@@ -483,3 +486,8 @@ def race_delete_prime(race_id,prime_id):
     db.session.delete(prime)
     flash('Prime for ' + prime.participant.racer.name + ' deleted from race!')
     return redirect(url_for('main.race_details',id=race.id))
+
+@main.route('/test/')
+@login_required
+def test():
+    return 'auth!'
