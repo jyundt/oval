@@ -94,6 +94,7 @@ def race_class_edit(id):
                            item=race_class,form=form,type='race class')
 
 @main.route('/race_class/delete/<int:id>/')
+@login_required
 def race_class_delete(id):
     race_class = RaceClass.query.get_or_404(id)
     db.session.delete(race_class)
