@@ -31,6 +31,9 @@
                 <li><a href="{{ url_for('main.racer') }}">Racers</a></li> 
                 <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
                 <li><a href="{{ url_for('main.race') }}">Races</a></li> 
+                {% if current_user.is_authenticated %}
+                <li><a href="{{url_for('auth.admin')}}">Admin</a></li>
+                {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}

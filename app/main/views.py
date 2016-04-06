@@ -137,7 +137,6 @@ def racer_add():
 def racer_edit(id):
     racer = Racer.query.get_or_404(id)
     form=RacerForm()
-    form.submit.label.text='Save'
     
     if form.validate_on_submit():
         name = form.name.data
@@ -194,7 +193,6 @@ def team_add():
 def team_edit(id):
     team = Team.query.get_or_404(id)
     form=TeamEditForm(team)
-    form.submit.label.text='Save'
     
     if form.validate_on_submit():
         name = form.name.data
@@ -275,7 +273,6 @@ def race_add():
 def race_edit(id):
     race = Race.query.get_or_404(id)
     form=RaceEditForm(race)
-    form.submit.label.text='Save'
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                             RaceClass.query.order_by('name')]
     
@@ -342,13 +339,16 @@ def race_delete(id):
 def race_add_participant(id):
     race = Race.query.get_or_404(id)
     form=ParticipantAddForm(race)
+    form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
+                           Team.query.order_by('name')]
+    form.team_id.choices.insert(0, (0, ''))
     if form.validate_on_submit():
         race_id = race.id
         racer_id=Racer.query.filter_by(name=form.name.data).first().id
-        if Team.query.filter_by(name=form.team_name.data).first():
-            team_id=Team.query.filter_by(name=form.team_name.data).first().id
-        else:
+        if form.team_id.data == 0:
             team_id=None
+        else:
+            team_id=form.team_id.data
 
         place = form.place.data
         points = form.points.data
@@ -381,13 +381,16 @@ def race_edit_participant(race_id,participant_id):
     if participant.race_id != race_id:
         abort(404) 
     form=ParticipantEditForm(race)
+    form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
+                           Team.query.order_by('name')]
+    form.team_id.choices.insert(0, (0, ''))
     if form.validate_on_submit():
         race_id = race.id
         racer_id=Racer.query.filter_by(name=form.name.data).first().id
-        if Team.query.filter_by(name=form.team_name.data).first():
-            team_id=Team.query.filter_by(name=form.team_name.data).first().id
-        else:
+        if form.team_id.data == 0:
             team_id=None
+        else:
+            team_id=form.team_id.data
 
         place = form.place.data
         points = form.points.data
@@ -426,7 +429,7 @@ def race_edit_participant(race_id,participant_id):
     form.relegated.data = participant.relegated
     form.disqualified.data = participant.disqualified
     if participant.team is not None:
-        form.team_name.data = participant.team.name
+        form.team_id.data = participant.team.id
         
     return render_template('edit.html', item=participant,form=form,
                            type='participant')

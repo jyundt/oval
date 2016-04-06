@@ -127,7 +127,9 @@ class RaceEditForm(RaceForm):
 class ParticipantForm(Form):
     place = IntegerField('Place',validators=[Optional(),NumberRange(min=1)])
     name = StringField('Racer Name',validators=[Required()])
-    team_name = StringField('Team Name',validators=[Optional()])
+    #team_name = StringField('Team Name',validators=[Optional()])
+    #Let's change this to a select field
+    team_id = SelectField(u'Team', coerce=int, validators=[Optional()])
     points = IntegerField('Points',validators=[Optional(),
                           NumberRange(min=1,max=11,
                                       message='Invalid amount of points')])
