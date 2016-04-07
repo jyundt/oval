@@ -9,9 +9,11 @@ from . import main
 from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
-                   PrimeEditForm
+                   PrimeEditForm, MarshalAddForm, MarshalEditForm,\
+                   RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
+                   RaceOfficialAddForm
 from datetime import timedelta,datetime
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 #The goal of this function is return a table for the current standings for
 #a given season
@@ -523,6 +525,189 @@ def race_delete_prime(race_id,prime_id):
         abort(404) 
     db.session.delete(prime)
     flash('Prime for ' + prime.participant.racer.name + ' deleted from race!')
+    return redirect(url_for('main.race_details',id=race.id))
+
+@main.route('/marshal/')
+@login_required
+def marshal():
+    marshals = Marshal.query.order_by(Marshal.name).all()
+    return render_template('marshal.html', marshals = marshals)
+
+@main.route('/marshal/<int:id>/')
+@login_required
+def marshal_details(id):
+    marshal = Marshal.query.get_or_404(id)
+
+    return render_template('marshal_details.html', marshal=marshal)
+
+@main.route('/marshal/add/', methods=['GET', 'POST'])
+@login_required
+def marshal_add():
+    if not current_user.is_authenticated:
+        abort(403)
+    form=MarshalAddForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        marshal=Marshal(name=name)
+        db.session.add(marshal)
+        db.session.commit()
+        flash('Marshal ' + marshal.name + ' created!')
+        return redirect(url_for('main.marshal'))
+
+
+    return render_template('add.html',form=form,type='marshal')
+
+@main.route('/marshal/edit/<int:id>/', methods=['GET', 'POST'])
+@login_required
+def marshal_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    marshal = Marshal.query.get_or_404(id)
+    form=MarshalEditForm(marshal)
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        marshal.name = name
+        db.session.commit()
+        flash('Marshal ' + marshal.name + ' updated!')
+        return redirect(url_for('main.marshal'))
+        
+    form.name.data = marshal.name
+    return render_template('edit.html',
+                           item=marshal,form=form,type='marshal')
+
+@main.route('/marshal/delete/<int:id>/')
+@login_required
+def marshal_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    marshal = Marshal.query.get_or_404(id)
+    db.session.delete(marshal)
+    db.session.commit()
+    flash('Marshal ' + marshal.name + ' deleted!')
+    return redirect(url_for('main.marshal'))
+
+@main.route('/race/<int:id>/marshal/add/', methods=['GET', 'POST'])
+def race_add_marshal(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    race = Race.query.get_or_404(id)
+    form=RaceMarshalAddForm()
+    form.marshal_id.choices = [(marshal.id, 
+                                   marshal.name)
+                                   for marshal in 
+                                   Marshal.query.all()]
+    if form.validate_on_submit():
+        marshal_id = form.marshal_id.data
+        race_id = race.id
+        race_marshal=RaceMarshal(marshal_id = marshal_id, race_id=race_id)
+        db.session.add(race_marshal)
+        db.session.commit()
+        flash('Marshal ' + race_marshal.marshal.name + ' added to race!')
+        return redirect(url_for('main.race_details',id=race.id))
+    return render_template('add.html',form=form,type='race marshal')
+
+@main.route('/race/<int:race_id>/marshal/delete/<int:race_marshal_id>')
+def race_delete_marshal(race_id,race_marshal_id):
+    if not current_user.is_authenticated:
+        abort(403)
+    race = Race.query.get_or_404(race_id)
+    race_marshal = RaceMarshal.query.get_or_404(race_marshal_id)
+    if race_marshal.race.id != race_id:
+        abort(404) 
+    db.session.delete(race_marshal)
+    flash('Marshal ' + race_marshal.marshal.name + ' deleted from race!')
+    return redirect(url_for('main.race_details',id=race.id))
+
+@main.route('/official/')
+@login_required
+def official():
+    officials = Official.query.order_by(Official.name).all()
+    return render_template('official.html', officials = officials)
+
+@main.route('/official/<int:id>/')
+@login_required
+def official_details(id):
+    official = Official.query.get_or_404(id)
+    return render_template('official_details.html', official=official)
+
+@main.route('/official/add/', methods=['GET', 'POST'])
+@login_required
+def official_add():
+    if not current_user.is_authenticated:
+        abort(403)
+    form=OfficialAddForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        official=Official(name=name)
+        db.session.add(official)
+        db.session.commit()
+        flash('Official ' + official.name + ' created!!')
+        return redirect(url_for('main.official'))
+
+
+    return render_template('add.html',form=form,type='official')
+
+@main.route('/official/edit/<int:id>/', methods=['GET', 'POST'])
+@login_required
+def official_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    official = Official.query.get_or_404(id)
+    form=OfficialEditForm(official)
+    
+    if form.validate_on_submit():
+        name = form.name.data
+        official.name = name
+        db.session.commit()
+        flash('Official ' + official.name + ' updated!')
+        return redirect(url_for('main.official'))
+        
+    form.name.data = official.name
+    return render_template('edit.html',
+                           item=official,form=form,type='official')
+
+@main.route('/official/delete/<int:id>/')
+@login_required
+def official_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    official = Official.query.get_or_404(id)
+    db.session.delete(official)
+    db.session.commit()
+    flash('Official ' + official.name + ' deleted!')
+    return redirect(url_for('main.official'))
+
+@main.route('/race/<int:id>/official/add/', methods=['GET', 'POST'])
+def race_add_official(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    race = Race.query.get_or_404(id)
+    form=RaceOfficialAddForm()
+    form.official_id.choices = [(official.id, 
+                                   official.name)
+                                   for official in 
+                                   Official.query.all()]
+    if form.validate_on_submit():
+        official_id= form.official_id.data
+        race_id = race.id
+        race_official=RaceOfficial(official_id = official_id, race_id=race_id)
+        db.session.add(race_official)
+        db.session.commit()
+        flash('Official ' + race_official.official.name + ' added to race!')
+        return redirect(url_for('main.race_details',id=race.id))
+    return render_template('add.html',form=form,type='race official')
+
+@main.route('/race/<int:race_id>/official/delete/<int:race_official_id>')
+def race_delete_official(race_id,race_official_id):
+    if not current_user.is_authenticated:
+        abort(403)
+    race = Race.query.get_or_404(race_id)
+    race_official = RaceOfficial.query.get_or_404(race_official_id)
+    if race_official.race.id != race_id:
+        abort(404) 
+    db.session.delete(race_official)
+    flash('Official ' + race_official.official.name + ' deleted from race!')
     return redirect(url_for('main.race_details',id=race.id))
 
 

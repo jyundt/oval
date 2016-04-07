@@ -8,7 +8,8 @@ class Official(db.Model):
     __tablename__ = 'official'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
-    races = db.relationship('RaceOfficial', backref='official')
+    races = db.relationship('RaceOfficial', cascade='all,delete',
+                                            backref='official')
 
     def __repr__(self):
         return '<Official %r>' % self.name
@@ -17,7 +18,8 @@ class Marshal(db.Model):
     __tablename__ = 'marshal'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
-    races = db.relationship('RaceMarshal', backref='marshal')
+    races = db.relationship('RaceMarshal', cascade='all,delete',
+                                           backref='marshal')
 
     def __repr__(self):
         return '<Marshal %r>' % self.name
@@ -68,8 +70,10 @@ class Race(db.Model):
     laps = db.Column(db.Integer)
     participants= db.relationship('Participant', cascade='all,delete',
                                    backref='race')
-    officials = db.relationship('RaceOfficial', backref='race')
-    marshals = db.relationship('RaceMarshal', backref='race')
+    officials = db.relationship('RaceOfficial', cascade='all,delete',
+                                   backref='race')
+    marshals = db.relationship('RaceMarshal', cascade='all,delete',
+                                   backref='race')
 
 
     def __repr__(self):

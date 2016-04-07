@@ -11,8 +11,10 @@
     <a class="btn btn-default" href="{{ url_for('main.race_edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
     {{ macros.confirm_delete_modal(race,'main.race_delete')}}
-    <a class="btn btn-default" href="{{url_for('main.race_add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant to this race</a>
-    <a class="btn btn-default" href="{{url_for('main.race_add_prime',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a prime to this race</a>
+    <a class="btn btn-default" href="{{url_for('main.race_add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant</a>
+    <a class="btn btn-default" href="{{url_for('main.race_add_prime',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a prime</a>
+    <a class="btn btn-default" href="{{url_for('main.race_add_official',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add an official</a>
+    <a class="btn btn-default" href="{{url_for('main.race_add_marshal',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a marshal</a>
 {% endif %}
 </div>
 <div class="table-responsive">
@@ -83,4 +85,37 @@
 {% endfor %}
 </tbody>
 </table>
+
+{% if race.officials |length>0 %}
+<h3>
+Officials
+</h3>
+<ul>
+{% for race_official in race.officials %}
+<li>{{race_official.official.name}}
+{% if current_user.is_authenticated %}
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#race_official{{race_official.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_official_modal(race_official,race,'main.race_delete_official')}}
+{%endif%}
+</li>
+{%endfor%}
+</ul>
+{% endif %}
+
+
+{% if race.marshals |length>0 %}
+<h3>
+Marshals
+</h3>
+<ul>
+{% for race_marshal in race.marshals %}
+<li>{{race_marshal.marshal.name}}
+{% if current_user.is_authenticated %}
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#race_marshal{{race_marshal.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_marshal_modal(race_marshal,race,'main.race_delete_marshal')}}
+{%endif%}
+</li>
+{%endfor%}
+</ul>
+{% endif %}
 {% endblock %}

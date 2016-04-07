@@ -4,7 +4,7 @@ from wtforms import StringField, SubmitField, DateField, IntegerField,\
 from wtforms import ValidationError
 from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
                                Email
-from ..models import RaceClass, Racer, Team, Race
+from ..models import RaceClass, Racer, Team, Race, Marshal, Official
 from sqlalchemy import and_
 
 class RaceClassForm(Form):
@@ -176,3 +176,58 @@ class PrimeAddForm(PrimeForm):
 class PrimeEditForm(PrimeForm):
     submit = SubmitField('Save')
 
+class RaceMarshalForm(Form):
+     marshal_id = SelectField(u'Marshal', coerce=int, validators=[Required()])
+
+class RaceMarshalAddForm(RaceMarshalForm):
+     submit = SubmitField('Add')
+
+class MarshalForm(Form):
+    name = StringField('Name', validators=[Required()])
+
+class MarshalEditForm(MarshalForm):
+    submit = SubmitField('Save')
+
+    def __init__(self, marshal, *args, **kwargs):
+        super(MarshalEditForm, self).__init__(*args, **kwargs)
+        self.marshal = marshal
+
+    def validate_name(self, field):
+        if field.data != self.marshal.name and \
+           Marshal.query.filter(Marshal.name.ilike(field.data)).first():
+            raise ValidationError('Marshal already exists!.')
+
+class MarshalAddForm(MarshalForm):
+    submit = SubmitField('Add')
+
+    def validate_name(self, field):
+        if Marshal.query.filter(Marshal.name.ilike(field.data)).first():
+            raise ValidationError('Marshal already exists!.')
+
+class RaceOfficialForm(Form):
+     official_id = SelectField(u'Official', coerce=int, validators=[Required()])
+
+class RaceOfficialAddForm(RaceOfficialForm):
+     submit = SubmitField('Add')
+
+class OfficialForm(Form):
+    name = StringField('Name', validators=[Required()])
+
+class OfficialEditForm(OfficialForm):
+    submit = SubmitField('Save')
+
+    def __init__(self, marshal, *args, **kwargs):
+        super(OfficialEditForm, self).__init__(*args, **kwargs)
+        self.marshal = marshal
+
+    def validate_name(self, field):
+        if field.data != self.marshal.name and \
+           Official.query.filter(Official.name.ilike(field.data)).first():
+            raise ValidationError('Official already exists!.')
+
+class OfficialAddForm(OfficialForm):
+    submit = SubmitField('Add')
+
+    def validate_name(self, field):
+        if Official.query.filter(Official.name.ilike(field.data)).first():
+            raise ValidationError('Official already exists!.')

@@ -54,3 +54,41 @@
   </div>
 </div>
 {% endmacro %}
+
+{% macro confirm_delete_marshal_modal(race_marshal,race,endpoint) %}
+<div class="modal fade" id="race_marshal{{race_marshal.id}}" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete marshal {{race_marshal.marshal.name}} from this race. Are you sure you want to continue? (This may cause irreparable damage to the database.)</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-danger" href="{{ url_for(endpoint,race_id=race.id,race_marshal_id=race_marshal.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro confirm_delete_official_modal(race_official,race,endpoint) %}
+<div class="modal fade" id="race_official{{race_official.id}}" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete official {{race_official.official.name}} from this race. Are you sure you want to continue? (This may cause irreparable damage to the database.)</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-danger" href="{{ url_for(endpoint,race_id=race.id,race_official_id=race_official.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
