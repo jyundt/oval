@@ -13,7 +13,6 @@ from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
 from datetime import timedelta,datetime
 from flask_login import login_required
 
-
 #The goal of this function is return a table for the current standings for
 #a given season
 #e.g. Place Name Team Points
@@ -491,7 +490,7 @@ def race_delete_prime(race_id,prime_id):
     flash('Prime for ' + prime.participant.racer.name + ' deleted from race!')
     return redirect(url_for('main.race_details',id=race.id))
 
-@main.route('/test/')
-@login_required
-def test():
-    return 'auth!'
+
+@main.route('/robots.txt')
+def serve_static():
+   return current_app.send_static_file('robots.txt')
