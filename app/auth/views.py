@@ -2,7 +2,7 @@ from flask import render_template, redirect, request, url_for, flash, abort
 from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm
 from ..models import Admin
-from flask_login import logout_user, login_required, login_user
+from flask_login import logout_user, login_required, login_user, current_user
 from .. import db
 
 @auth.route('/login/', methods=['GET', 'POST'])
@@ -26,17 +26,21 @@ def logout():
     return redirect(url_for('main.index'))
 
 @auth.route('/admin/')
+@login_required
 def admin():
     admins = Admin.query.order_by(Admin.username).all()
     return render_template('auth/admin.html', admins=admins)
 
 @auth.route('/admin/<int:id>')
+@login_required
 def admin_details(id):
     admin=Admin.query.get_or_404(id)
     return render_template('auth/admin_details.html', admin=admin)
 
 @auth.route('/admin/add/', methods=['GET', 'POST'])
 def admin_add():
+    if not current_user.is_authenticated:
+        abort(403)
     form = AdminAddForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -51,6 +55,8 @@ def admin_add():
 
 @auth.route('/admin/edit/<int:id>/', methods=['GET', 'POST'])
 def admin_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
     admin = Admin.query.get_or_404(id)
     form=AdminEditForm(admin)
     
@@ -72,6 +78,8 @@ def admin_edit(id):
     
 @auth.route('/admin/delete/<int:id>/')
 def admin_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
     admin= Admin.query.get_or_404(id)
     db.session.delete(admin)
     db.session.commit()

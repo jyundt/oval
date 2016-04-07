@@ -11,7 +11,7 @@ from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm
 from datetime import timedelta,datetime
-from flask_login import login_required
+from flask_login import current_user
 
 #The goal of this function is return a table for the current standings for
 #a given season
@@ -64,6 +64,8 @@ def race_class_details(id):
 
 @main.route('/race_class/add/', methods=['GET', 'POST'])
 def race_class_add():
+    if not current_user.is_authenticated:
+        abort(403)
     form=RaceClassAddForm()
     if form.validate_on_submit():
         name = form.name.data
@@ -78,6 +80,8 @@ def race_class_add():
 
 @main.route('/race_class/edit/<int:id>/', methods=['GET', 'POST'])
 def race_class_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race_class = RaceClass.query.get_or_404(id)
     form=RaceClassEditForm(race_class)
     
@@ -93,8 +97,9 @@ def race_class_edit(id):
                            item=race_class,form=form,type='race class')
 
 @main.route('/race_class/delete/<int:id>/')
-@login_required
 def race_class_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race_class = RaceClass.query.get_or_404(id)
     db.session.delete(race_class)
     db.session.commit()
@@ -117,6 +122,8 @@ def racer_details(id):
 
 @main.route('/racer/add/', methods=['GET', 'POST'])
 def racer_add():
+    if not current_user.is_authenticated:
+        abort(403)
     form=RacerForm()
     form.submit.label.text='Add'
     if form.validate_on_submit():
@@ -134,6 +141,8 @@ def racer_add():
 
 @main.route('/racer/edit/<int:id>/', methods=['GET', 'POST'])
 def racer_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
     racer = Racer.query.get_or_404(id)
     form=RacerForm()
     
@@ -156,6 +165,8 @@ def racer_edit(id):
 
 @main.route('/racer/delete/<int:id>/')
 def racer_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
     racer = Racer.query.get_or_404(id)
     db.session.delete(racer)
     db.session.commit()
@@ -176,6 +187,8 @@ def team_details(id):
 
 @main.route('/team/add/', methods=['GET', 'POST'])
 def team_add():
+    if not current_user.is_authenticated:
+        abort(403)
     form=TeamAddForm()
     if form.validate_on_submit():
         name = form.name.data
@@ -190,6 +203,8 @@ def team_add():
 
 @main.route('/team/edit/<int:id>/', methods=['GET', 'POST'])
 def team_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
     team = Team.query.get_or_404(id)
     form=TeamEditForm(team)
     
@@ -205,6 +220,8 @@ def team_edit(id):
 
 @main.route('/team/delete/<int:id>/')
 def team_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
     team = Team.query.get_or_404(id)
     db.session.delete(team)
     db.session.commit()
@@ -228,6 +245,8 @@ def race_details(id):
 
 @main.route('/race/add/', methods=['GET', 'POST'])
 def race_add():
+    if not current_user.is_authenticated:
+        abort(403)
     form=RaceAddForm()
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                             RaceClass.query.order_by('name')]
@@ -270,6 +289,8 @@ def race_add():
 
 @main.route('/race/edit/<int:id>/', methods=['GET', 'POST'])
 def race_edit(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(id)
     form=RaceEditForm(race)
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
@@ -328,6 +349,8 @@ def race_edit(id):
 
 @main.route('/race/delete/<int:id>/')
 def race_delete(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(id)
     db.session.delete(race)
     db.session.commit()
@@ -336,6 +359,8 @@ def race_delete(id):
 
 @main.route('/race/<int:id>/participant/add/', methods=['GET', 'POST'])
 def race_add_participant(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(id)
     form=ParticipantAddForm(race)
     form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
@@ -375,6 +400,8 @@ def race_add_participant(id):
     
 @main.route('/race/<int:race_id>/participant/edit/<int:participant_id>', methods=['GET', 'POST'])
 def race_edit_participant(race_id,participant_id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(race_id)
     participant = Participant.query.get_or_404(participant_id)
     if participant.race_id != race_id:
@@ -436,6 +463,8 @@ def race_edit_participant(race_id,participant_id):
     
 @main.route('/race/<int:race_id>/participant/delete/<int:participant_id>')
 def race_delete_participant(race_id,participant_id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(race_id)
     participant = Participant.query.get_or_404(participant_id)
     if participant.race_id != race_id:
@@ -446,6 +475,8 @@ def race_delete_participant(race_id,participant_id):
     
 @main.route('/race/<int:id>/prime/add/', methods=['GET', 'POST'])
 def race_add_prime(id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(id)
     form=PrimeAddForm()
     form.participant_id.choices = [(participant_id.id, 
@@ -465,6 +496,8 @@ def race_add_prime(id):
 @main.route('/race/<int:race_id>/prime/edit/<int:prime_id>/', methods=['GET',
                                                               'POST'])
 def race_edit_prime(race_id,prime_id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(race_id)
     prime = Prime.query.get_or_404(prime_id)
     if prime.participant.race.id != race_id:
@@ -482,6 +515,8 @@ def race_edit_prime(race_id,prime_id):
 
 @main.route('/race/<int:race_id>/prime/delete/<int:prime_id>')
 def race_delete_prime(race_id,prime_id):
+    if not current_user.is_authenticated:
+        abort(403)
     race = Race.query.get_or_404(race_id)
     prime = Prime.query.get_or_404(prime_id)
     if prime.participant.race.id != race_id:
