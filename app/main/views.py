@@ -724,8 +724,8 @@ def race_delete_official(race_id,race_official_id):
 def standings_test():
     form = StandingsSearchForm()
     #form.year.choices = [(2015,2015),(2014,2014)]
-    form.year.choices = sorted(set([(year.date.strftime('%Y'),
-                                     year.date.strftime('%Y'))
+    form.year.choices = sorted(set([(int(year.date.strftime('%Y')),
+                                     int(year.date.strftime('%Y')))
                                   for year in Race.query.all()]),reverse=True)
     
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
