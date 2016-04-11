@@ -1,3 +1,4 @@
+import json
 from flask import render_template, session, redirect, url_for, current_app,\
                   flash, abort
 from sqlalchemy import extract, desc
@@ -11,7 +12,7 @@ from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm, MarshalAddForm, MarshalEditForm,\
                    RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
-                   RaceOfficialAddForm
+                   RaceOfficialAddForm, StandingsSearchForm
 from datetime import timedelta,datetime
 from flask_login import current_user, login_required
 
@@ -365,6 +366,10 @@ def race_add_participant(id):
         abort(403)
     race = Race.query.get_or_404(id)
     form=ParticipantAddForm(race)
+    form.name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                         'autocomplete':'off',
+                         'data-source':json.dumps([racer.name for racer in
+                                                   Racer.query.all()])}
     form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
                            Team.query.order_by('name')]
     form.team_id.choices.insert(0, (0, ''))
@@ -409,6 +414,10 @@ def race_edit_participant(race_id,participant_id):
     if participant.race_id != race_id:
         abort(404) 
     form=ParticipantEditForm(race)
+    form.name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                         'autocomplete':'off',
+                         'data-source':json.dumps([racer.name for racer in
+                                                   Racer.query.all()])}
     form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
                            Team.query.order_by('name')]
     form.team_id.choices.insert(0, (0, ''))
@@ -711,6 +720,20 @@ def race_delete_official(race_id,race_official_id):
     return redirect(url_for('main.race_details',id=race.id))
 
 
+@main.route('/standings2/', methods=['GET', 'POST'])
+def standings_test():
+    form = StandingsSearchForm()
+    form.year.choices = [(2015,2015),(2014,2014)]
+    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
+                            RaceClass.query.order_by('name')]
+    if form.validate_on_submit():
+        year = form.year.data
+        class_id = form.class_id.data
+        standings_type = form.standings_type.data
+        return 'do this'
+    return render_template('add.html', form=form, type='standings')
+
 @main.route('/robots.txt')
 def serve_static():
    return current_app.send_static_file('robots.txt')
+

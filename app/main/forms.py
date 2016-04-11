@@ -1,11 +1,26 @@
 from flask_wtf import Form
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
-                    SelectField, DateTimeField, BooleanField, PasswordField
+                    SelectField, DateTimeField, BooleanField, PasswordField,\
+                    RadioField
+   
 from wtforms import ValidationError
 from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
                                Email
 from ..models import RaceClass, Racer, Team, Race, Marshal, Official
 from sqlalchemy import and_
+
+class TypeaheadWidget:
+
+  def __init__(self, widget_object, **kwargs):
+    self.obj = widget_object
+    kwargs['class'] = kwargs['class_']
+    self.defaults = kwargs
+
+  def __call__(self, field, **kwargs):
+    if 'class' in kwargs and 'class' in self.defaults:
+      kwargs['class'] = "%s %s" % (kwargs['class'], self.defaults['class'])
+    merged = dict(self.defaults.items() + kwargs.items())
+    return self.obj(field, **kwargs)
 
 class RaceClassForm(Form):
     name = StringField('Name', validators=[Required()])
@@ -231,3 +246,15 @@ class OfficialAddForm(OfficialForm):
     def validate_name(self, field):
         if Official.query.filter(Official.name.ilike(field.data)).first():
             raise ValidationError('Official already exists!.')
+
+class StandingsSearchForm(Form):
+    test = StringField('Test')
+    year = SelectField(u'Year',coerce=int, validators=[Required()])
+    class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
+    standings_type = RadioField('Standings Type',
+                                 choices=[('individual','Individual'),
+                                          ('team','Team'),
+                                          ('mar','MAR')],
+                                          validators=[Required()],
+                                          default='individual')
+    submit = SubmitField('Search')
