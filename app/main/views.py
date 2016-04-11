@@ -723,7 +723,11 @@ def race_delete_official(race_id,race_official_id):
 @main.route('/standings2/', methods=['GET', 'POST'])
 def standings_test():
     form = StandingsSearchForm()
-    form.year.choices = [(2015,2015),(2014,2014)]
+    #form.year.choices = [(2015,2015),(2014,2014)]
+    form.year.choices = sorted(set([(year.date.strftime('%Y'),
+                                     year.date.strftime('%Y'))
+                                  for year in Race.query.all()]))
+    
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                             RaceClass.query.order_by('name')]
     if form.validate_on_submit():

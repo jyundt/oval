@@ -248,7 +248,6 @@ class OfficialAddForm(OfficialForm):
             raise ValidationError('Official already exists!.')
 
 class StandingsSearchForm(Form):
-    test = StringField('Test')
     year = SelectField(u'Year',coerce=int, validators=[Required()])
     class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
     standings_type = RadioField('Standings Type',
