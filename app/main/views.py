@@ -44,6 +44,10 @@ def generate_standings(year,race_class):
 def index():
     return render_template('index.html')
 
+@main.route('/changelog')
+def changelog():
+    return render_template('changelog.html')
+
 @main.route('/standings')
 def standings():
     races = generate_standings(2015,'C')

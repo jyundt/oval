@@ -11,7 +11,7 @@
 {% endblock %}
 
 
-{% block title %}The Oval The App{%endblock %}
+{% block title %}The Oval App{%endblock %}
 {% block navbar %}
 <div class="navbar navbar-inverse" role="navigation">
     <div class="container">
@@ -22,7 +22,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">The Oval The App</a>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">The Oval App</a>
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -30,6 +30,7 @@
                 <li><a href="{{ url_for('main.racer') }}">Racers</a></li> 
                 <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
                 <li><a href="{{ url_for('main.race') }}">Races</a></li> 
+                <li><a href="{{ url_for('main.changelog') }}">Changelog</a></li> 
                 {% if current_user.is_authenticated %}
                 {#<li><a href="{{url_for('auth.admin')}}">Admin</a></li>#}
                 <li class="dropdown">

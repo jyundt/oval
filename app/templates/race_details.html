@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{race.date}} - {{race.race_class.name}} Race Details
+{{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}} Race Details
 {% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Details for Race: {{race.date}} - {{race.race_class.name}}</h1>
+    <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}</h1>
 {% if current_user.is_authenticated %}
     <a class="btn btn-default" href="{{ url_for('main.race_edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
