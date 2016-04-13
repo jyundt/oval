@@ -20,6 +20,7 @@
         <table class="table table-striped table-bordered">
           <thead>
             <tr>
+              <th>Place</th>
               <th>Name</th>
               <th>Points</th>
             </tr>
@@ -27,6 +28,7 @@
           <tbody>
             {% for result in results %}
               <tr>
+                <td>{{loop.index}}</td>
                 {% if standings_type == 'team' %}
                   <td><a href="{{url_for('main.team_details', id=result[2])}}">{{result[0]}}</a></td>
                 {% else %}
