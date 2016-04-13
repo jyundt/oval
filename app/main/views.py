@@ -759,7 +759,6 @@ def standings():
         race_class_id = form.race_class_id.data
         standings_type = form.standings_type.data
 	results = generate_standings(year,race_class_id,standings_type)
-        print results
         return render_template('standings.html', form=form, results=results, 
                                                  standings_type=standings_type)
     return render_template('standings.html', form=form, results=None)
