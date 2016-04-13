@@ -248,7 +248,8 @@ class OfficialAddForm(OfficialForm):
 
 class StandingsSearchForm(Form):
     year = SelectField(u'Year',coerce=int, validators=[Required()])
-    class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
+    race_class_id = SelectField(u'Race Class', coerce=int, 
+                                validators=[Required()])
     standings_type = RadioField('Standings Type',
                                  choices=[('individual','Individual'),
                                           ('team','Team'),

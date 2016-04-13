@@ -1,7 +1,7 @@
 import json
 from flask import render_template, session, redirect, url_for, current_app,\
                   flash, abort
-from sqlalchemy import extract, desc
+from sqlalchemy import extract, desc, func, and_
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime
@@ -19,26 +19,55 @@ from flask_login import current_user, login_required
 #The goal of this function is return a table for the current standings for
 #a given season
 #e.g. Place Name Team Points
-def generate_standings(year,race_class):
-    #This is clunky, but I need to get the class_id for this race class
-    race_class_id = RaceClass.query.filter_by(name='C').first().id
+def generate_standings(year,race_class_id,standings_type):
+    if standings_type == 'team':
+        results = Team.query.with_entities(Team.name, 
+                                           func.sum(Participant.team_points),\
+                                           Team.id)\
+                            .join(Participant)\
+                            .join(Race)\
+                            .join(RaceClass)\
+                            .group_by(Team.id)\
+                            .filter(and_(Race.class_id==race_class_id,\
+                                         extract('year',Race.date)==year))\
+                            .having(func.sum(Participant.team_points) >0)\
+                            .order_by(func.sum(Participant.team_points)\
+                            .desc()).all()
 
-    #Generate a list of races for us to calculate standings
-    races = Race.query.filter(extract('year',Race.date)==2015,\
-                              Race.class_id==race_class_id).all()    
+    elif standings_type == 'individual':
+        results = Racer.query.with_entities(Racer.name,
+                                            func.sum(Participant.points),\
+                                            Racer.id )\
+                             .join(Participant)\
+                             .join(Race)\
+                             .join(RaceClass)\
+                             .group_by(Racer.id)\
+                             .filter(and_(Race.class_id==race_class_id,\
+                                          extract('year',Race.date)==year))\
+                             .having(func.sum(Participant.points) > 0)\
+                             .order_by(func.sum(Participant.points)\
+                             .desc()).all()
 
-    #I don't know of a better way of doing this, so I'm going to build a list 
-    # of dicts (of racers) and just do a running subtotal
+    elif standings_type == 'mar':
+        results = Racer.query.with_entities(Racer.name,
+                                            func.sum(Participant.mar_points),\
+                                            Racer.id)\
+                             .join(Participant)\
+                             .join(Race)\
+                             .join(RaceClass)\
+                             .group_by(Racer.id)\
+                             .filter(and_(Race.class_id==race_class_id,\
+                                          extract('year',Race.date)==year))\
+                             .having(func.sum(Participant.mar_points) > 0)\
+                             .order_by(func.sum(Participant.mar_points)\
+                             .desc()).all()
+    else:
+        results = None
 
-    rider_points = {}
-    for race in races:
-        for participant in race.participants:
-            print participant.racer.name
-            print participant.place
-            print participant.points
-           
-            
-    return races
+    return results
+
+
+    
 
 @main.route('/')
 def index():
@@ -47,15 +76,6 @@ def index():
 @main.route('/changelog')
 def changelog():
     return render_template('changelog.html')
-
-@main.route('/standings')
-def standings():
-    races = generate_standings(2015,'C')
-    seasons = []
-    for race in Race.query.all():
-        seasons.append(race.date.year)
-    #return render_template('standings.html', seasons=sorted(set(seasons)))
-    return render_template('standings.html', seasons=sorted(set(races)))
 
 @main.route('/race_class/')
 def race_class():
@@ -724,22 +744,25 @@ def race_delete_official(race_id,race_official_id):
     return redirect(url_for('main.race_details',id=race.id))
 
 
-@main.route('/standings2/', methods=['GET', 'POST'])
-def standings_test():
+@main.route('/standings/', methods=['GET', 'POST'])
+def standings():
     form = StandingsSearchForm()
-    #form.year.choices = [(2015,2015),(2014,2014)]
     form.year.choices = sorted(set([(int(year.date.strftime('%Y')),
                                      int(year.date.strftime('%Y')))
                                   for year in Race.query.all()]),reverse=True)
     
-    form.class_id.choices = [(class_id.id, class_id.name) for class_id in
-                            RaceClass.query.order_by('name')]
+    form.race_class_id.choices = [(race_class_id.id, race_class_id.name)
+                                  for race_class_id in
+                                  RaceClass.query.order_by('name')]
     if form.validate_on_submit():
         year = form.year.data
-        class_id = form.class_id.data
+        race_class_id = form.race_class_id.data
         standings_type = form.standings_type.data
-        return 'do this'
-    return render_template('add.html', form=form, type='standings')
+	results = generate_standings(year,race_class_id,standings_type)
+        print results
+        return render_template('standings.html', form=form, results=results, 
+                                                 standings_type=standings_type)
+    return render_template('standings.html', form=form, results=None)
 
 @main.route('/feedback/', methods=['GET', 'POST'])
 def send_feedback():
