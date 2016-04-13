@@ -1,6 +1,7 @@
 {% extends "bootstrap/base.html" %}
 
 {% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/google.html" as google %}
 {% import "macros.html" as macros %}
 
 {% block html_attribs %} lang="en" {% endblock %}
@@ -70,8 +71,11 @@
 
 {% endblock %}
 {% block scripts %}
- {{super()}}  
- <script src="{{url_for('static', filename='bootstrap3-typeahead.min.js')}}"></script> 
+  {{super()}}  
+  <script src="{{url_for('static', filename='bootstrap3-typeahead.min.js')}}"></script> 
+  {{google.uanalytics(config['GOOGLE_ANALYTICS_ID'])}}
+
+ 
 {% endblock %}
 
 
