@@ -5,14 +5,14 @@ from sqlalchemy import extract, desc
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime
-#from ..email import send_email
+from ..email import send_feedback_email
 from . import main
 from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
                    RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm, MarshalAddForm, MarshalEditForm,\
                    RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
-                   RaceOfficialAddForm, StandingsSearchForm
+                   RaceOfficialAddForm, StandingsSearchForm,FeedbackForm
 from datetime import timedelta,datetime
 from flask_login import current_user, login_required
 
@@ -740,6 +740,19 @@ def standings_test():
         standings_type = form.standings_type.data
         return 'do this'
     return render_template('add.html', form=form, type='standings')
+
+@main.route('/feedback/', methods=['GET', 'POST'])
+def send_feedback():
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        replyaddress = form.replyaddress.data
+        subject = form.subject.data
+        feedback = form.feedback.data
+        send_feedback_email(name,replyaddress, subject, feedback)
+        flash('Feedback sent!')
+        return redirect(url_for('main.index'))
+    return render_template('feedback.html', form=form)
 
 @main.route('/robots.txt')
 def serve_static():

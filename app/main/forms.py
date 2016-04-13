@@ -1,8 +1,7 @@
 from flask_wtf import Form
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     SelectField, DateTimeField, BooleanField, PasswordField,\
-                    RadioField
-   
+                    RadioField, TextAreaField
 from wtforms import ValidationError
 from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
                                Email
@@ -257,3 +256,10 @@ class StandingsSearchForm(Form):
                                           validators=[Required()],
                                           default='individual')
     submit = SubmitField('Search')
+
+class FeedbackForm(Form):
+    name = StringField('Name', validators=[Required()])
+    replyaddress = StringField('Email Address', validators=[Required(), Email()])
+    subject = StringField('Subject', validators=[Required()])
+    feedback = TextAreaField('Feedback', validators=[Required()])
+    submit = SubmitField('Send')
