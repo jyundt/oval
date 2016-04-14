@@ -2,7 +2,7 @@ from . import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from . import login_manager
+#from . import login_manager
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -156,7 +156,34 @@ class Admin(UserMixin, db.Model):
         return '<Admin %r>' % self.username
 
 
-@login_manager.user_loader
-def load_user(admin_id):
-    return Admin.query.get(int(admin_id))
+#@login_manager.user_loader
+#def load_user(admin_id):
+#    return Admin.query.get(int(admin_id))
 
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False,unique=True)
+    username = db.Column(db.String(200), nullable=False,unique=True)
+    password = db.Column(db.String(128), nullable=False)
+    reset_password_token = db.Column(db.String(100), nullable=False)
+    confirmed_at = db.Column(db.DateTime())
+   
+    active = db.Column('is_active', db.Boolean(), nullable=False)
+    first_name = db.Column(db.String(200), nullable=False)
+    last_name = db.Column(db.String(200), nullable=False)
+    roles = db.relationship('Role', secondary='user_roles',
+                            backref='users')
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(200), unique=True)
+
+class UserRoles(db.Model):
+    __tablename__ = 'user_roles'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE'))
+    role_id = db.Column(db.Integer(), db.ForeignKey('roles.id', ondelete='CASCADE'))
