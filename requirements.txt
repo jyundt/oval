@@ -7,7 +7,6 @@ Flask-Migrate==1.8.0
 Flask-Moment==0.5.1
 Flask-SQLAlchemy==2.1
 Flask-Script==2.0.5
-Flask-User==0.6.8
 Flask-WTF==0.12
 Jinja2==2.8
 Mako==1.0.4
@@ -16,17 +15,11 @@ SQLAlchemy==1.0.12
 WTForms==2.1
 Werkzeug==0.11.4
 alembic==0.8.5
-bcrypt==2.0.0
 blinker==1.4
-cffi==1.5.2
 dominate==2.1.17
 itsdangerous==0.24
-passlib==1.6.5
 psycopg2==2.6.1
-pycparser==2.14
-pycrypto==2.6.1
 python-editor==0.5
-six==1.10.0
 uWSGI==2.0.12
 visitor==0.1.2
 wsgiref==0.1.2

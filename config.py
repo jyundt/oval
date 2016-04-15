@@ -16,9 +16,6 @@ class Config:
     MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
     GOOGLE_ANALYTICS_ID = 'UA-76360864-1'
 
-    #Used by Flask User
-    USER_APP_NAME = 'The Oval App'
-
     @staticmethod
     def init_app(app):
         pass
