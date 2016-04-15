@@ -64,5 +64,4 @@ target/
 #Excluding my venv
 venv
 #Exclude my DB Migrations
-migrations
 
