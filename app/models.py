@@ -68,6 +68,7 @@ class Race(db.Model):
     weather = db.Column(db.String(200))
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
+    starters = db.Column(db.Integer)
     participants= db.relationship('Participant', cascade='all,delete',
                                    backref='race')
     officials = db.relationship('RaceOfficial', cascade='all,delete',

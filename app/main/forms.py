@@ -8,19 +8,6 @@ from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
 from ..models import RaceClass, Racer, Team, Race, Marshal, Official
 from sqlalchemy import and_
 
-class TypeaheadWidget:
-
-  def __init__(self, widget_object, **kwargs):
-    self.obj = widget_object
-    kwargs['class'] = kwargs['class_']
-    self.defaults = kwargs
-
-  def __call__(self, field, **kwargs):
-    if 'class' in kwargs and 'class' in self.defaults:
-      kwargs['class'] = "%s %s" % (kwargs['class'], self.defaults['class'])
-    merged = dict(self.defaults.items() + kwargs.items())
-    return self.obj(field, **kwargs)
-
 class RaceClassForm(Form):
     name = StringField('Name', validators=[Required()])
 
@@ -82,6 +69,7 @@ class RaceForm(Form):
                      description='MM/DD/YYYY',
                      format='%m/%d/%Y')
     class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
+    starters = IntegerField('# of Starters', validators=[Optional()])
     fast_lap = DateTimeField('Fast Lap', validators=[Optional()],
                              description='mm:ss',default=None,
                              format='%M:%S')
@@ -141,9 +129,7 @@ class RaceEditForm(RaceForm):
 class ParticipantForm(Form):
     place = IntegerField('Place',validators=[Optional(),NumberRange(min=1)])
     name = StringField('Racer Name',validators=[Required()])
-    #team_name = StringField('Team Name',validators=[Optional()])
-    #Let's change this to a select field
-    team_id = SelectField(u'Team', coerce=int, validators=[Optional()])
+    team_name = StringField('Team Name',validators=[Optional()])
     points = IntegerField('Points',validators=[Optional(),
                           NumberRange(min=1,max=11,
                                       message='Invalid amount of points')])

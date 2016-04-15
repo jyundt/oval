@@ -71,7 +71,15 @@ def generate_standings(year,race_class_id,standings_type):
 
 @main.route('/')
 def index():
-    return render_template('index.html')
+    #Let's hard code the categories that we'd like to see on the front page
+    categories=['A', 'B', 'C', 'Masters 40+/Women']
+    races = []
+    for category in categories:
+        races.append(Race.query.join(RaceClass)
+                                   .filter_by(name=category)
+                                   .order_by(Race.date.desc())
+                                   .first())
+    return render_template('index.html',races=races)
 
 @main.route('/changelog')
 def changelog():
@@ -394,16 +402,17 @@ def race_add_participant(id):
                          'autocomplete':'off',
                          'data-source':json.dumps([racer.name for racer in
                                                    Racer.query.all()])}
-    form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
-                           Team.query.order_by('name')]
-    form.team_id.choices.insert(0, (0, ''))
+    form.team_name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                              'autocomplete':'off',
+                              'data-source':json.dumps([team.name for team in
+                                                   Team.query.all()])}
     if form.validate_on_submit():
         race_id = race.id
         racer_id=Racer.query.filter_by(name=form.name.data).first().id
-        if form.team_id.data == 0:
-            team_id=None
+        if form.team_name.data:
+            team_id=Team.query.filter_by(name=form.team_name.data).first().id
         else:
-            team_id=form.team_id.data
+            team_id=None
 
         place = form.place.data
         points = form.points.data
@@ -426,6 +435,14 @@ def race_add_participant(id):
         db.session.commit()
         return redirect(url_for('main.race_details',id=race.id))
         
+    #Let's get the next place and pre-populate the form
+    next_place = Participant.query.filter(and_(Participant.race_id==89,
+                                               Participant.place>0))\
+                                  .order_by(Participant.place.desc())\
+                                  .first()\
+                                  .place
+    form.place.data = next_place + 1
+
     return render_template('add.html',form=form,type='participant')
 
     
@@ -442,16 +459,17 @@ def race_edit_participant(race_id,participant_id):
                          'autocomplete':'off',
                          'data-source':json.dumps([racer.name for racer in
                                                    Racer.query.all()])}
-    form.team_id.choices = [(team_id.id, team_id.name) for team_id in 
-                           Team.query.order_by('name')]
-    form.team_id.choices.insert(0, (0, ''))
+    form.team_name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                              'autocomplete':'off',
+                              'data-source':json.dumps([team.name for team in
+                                                   Team.query.all()])}
     if form.validate_on_submit():
         race_id = race.id
         racer_id=Racer.query.filter_by(name=form.name.data).first().id
-        if form.team_id.data == 0:
-            team_id=None
+        if form.team_name.data:
+            team_id=Team.query.filter_by(name=form.team_name.data).first().id
         else:
-            team_id=form.team_id.data
+            team_id=None
 
         place = form.place.data
         points = form.points.data
@@ -489,8 +507,8 @@ def race_edit_participant(race_id,participant_id):
     form.dns.data = participant.dns
     form.relegated.data = participant.relegated
     form.disqualified.data = participant.disqualified
-    if participant.team is not None:
-        form.team_id.data = participant.team.id
+    if participant.team:
+        form.team_name.data = participant.team.name
         
     return render_template('edit.html', item=participant,form=form,
                            type='participant')
