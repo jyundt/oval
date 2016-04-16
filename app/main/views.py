@@ -125,7 +125,8 @@ def race_class_edit(id):
         race_class.name = name
         db.session.commit()
         flash('Race type ' + race_class.name + ' updated!')
-        return redirect(url_for('main.race_class'))
+        return redirect(url_for('main.race_class_details',
+                                id=race_class.id))
         
     form.name.data = race_class.name
     return render_template('edit.html',
@@ -190,7 +191,7 @@ def racer_edit(id):
         racer.birthdate = birthdate
         db.session.commit()
         flash('Racer ' + racer.name + ' updated!')
-        return redirect(url_for('main.racer'))
+        return redirect(url_for('main.racer_details',id=racer.id))
         
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
@@ -248,7 +249,7 @@ def team_edit(id):
         team.name = name
         db.session.commit()
         flash('Team ' + team.name + ' updated!')
-        return redirect(url_for('main.team'))
+        return redirect(url_for('main.team_details',id=team.id))
         
     form.name.data = team.name
     return render_template('edit.html', item=team,form=form,type='team')
@@ -354,6 +355,7 @@ def race_edit(id):
         class_id = form.class_id.data
         usac_permit = form.usac_permit.data
         laps = form.laps.data
+        starters = form.starters.data
 
         race.date=date
         race.fast_lap=fast_lap
@@ -363,9 +365,10 @@ def race_edit(id):
         race.class_id=class_id
         race.usac_permit=usac_permit
         race.laps=laps
+        race.starters=starters
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
-        return redirect(url_for('main.race'))
+        return redirect(url_for('main.race_details',id=race.id))
         
     form.date.data = race.date
     form.class_id.data=race.class_id
@@ -380,6 +383,7 @@ def race_edit(id):
     form.weather.data=race.weather
     form.usac_permit.data=race.usac_permit
     form.laps.data=race.laps
+    form.starters.data=race.starters
     return render_template('edit.html', item=race,form=form,type='race')
 
 @main.route('/race/delete/<int:id>/')
