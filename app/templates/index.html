@@ -1,45 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}The Oval App{% endblock %}
+{% block title %}The Oval App (Beta){% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>The Oval App</h1>
+    <h1>The Oval App (Beta)</h1>
 </div>
 <h3>
 Recent Results
 </h3>
+<div class="row col-md-5">
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
 <th>Date</th>
 <th>Category</th>
-<th>Winner</th>
-<th>Team</th>
-<th>MAR</th>
-<th>Team (MAR)</th>
 </tr>
 </thead>
 <tbody>
 {% for race in races %}
 <tr>
-<td>{{race.date.strftime('%m/%d/%Y')}}</td>
-<td>{{race.race_class.name}}</td>
-<td>some person</td>
-<td>another person</td>
-<td>someone</td>
-<td>another person</td>
+<td><a href="{{url_for('main.race_details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
+<td><a href="{{url_for('main.race_class_details',id=race.race_class.id)}}">{{race.race_class.name}}</a></td>
 </tr>
 {%endfor%}
 </tbody>
 </table>
 </div>
 <h4>
-Check out <a href="{{url_for('main.standings')}}">results</a> from last season as well!.
+Check out <a href="{{url_for('main.standings')}}">results</a> from last season as well.
 </h4>
 <img src="{{url_for('static', filename='oval-image.jpg')}}" class="img-responsive img-rounded">
-<div>
 (Image from PGH Citiparks)
 </div>
 {% endblock %}
