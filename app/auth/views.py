@@ -1,9 +1,14 @@
-from flask import render_template, redirect, request, url_for, flash, abort
+from flask import render_template, redirect, request, url_for, flash, \
+                  abort
 from . import auth
-from .forms import LoginForm, AdminAddForm, AdminEditForm
+from .forms import LoginForm, AdminAddForm, AdminEditForm,\
+                   ChangePasswordForm,ResetPasswordForm,\
+                   ResetPasswordRequestForm
 from ..models import Admin
-from flask_login import logout_user, login_required, login_user, current_user
+from flask_login import logout_user, login_required, login_user,\
+                        current_user
 from .. import db
+from ..email import send_email
 
 @auth.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -85,3 +90,55 @@ def admin_delete(id):
     db.session.commit()
     flash('Admin ' + admin.username + ' deleted!')
     return redirect(url_for('auth.admin'))
+
+@auth.route('/change-password/', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.old_password.data):
+            current_user.password = form.password.data
+            #db.session.add(current_user)
+            current_user.password = form.password.data
+            db.session.commit()
+            flash('Your password has been updated.')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Invalid password.')
+    return render_template('auth/change_password.html', form=form)
+
+@auth.route('/reset/', methods=['GET', 'POST'])
+def reset_password():
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        admin = Admin.query.filter_by(email=form.email.data).first()
+        if admin:
+             token = admin.generate_reset_token()
+             send_email(admin.email, 'Reset Your Password',
+                        'email/reset_password',
+                        admin=admin, token=token,
+                        next=request.args.get('next'))
+        flash('An email with instructions to reset your password has been\
+              sent to you.')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/reset_password.html', form=form)
+
+@auth.route('/reset/<token>/', methods=['GET', 'POST'])
+def password_reset(token):
+    if not current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        admin = Admin.query.filter_by(email=form.email.data).first()
+        if admin is None:
+            #I dont think we should ever be in this?
+            return redirect(url_for('main.index'))
+        if admin.reset_password(token, form.password.data):
+            flash('Your password has been updated.')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('Email address does not match password reset token!')
+            return redirect(url_for('main.index'))
+    return render_template('auth/reset_password.html', form=form)

@@ -48,3 +48,32 @@ class AdminEditForm(AdminForm):
             raise ValidationError('Email already in use!')
     
            
+
+class ChangePasswordForm(Form):
+    old_password = PasswordField('Old password',validators=[Required()])
+    password = PasswordField('New password', 
+                             validators=[Required(),EqualTo('password2',\
+                                         message='Passwords do\
+                                                  not match!')])
+    password2 = PasswordField('Repeat new password',
+                              validators=[Required()])
+    submit = SubmitField('Update Password')
+        
+
+class ResetPasswordRequestForm(Form):
+    email = StringField('Email', validators=[Required(), Email()])
+    submit = SubmitField('Reset Password')
+
+class ResetPasswordForm(Form):
+    email = StringField('Confirm Email', validators=[Required(), Length(1, 64),
+                                             Email()])
+    password = PasswordField('New Password', validators=[
+        Required(), EqualTo('password2', message='Passwords must match')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
+    submit = SubmitField('Reset Password')
+
+    def validate_email(self, field):
+        if Admin.query.filter_by(email=field.data).first() is None:
+            raise ValidationError('Unknown email address.')
+
+
