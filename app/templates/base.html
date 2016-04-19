@@ -34,6 +34,8 @@
                 <li><a href="{{ url_for('main.race') }}">Races</a></li> 
                 <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li> 
                 <li><a href="{{ url_for('main.changelog') }}">Changelog</a></li> 
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Admin<span class="caret"></span></a>
@@ -41,18 +43,9 @@
                         <li><a href="{{url_for('main.marshal')}}">Marshals</a></li>
                         <li><a href="{{url_for('main.official')}}">Officials</a></li>
                         <li><a href="{{url_for('auth.admin')}}">Admins</a></li>
-                    </ul>
-                {% endif %}
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                {% if current_user.is_authenticated %}
-                {#<li><a href="{{url_for('auth.logout')}}">Admin Sign Out</a></li>#}
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Admin Account Settings<span class="caret"></span></a>
-                    <ul class="dropdown-menu">
                         <li><a href="{{url_for('auth.change_password')}}">Change Password</a></li>
                         <li><a href="{{url_for('auth.change_email_request')}}">Change Email Address</a></li>
-                        <li><a href="{{url_for('auth.logout')}}">Admin Sign Out</a></li>
+                        <li><a href="{{url_for('auth.logout')}}">Sign Out</a></li>
                         
                     </ul>
                 {% else %}
