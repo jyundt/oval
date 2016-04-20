@@ -15,6 +15,7 @@
 <tr>
     <th>Username</th>
     <th>Email</th>
+    <th>Roles</th>
 </tr>
 </thead>
 <tbody> 
@@ -22,6 +23,19 @@
 <tr>    
 <td><a href="{{url_for('auth.admin_details',id=admin.id)}}">{{admin.username}}</a></td> 
 <td>{{admin.email}}</td>
+{%if admin.roles|length==0 %}
+<td></td>
+{%else%}
+<td>
+<ul>
+{% for role in admin.roles %}
+<li>
+{{role.name}}
+</li>
+{%endfor%}
+</ul>
+</td>
+{%endif%}
 </tr>   
 {% endfor %}
 </tbody>

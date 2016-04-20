@@ -1,8 +1,14 @@
 from flask_wtf import Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Email, EqualTo
+from wtforms import StringField, PasswordField, BooleanField, SubmitField,\
+                    SelectMultipleField
+from wtforms.validators import Required, Length, Email, EqualTo, Optional
 from ..models import Admin
 from wtforms import ValidationError
+from wtforms import widgets
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 class LoginForm(Form):
     username = StringField('Username', validators=[Required(), Length(1,200)])
@@ -10,13 +16,13 @@ class LoginForm(Form):
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
 
+
 class AdminForm(Form):
     email = StringField('Email', validators=[Required(), Email()])
     username = StringField('Username', validators=[Required(), Length(1,200)])
-    password = PasswordField('Password', validators=[Required(),
-                             EqualTo('password2', message='Passwords do not match!')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
+    roles = SelectMultipleField('Roles', coerce=int, validators=[Optional()])
 
+    #roles = MultiCheckboxField('Roles', coerce=int, validators=[Optional()])
     def validate_email(self, field):
         if Admin.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered!')
@@ -28,9 +34,20 @@ class AdminForm(Form):
 
     
 class AdminAddForm(AdminForm):
+    password = PasswordField('Password', validators=[Required(),
+                             EqualTo('password2'
+                                     ,message='Passwords do not match!')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
+
     submit = SubmitField('Add')
 
 class AdminEditForm(AdminForm):
+    password = PasswordField('Password', validators=[Optional(),
+                             EqualTo('password2'
+                                     ,message='Passwords do not match!')])
+    password2 = PasswordField('Confirm password', validators=[Optional(),
+                             EqualTo('password'
+                                     ,message='Passwords do not match!')])
     submit = SubmitField('Save')
 
     def __init__(self, admin, *args, **kwargs):

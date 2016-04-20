@@ -13,8 +13,8 @@ Mako==1.0.4
 MarkupSafe==0.23
 SQLAlchemy==1.0.12
 WTForms==2.1
-Werkzeug==0.11.4
-alembic==0.8.5
+Werkzeug==0.11.8
+alembic==0.8.6
 blinker==1.4
 dominate==2.1.17
 itsdangerous==0.24

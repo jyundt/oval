@@ -142,6 +142,9 @@ class Admin(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(200))
 
+    roles = db.relationship('Role', secondary='admin_role'
+                                  ,  backref='admin')
+
 
     @property
     def password(self):
@@ -195,6 +198,37 @@ class Admin(UserMixin, db.Model):
 
     def __repr__(self):
         return '<Admin %r>' % self.username
+
+class Role(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(200), unique=True)
+
+    #admins = db.relationship('Admin', secondary='admin_role'
+    #                                , cascade='all,delete'
+    #                                , backref='role')
+    #admins = db.relationship('Admin', secondary='admin_role',backref='role')
+    #Unfortunately I couldn't add this backref because deleting a Role
+    #or Admin would cause an sqlalchemy ORM issue.
+
+    @staticmethod
+    def insert_roles():
+        roles = ['superadmin','official','moderator']
+        for role in roles:
+            if Role.query.filter_by(name=role).first() is None:
+                db.session.add(Role(name=role))
+                db.session.commit()
+
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+class AdminRole(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    admin_id = db.Column(db.Integer(), db.ForeignKey('admin.id', ondelete='CASCADE'))
+    role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
+
+    def __repr__(self):
+        return '<AdminRole %r>' % self.id
 
 
 @login_manager.user_loader

@@ -4,7 +4,7 @@ from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm,\
                    ChangePasswordForm, ResetPasswordForm,\
                    ResetPasswordRequestForm, ChangeEmailForm
-from ..models import Admin
+from ..models import Admin, Role,AdminRole
 from flask_login import logout_user, login_required, login_user,\
                         current_user
 from .. import db
@@ -47,12 +47,22 @@ def admin_add():
     if not current_user.is_authenticated:
         abort(403)
     form = AdminAddForm()
+    form.roles.choices = [(role.id, role.name) for role in
+                          Role.query.order_by('name')]
     if form.validate_on_submit():
         email = form.email.data
         username = form.username.data
         password = form.password.data
         admin = Admin(email=email,username=username,password=password)
         db.session.add(admin)
+        db.session.commit()
+        if form.roles.data:
+            for role_id in form.roles.data:
+                role_name = Role.query.get(role_id).name
+                if role_name not in [(role.name) for role in admin.roles]:
+                    db.session.add(AdminRole(role_id=role_id,
+                                             admin_id=admin.id))
+        db.session.commit()
         flash ('Admin ' + username + ' added!')
         return redirect(url_for('auth.admin'))
 
@@ -64,20 +74,40 @@ def admin_edit(id):
         abort(403)
     admin = Admin.query.get_or_404(id)
     form=AdminEditForm(admin)
+    form.roles.choices = [(role.id, role.name) for role in
+                          Role.query.order_by('name')]
     
     if form.validate_on_submit():
         email = form.email.data
         username = form.username.data
-        password = form.password.data
+        if form.password.data != '':
+            password = form.password.data
+            admin.password = password
         admin.email=email
         admin.username = username
-        admin.password = password
-        db.session.commit()
+        if form.roles.data:
+            for role_id in form.roles.data:
+                role_name = Role.query.get(role_id).name
+                if role_name not in [(role.name) for role in admin.roles]:
+                    db.session.add(AdminRole(role_id=role_id,
+                                             admin_id=admin.id))
+            db.session.commit()
+        for role in admin.roles:
+            role_id = role.id
+            admin_id = admin.id
+            if role_id not in form.roles.data:
+                db.session.delete(AdminRole.query
+                                           .filter_by(role_id=role_id)
+                                           .filter_by(admin_id=admin_id)
+                                           .first())
+                db.session.commit()
         flash('Admin ' + username + ' updated!')
-        return redirect(url_for('auth.admin'))
+        return render_template('auth/admin_details.html', admin=admin)
 
     form.username.data = admin.username
     form.email.data = admin.email
+    form.roles.data = [(role.id) for  role in admin.roles]
+    
     return render_template('edit.html', item=admin, form=form, type='admin')
     
     
@@ -98,7 +128,6 @@ def change_password():
     if form.validate_on_submit():
         if current_user.verify_password(form.old_password.data):
             current_user.password = form.password.data
-            #db.session.add(current_user)
             current_user.password = form.password.data
             db.session.commit()
             flash('Your password has been updated.')
