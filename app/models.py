@@ -145,6 +145,19 @@ class Admin(UserMixin, db.Model):
     roles = db.relationship('Role', secondary='admin_role'
                                   ,  backref='admin')
 
+    def has_role(self, *specified_role_names):
+        #I took this from Flask-User because I didn't need the whole thing
+        if hasattr(self, 'roles'):
+            roles = self.roles
+        else:
+            return False
+
+        user_role_names = [role.name for role in roles]
+        for role_name in specified_role_names:
+            if role_name in user_role_names:
+                return True
+
+        return False
 
     @property
     def password(self):

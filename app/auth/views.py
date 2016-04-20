@@ -9,6 +9,7 @@ from flask_login import logout_user, login_required, login_user,\
                         current_user
 from .. import db
 from ..email import send_email
+from ..decorators import roles_accepted
 
 @auth.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -31,18 +32,19 @@ def logout():
     return redirect(url_for('main.index'))
 
 @auth.route('/admin/')
-@login_required
+@roles_accepted('superadmin')
 def admin():
     admins = Admin.query.order_by(Admin.username).all()
     return render_template('auth/admin.html', admins=admins)
 
 @auth.route('/admin/<int:id>')
-@login_required
+@roles_accepted('superadmin')
 def admin_details(id):
     admin=Admin.query.get_or_404(id)
     return render_template('auth/admin_details.html', admin=admin)
 
 @auth.route('/admin/add/', methods=['GET', 'POST'])
+@roles_accepted('superadmin')
 def admin_add():
     if not current_user.is_authenticated:
         abort(403)
@@ -69,6 +71,7 @@ def admin_add():
     return render_template('add.html', form=form, type='admin')
 
 @auth.route('/admin/edit/<int:id>/', methods=['GET', 'POST'])
+@roles_accepted('superadmin')
 def admin_edit(id):
     if not current_user.is_authenticated:
         abort(403)
@@ -112,6 +115,7 @@ def admin_edit(id):
     
     
 @auth.route('/admin/delete/<int:id>/')
+@roles_accepted('superadmin')
 def admin_delete(id):
     if not current_user.is_authenticated:
         abort(403)

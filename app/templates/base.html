@@ -42,7 +42,9 @@
                     <ul class="dropdown-menu">
                         <li><a href="{{url_for('main.marshal')}}">Marshals</a></li>
                         <li><a href="{{url_for('main.official')}}">Officials</a></li>
-                        <li><a href="{{url_for('auth.admin')}}">Admins</a></li>
+                        {% if current_user.has_role('superadmin') %}
+                            <li><a href="{{url_for('auth.admin')}}">Admins</a></li>
+                        {%endif%}
                         <li><a href="{{url_for('auth.change_password')}}">Change Password</a></li>
                         <li><a href="{{url_for('auth.change_email_request')}}">Change Email Address</a></li>
                         <li><a href="{{url_for('auth.logout')}}">Sign Out</a></li>
