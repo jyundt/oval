@@ -282,9 +282,16 @@ def race_details(id):
         if participant.points:
             points_race = True
 
+    #Generate list of MAR winners
+    mar_list = Participant.query.join(Race).filter(Race.id==id)\
+                                          .group_by(Participant.id)\
+                                          .having(Participant.mar_place>0)\
+                                          .order_by(Participant.mar_place)\
+                                          .all()
     return render_template('race_details.html', race=race,
                            participants=participants,
-                           points_race=points_race)
+                           points_race=points_race,
+                           mar_list=mar_list)
 
 
 @main.route('/race/add/', methods=['GET', 'POST'])
@@ -448,11 +455,16 @@ def race_add_participant(id):
         return redirect(url_for('main.race_details',id=race.id))
         
     #Let's get the next place and pre-populate the form
-    next_place = Participant.query.filter(and_(Participant.race_id==89,
-                                               Participant.place>0))\
-                                  .order_by(Participant.place.desc())\
-                                  .first()\
-                                  .place
+    if Participant.query.filter(and_(Participant.race_id==id,
+                                     Participant.place>0)).count():
+        next_place = Participant.query.filter(and_(Participant.race_id==id,
+                                                   Participant.place>0))\
+                                      .order_by(Participant.place.desc())\
+                                      .first()\
+                                      .place
+
+    else:
+        next_place=0
     form.place.data = next_place + 1
 
     return render_template('add.html',form=form,type='participant')
