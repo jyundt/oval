@@ -13,6 +13,17 @@
     {{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
 {% endif %}
 </div>
+<h2>Racer Bio</h2>
+coming soon!
+{% if teams|length>0%}
+<h2>Teams</h2>
+<ul>
+{%for team in teams%}
+<li><a href="{{url_for('main.team_details',id=team.id)}}">{{team.name}}</a></li>
+{%endfor%}
+</ul>
+{%endif%}
+
 <h2>All Race Results</h2>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">

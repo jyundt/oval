@@ -153,8 +153,11 @@ def racer():
 @main.route('/racer/<int:id>/')
 def racer_details(id):
     racer = Racer.query.get_or_404(id)
-
-    return render_template('racer_details.html', racer=racer)
+    teams = Team.query.join(Participant)\
+                      .join(Racer)\
+                      .filter_by(id=id)\
+                      .all()
+    return render_template('racer_details.html', racer=racer, teams=teams)
 
 @main.route('/racer/add/', methods=['GET', 'POST'])
 def racer_add():
