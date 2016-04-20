@@ -272,11 +272,19 @@ def race():
 @main.route('/race/<int:id>/')
 def race_details(id):
     race = Race.query.get_or_404(id)
+    points_race = False
     #I had to do this sort because jinja doesn't support lambas
-    participants = sorted(race.participants, key=lambda x: (x.place is None, x.place))
+    participants = sorted(race.participants,
+                          key=lambda x: (x.place is None, x.place))
+
+    #Let's see if we can figure out if anyone got points in this race
+    for participant in participants:
+        if participant.points:
+            points_race = True
 
     return render_template('race_details.html', race=race,
-                           participants=participants)
+                           participants=participants,
+                           points_race=points_race)
 
 
 @main.route('/race/add/', methods=['GET', 'POST'])

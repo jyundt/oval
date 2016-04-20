@@ -27,8 +27,10 @@
 <th>Place</th>
 <th>Name</th>
 <th>Team</th>
+{% if points_race %}
 <th>Points</th>
 <th>Team Points</th>
+{% endif %}
 <th>Primes</th>
 </tr>
 </thead>
@@ -53,6 +55,7 @@
 {%else%}
 <td>-</td>
 {%endif%}
+{% if points_race %}
 {% if participant.points is not none %}
 <td> {{ participant.points }}</td>
 {% else %}
@@ -63,6 +66,7 @@
 {% else %}
 <td>-</td>
 {%endif %}
+{% endif %}
 {%if participant.primes|length ==0 %}
 <td></td>
 {%else%}
