@@ -251,9 +251,24 @@ def team():
 def team_details(id):
     team = Team.query.get_or_404(id)
     current_racers = team.current_racers
+    results = Race.query.with_entities(Race.date,
+                                       RaceClass.name,
+                                       func.count(Racer.id),
+                                       Race.id)\
+                                       .join(Participant)\
+                                       .join(Racer)\
+                                       .join(Team,Team.id==Participant.team_id)\
+                                       .join(RaceClass)\
+                                       .filter(Team.id==team.id)\
+                                       .group_by(Race.date,
+                                                 RaceClass.id,
+                                                 Race.id)\
+                                       .order_by(Race.date.desc())\
+                                       .all()
 
     return render_template('team_details.html', team=team,\
-                           current_racers = current_racers)
+                           current_racers = current_racers,\
+                           results=results)
    
 
 @main.route('/team/add/', methods=['GET', 'POST'])
