@@ -41,6 +41,7 @@ class Racer(db.Model):
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     birthdate = db.Column(db.Date)
+    current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete', 
                                    backref='racer')
 
@@ -53,6 +54,7 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
     participants = db.relationship('Participant', backref='team')
+    current_racers = db.relationship('Racer', backref='current_team')
 
     def __repr__(self):
         return '<Team %r>' % self.name

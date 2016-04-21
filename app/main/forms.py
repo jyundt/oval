@@ -36,11 +36,30 @@ class RacerForm(Form):
     birthdate = DateField('Birthdate', validators=[Optional()],
                           description="MM/DD/YYYY",
                           format='%m/%d/%Y' )
-    submit = SubmitField('Submit')
+    current_team = StringField('Current Team',validators=[Optional()])
 
     def validate_usac_license(self, field):
         if Racer.query.filter_by(usac_license=field.data).first():
             raise ValidationError('USAC license already in use.')
+
+    def validate_current_team(self, field):
+        if Team.query.filter_by(name=field.data).first() is None:
+            raise ValidationError('Team does not exist!')
+
+class RacerEditForm(RacerForm):
+    submit = SubmitField('Save')
+
+class RacerAddForm(RacerForm):
+    submit = SubmitField('Add')
+
+class RacerAddToTeamForm(Form):
+    name = StringField('Name', validators=[Required()])
+    submit = SubmitField('Add')
+
+    def validate_name(self, field):
+        if Racer.query.filter_by(name=field.data).first() is None:
+            raise ValidationError('Racer does not exist!')
+
 
 class TeamForm(Form):
     name = StringField('Name', validators=[Required()])

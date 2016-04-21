@@ -7,12 +7,13 @@ from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
     Participant,RaceOfficial,RaceMarshal,Prime
 from ..email import send_feedback_email
 from . import main
-from .forms import RaceClassAddForm, RaceClassEditForm, RacerForm, TeamAddForm,\
+from .forms import RaceClassAddForm, RaceClassEditForm, TeamAddForm,\
                    RaceEditForm, ParticipantForm, TeamEditForm, RaceAddForm,\
                    ParticipantAddForm, ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm, MarshalAddForm, MarshalEditForm,\
                    RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
-                   RaceOfficialAddForm, StandingsSearchForm,FeedbackForm
+                   RaceOfficialAddForm, StandingsSearchForm,FeedbackForm,\
+                   RacerAddForm, RacerEditForm,RacerAddToTeamForm
 from datetime import timedelta,datetime
 from flask_login import current_user, login_required
 
@@ -159,7 +160,10 @@ def racer_details(id):
                       .join(Race)\
                       .order_by(Race.date.desc())\
                       .all()
-    current_team=teams.pop(0)
+    #current_team=teams.pop(0)
+    current_team=racer.current_team
+    if current_team in teams:
+        teams.remove(current_team)
     return render_template('racer_details.html', racer=racer,
                            current_team=current_team, teams=teams)
 
@@ -167,13 +171,22 @@ def racer_details(id):
 def racer_add():
     if not current_user.is_authenticated:
         abort(403)
-    form=RacerForm()
-    form.submit.label.text='Add'
+    form=RacerAddForm()
+    form.current_team.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                                 'autocomplete':'off',
+                                 'data-source':json.dumps([team.name for team in
+                                                          Team.query.all()])}
     if form.validate_on_submit():
         name = form.name.data
         usac_license = form.usac_license.data
         birthdate = form.birthdate.data
-        racer=Racer(name=name, usac_license=usac_license,birthdate=birthdate)
+        if form.current_team.data:
+            current_team_id=Team.query.filter_by(name=form.current_team.data)\
+                                      .first().id
+        else:
+            current_team_id=None
+        racer=Racer(name=name, usac_license=usac_license,birthdate=birthdate,
+                    current_team_id=current_team_id)
         db.session.add(racer)
         db.session.commit()
         flash('Racer ' + racer.name + ' created!')
@@ -187,7 +200,11 @@ def racer_edit(id):
     if not current_user.is_authenticated:
         abort(403)
     racer = Racer.query.get_or_404(id)
-    form=RacerForm()
+    form=RacerEditForm()
+    form.current_team.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                                 'autocomplete':'off',
+                                 'data-source':json.dumps([team.name for team in
+                                                          Team.query.all()])}
     
     if form.validate_on_submit():
         name = form.name.data
@@ -196,6 +213,12 @@ def racer_edit(id):
         racer.usac_license = usac_license
         birthdate = form.birthdate.data
         racer.birthdate = birthdate
+        if form.current_team.data:
+            current_team_id=Team.query.filter_by(name=form.current_team.data)\
+                                      .first().id
+        else:
+            current_team_id=None
+        racer.current_team_id = current_team_id
         db.session.commit()
         flash('Racer ' + racer.name + ' updated!')
         return redirect(url_for('main.racer_details',id=racer.id))
@@ -203,6 +226,8 @@ def racer_edit(id):
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
     form.birthdate.data = racer.birthdate
+    if racer.current_team_id:
+        form.current_team.data = Team.query.get(racer.current_team_id).name
     return render_template('edit.html',
                            item=racer,form=form,type='racer')
 
@@ -225,8 +250,11 @@ def team():
 @main.route('/team/<int:id>/')
 def team_details(id):
     team = Team.query.get_or_404(id)
+    current_racers = team.current_racers
 
-    return render_template('team_details.html', team=team)
+    return render_template('team_details.html', team=team,\
+                           current_racers = current_racers)
+   
 
 @main.route('/team/add/', methods=['GET', 'POST'])
 def team_add():
@@ -270,6 +298,28 @@ def team_delete(id):
     db.session.commit()
     flash('Team ' + team.name + ' deleted!')
     return redirect(url_for('main.team'))
+
+@main.route('/team/<int:id>/racer/add/', methods=['GET', 'POST'])
+def team_add_racer(id):
+    if not current_user.is_authenticated:
+        abort(403)
+    team = Team.query.get_or_404(id)
+    form=RacerAddToTeamForm()
+    form.name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                         'autocomplete':'off',
+                         'data-source':json.dumps([racer.name for racer in
+                                                   Racer.query.all()])}
+
+    if form.validate_on_submit():
+        name = form.name.data
+        racer_id = Racer.query.filter_by(name=name).first().id
+        Racer.query.get(racer_id).current_team_id=team.id
+        db.session.commit()
+        return redirect(url_for('main.team_details',id=team.id))
+
+    return render_template('add.html',iteam='racer to team',\
+                           form=form,type='racer to team')
+    
 
 @main.route('/race/')
 def race():
