@@ -14,19 +14,30 @@
 {% endif %}
 </div>
 <h2>Racer Bio</h2>
-coming soon!
-{% if current_team is not none %}
-<h2>Team Info</h2>
+{%if racer.usac_license %}
+<h5>
+USAC License: <a href="https://www.usacycling.org/results/index.php?compid={{racer.usac_license}}">{{racer.usac_license}}</a>
+</h5>
+{%endif%}
+{%if racer.birthdate %}
+<h5>
+Race age: {{racer.race_age()}}
+</h5>
+{%endif%}
+
+{% if current_team %}
+<h5>
 Current team: <a href="{{url_for('main.team_details',id=current_team.id)}}">{{current_team.name}}</a>
+</h5>
 {%if teams|length>0%}
 <h5>
 Previous teams:
-<h5>
 <ul>
 {%for team in teams%}
 <li><a href="{{url_for('main.team_details',id=team.id)}}">{{team.name}}</a></li>
 {%endfor%}
 </ul>
+</h5>
 {%endif%}
 {%endif%}
 

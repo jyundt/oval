@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import login_manager
 from flask import current_app, request
+from datetime import date
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -44,6 +45,13 @@ class Racer(db.Model):
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete', 
                                    backref='racer')
+
+    def race_age(self):
+        if self.birthdate:
+            race_age = date.today().year - self.birthdate.year
+            return race_age
+        else:
+            return None
 
     def __repr__(self):
         return '<Racer %r>' % self.name
