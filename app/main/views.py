@@ -156,8 +156,12 @@ def racer_details(id):
     teams = Team.query.join(Participant)\
                       .join(Racer)\
                       .filter_by(id=id)\
+                      .join(Race)\
+                      .order_by(Race.date.desc())\
                       .all()
-    return render_template('racer_details.html', racer=racer, teams=teams)
+    current_team=teams.pop(0)
+    return render_template('racer_details.html', racer=racer,
+                           current_team=current_team, teams=teams)
 
 @main.route('/racer/add/', methods=['GET', 'POST'])
 def racer_add():
