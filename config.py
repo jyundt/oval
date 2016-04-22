@@ -14,7 +14,7 @@ class Config:
     MAIL_SUBJECT_PREFIX = '[Oval App]'
     MAIL_SENDER = 'The Oval App <noreply@oval.jyundt.com>'
     MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
-    GOOGLE_ANALYTICS_ID = 'UA-76360864-1'
+    GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
 
     @staticmethod
     def init_app(app):
