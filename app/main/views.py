@@ -200,7 +200,7 @@ def racer_edit(id):
     if not current_user.is_authenticated:
         abort(403)
     racer = Racer.query.get_or_404(id)
-    form=RacerEditForm()
+    form=RacerEditForm(racer)
     form.current_team.render_kw={'data-provide': 'typeahead', 'data-items':'4',
                                  'autocomplete':'off',
                                  'data-source':json.dumps([team.name for team in

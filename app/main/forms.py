@@ -38,9 +38,6 @@ class RacerForm(Form):
                           format='%m/%d/%Y' )
     current_team = StringField('Current Team',validators=[Optional()])
 
-    def validate_usac_license(self, field):
-        if Racer.query.filter_by(usac_license=field.data).first():
-            raise ValidationError('USAC license already in use.')
 
     def validate_current_team(self, field):
         if Team.query.filter_by(name=field.data).first() is None:
@@ -49,8 +46,21 @@ class RacerForm(Form):
 class RacerEditForm(RacerForm):
     submit = SubmitField('Save')
 
+    def __init__(self, racer, *args, **kwargs):
+        super(RacerEditForm, self).__init__(*args, **kwargs)
+        self.racer = racer
+
+    def validate_usac_license(self, field):
+        if field.data != self.racer.usac_license and \
+            Racer.query.filter_by(usac_license=field.data).first():
+            raise ValidationError('USAC license already in use!')
+
 class RacerAddForm(RacerForm):
     submit = SubmitField('Add')
+
+    def validate_usac_license(self, field):
+        if Racer.query.filter_by(usac_license=field.data).first():
+            raise ValidationError('USAC license already in use.')
 
 class RacerAddToTeamForm(Form):
     name = StringField('Name', validators=[Required()])
