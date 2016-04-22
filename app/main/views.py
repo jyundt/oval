@@ -345,14 +345,21 @@ def race():
 def race_details(id):
     race = Race.query.get_or_404(id)
     points_race = False
+    dnf_list=[]
     #I had to do this sort because jinja doesn't support lambas
     participants = sorted(race.participants,
                           key=lambda x: (x.place is None, x.place))
 
+        
+
     #Let's see if we can figure out if anyone got points in this race
+    #We also want to see if they DNFed and put them in a separate list
     for participant in participants:
         if participant.points:
             points_race = True
+        if participant.dnf:
+            dnf_list.append(participant)
+            participants.remove(participant)
 
     #Generate list of MAR winners
     mar_list = Participant.query.join(Race).filter(Race.id==id)\
@@ -360,10 +367,13 @@ def race_details(id):
                                           .having(Participant.mar_place>0)\
                                           .order_by(Participant.mar_place)\
                                           .all()
+    primes = Prime.query.join(Participant).join(Race).filter(Race.id==id).all()
     return render_template('race_details.html', race=race,
                            participants=participants,
                            points_race=points_race,
-                           mar_list=mar_list)
+                           mar_list=mar_list,
+                           dnf_list=dnf_list,
+                           primes=primes)
 
 
 @main.route('/race/add/', methods=['GET', 'POST'])
