@@ -355,11 +355,17 @@ def race_details(id):
     #Let's see if we can figure out if anyone got points in this race
     #We also want to see if they DNFed and put them in a separate list
     for participant in participants:
+        print participant.racer.name
         if participant.points:
             points_race = True
         if participant.dnf:
             dnf_list.append(participant)
-            participants.remove(participant)
+
+
+	#for some reason I couldn't remove dnf riders from the previous
+    #loop, I couldn't figure out why so I needed to split this up
+    for dnf_rider in dnf_list:
+        participants.remove(dnf_rider)
 
     #Generate list of MAR winners
     mar_list = Participant.query.join(Race).filter(Race.id==id)\
