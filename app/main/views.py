@@ -13,7 +13,8 @@ from .forms import RaceClassAddForm, RaceClassEditForm, TeamAddForm,\
                    PrimeEditForm, MarshalAddForm, MarshalEditForm,\
                    RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
                    RaceOfficialAddForm, StandingsSearchForm,FeedbackForm,\
-                   RacerAddForm, RacerEditForm,RacerAddToTeamForm
+                   RacerAddForm, RacerEditForm,RacerAddToTeamForm,\
+                   RacerSearchForm
 from datetime import timedelta,datetime
 from flask_login import current_user, login_required
 
@@ -147,8 +148,32 @@ def race_class_delete(id):
 def racer():
     racers = Racer.query.order_by(Racer.name).all()
     #racers = sorted(racers, key=lambda x: x.name.split()[1])
-    
     return render_template('racer.html', racers=racers)
+
+@main.route('/racer/search/', methods=['GET', 'POST'])
+def racer_search():
+    racers = Racer.query.order_by(Racer.name).all()
+    form=RacerSearchForm()
+    form.name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                         'autocomplete':'off',
+                         'data-source':json.dumps([racer.name for racer in
+                                                   Racer.query.all()])}
+
+    if form.validate_on_submit():
+        name = form.name.data      
+        racers = Racer.query.filter(Racer.name.ilike('%'+name+'%')).all()
+        print racers
+        if len(racers) == 1:
+            racer=racers[0]
+            return redirect(url_for('main.racer_details',id=racer.id))
+        else:
+            return render_template('racer_search.html',racers=racers,\
+                                   form=form)
+            
+            
+
+    return render_template('racer_search.html', racers=None,form=form)
+    
 
 
 @main.route('/racer/<int:id>/')

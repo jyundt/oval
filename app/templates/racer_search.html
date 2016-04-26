@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Racer Search{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Racer Search</h1>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {{wtf.quick_form(form)}}
+  <br>
+  </div>
+  {% if racers is not none %}
+    {% if racers | length == 0 %}
+      <h2>No Results!</h2>
+    {%else%}
+      <div class="col-md-6">
+        <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>USAC License</th>
+              <th>Race Age</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for racer in racers %}
+              <tr>
+                <td><a href="{{url_for('main.racer_details', id=racer.id)}}">{{racer.name}}</a></td>
+                {%if racer.usac_license %}
+                  <td><a href="https://www.usacycling.org/results/index.php?compid={{racer.usac_license}}">{{racer.usac_license}}</a></td>
+                {%else%}
+                  <td></td>
+                {%endif%}
+                {%if racer.birthdate %}
+                  <td>{{racer.race_age()}}</td>
+                {% else %}
+                  <td></td>
+                {%endif%}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

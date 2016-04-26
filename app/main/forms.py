@@ -71,6 +71,10 @@ class RacerAddToTeamForm(Form):
             raise ValidationError('Racer does not exist!')
 
 
+class RacerSearchForm(Form):
+    name = StringField('Name', validators=[Required()])
+    submit = SubmitField('Search')
+
 class TeamForm(Form):
     name = StringField('Name', validators=[Required()])
 

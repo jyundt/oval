@@ -33,7 +33,6 @@
                 <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
                 <li><a href="{{ url_for('main.race') }}">Races</a></li> 
                 <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li> 
-                <li><a href="{{ url_for('main.changelog') }}">Changelog</a></li> 
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
@@ -47,6 +46,7 @@
                         {%endif%}
                         <li><a href="{{url_for('auth.change_password')}}">Change Password</a></li>
                         <li><a href="{{url_for('auth.change_email_request')}}">Change Email Address</a></li>
+                        <li><a href="{{ url_for('main.changelog') }}">Changelog</a></li> 
                         <li><a href="{{url_for('auth.logout')}}">Sign Out</a></li>
                         
                     </ul>
