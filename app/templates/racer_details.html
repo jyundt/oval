@@ -25,9 +25,14 @@ Race age: {{racer.race_age()}}
 </h5>
 {%endif%}
 
-{% if current_team %}
+{% if current_team or teams|length>0%}
 <h5>
-Current team: <a href="{{url_for('main.team_details',id=current_team.id)}}">{{current_team.name}}</a>
+Current team: 
+{% if current_team %}
+<a href="{{url_for('main.team_details',id=current_team.id)}}">{{current_team.name}}</a>
+{%else%}
+None
+{%endif%}
 </h5>
 {%if teams|length>0%}
 <h5>
