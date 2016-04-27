@@ -17,6 +17,10 @@
 <script>
 $(document).ready(function() {
   $('#calendar').fullCalendar({
+    header: {
+        left: 'title',
+        right: 'today, prev,next prevYear,nextYear'
+    },
     events: '/race'
   })
 });
