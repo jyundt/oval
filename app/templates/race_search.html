@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Race Search{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Race Search</h1>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {{wtf.quick_form(form)}}
+  <br>
+  </div>
+  {% if races is not none %}
+    {% if races | length == 0 %}
+      <h2>No Results!</h2>
+    {%else%}
+      <div class="col-md-6">
+        <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Race Date</th>
+              <th>Category</th>
+              <th>Starters</th>
+              <th>Finishers</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for race in races %}
+              <tr>
+                <td><a href="{{url_for('main.race_details', id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
+                <td><a href="{{url_for('main.race_class_details',id=race.race_class.id)}}">{{ race.race_class.name}}</a></td> 
+                {% if race.starters is none %}
+                  <td>-</td>
+                {% else %}
+                  <td>{{race.starters}}</td>
+                {%endif%}
+                <td>{{race.participants|length}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -30,6 +30,7 @@ class RaceClass(db.Model):
     __tablename__ = 'race_class'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
+    color = db.Column(db.String(8))
     races = db.relationship('Race', cascade='all,delete', backref='race_class')
     
 

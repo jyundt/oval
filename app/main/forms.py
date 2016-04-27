@@ -4,12 +4,19 @@ from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     RadioField, TextAreaField
 from wtforms import ValidationError
 from wtforms.validators import Required,EqualTo,Optional,NumberRange,Length,\
-                               Email
+                               Email, Regexp
 from ..models import RaceClass, Racer, Team, Race, Marshal, Official
 from sqlalchemy import and_
 
 class RaceClassForm(Form):
     name = StringField('Name', validators=[Required()])
+    color = StringField('Race Category Color', 
+                        validators=[Optional(),
+                                    Regexp('^#(?:[0-9a-fA-F]{3}){1,2}$',
+                                           0,
+                                           'Color must be valid hex format.\
+                                            (example: #ff0000)')],
+                        description='#ff0000')
 
 class RaceClassEditForm(RaceClassForm):
     submit = SubmitField('Save')
@@ -156,6 +163,12 @@ class RaceEditForm(RaceForm):
                                          category already exists!')
             return False
         return True
+
+class RaceSearchForm(Form):
+    date = DateField('Date', validators=[Required()],
+                     description='MM/DD/YYYY',
+                     format='%m/%d/%Y')
+    submit = SubmitField('Search')
     
     
 

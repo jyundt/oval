@@ -1,6 +1,6 @@
 import json
 from flask import render_template, session, redirect, url_for, current_app,\
-                  flash, abort
+                  flash, abort, request, jsonify
 from sqlalchemy import extract, desc, func, and_
 from .. import db
 from ..models import Official,Marshal,RaceClass,Racer,Team,Race,\
@@ -14,7 +14,7 @@ from .forms import RaceClassAddForm, RaceClassEditForm, TeamAddForm,\
                    RaceMarshalAddForm, OfficialAddForm, OfficialEditForm,\
                    RaceOfficialAddForm, StandingsSearchForm,FeedbackForm,\
                    RacerAddForm, RacerEditForm,RacerAddToTeamForm,\
-                   RacerSearchForm
+                   RacerSearchForm, RaceSearchForm
 from datetime import timedelta,datetime
 from flask_login import current_user, login_required
 
@@ -87,6 +87,7 @@ def index():
 def changelog():
     return render_template('changelog.html')
 
+
 @main.route('/race_class/')
 def race_class():
     race_classes = RaceClass.query.order_by(RaceClass.name).all()
@@ -106,7 +107,8 @@ def race_class_add():
     form=RaceClassAddForm()
     if form.validate_on_submit():
         name = form.name.data
-        race_class=RaceClass(name=name)
+        color = form.color.data
+        race_class=RaceClass(name=name,color=color)
         db.session.add(race_class)
         db.session.commit()
         flash('Race type ' + race_class.name + ' created!')
@@ -125,12 +127,15 @@ def race_class_edit(id):
     if form.validate_on_submit():
         name = form.name.data
         race_class.name = name
+        color = form.color.data
+        race_class.color = color
         db.session.commit()
         flash('Race type ' + race_class.name + ' updated!')
         return redirect(url_for('main.race_class_details',
                                 id=race_class.id))
         
     form.name.data = race_class.name
+    form.color.data = race_class.color
     return render_template('edit.html',
                            item=race_class,form=form,type='race class')
 
@@ -147,12 +152,10 @@ def race_class_delete(id):
 @main.route('/racer/')
 def racer():
     racers = Racer.query.order_by(Racer.name).all()
-    #racers = sorted(racers, key=lambda x: x.name.split()[1])
     return render_template('racer.html', racers=racers)
 
 @main.route('/racer/search/', methods=['GET', 'POST'])
 def racer_search():
-    racers = Racer.query.order_by(Racer.name).all()
     form=RacerSearchForm()
     form.name.render_kw={'data-provide': 'typeahead', 'data-items':'4',
                          'autocomplete':'off',
@@ -162,7 +165,6 @@ def racer_search():
     if form.validate_on_submit():
         name = form.name.data      
         racers = Racer.query.filter(Racer.name.ilike('%'+name+'%')).all()
-        print racers
         if len(racers) == 1:
             racer=racers[0]
             return redirect(url_for('main.racer_details',id=racer.id))
@@ -185,7 +187,6 @@ def racer_details(id):
                       .join(Race)\
                       .order_by(Race.date.desc())\
                       .all()
-    #current_team=teams.pop(0)
     current_team=racer.current_team
     if current_team in teams:
         teams.remove(current_team)
@@ -357,14 +358,63 @@ def team_add_racer(id):
         db.session.commit()
         return redirect(url_for('main.team_details',id=team.id))
 
-    return render_template('add.html',iteam='racer to team',\
-                           form=form,type='racer to team')
+    return render_template('add.html', form=form,type='racer to team')
     
 
 @main.route('/race/')
 def race():
+    if request.query_string:
+        
+
+        if 'start' in request.args:
+            start = request.args.get('start')
+        else:
+            start = None
+        if 'end' in request.args:
+            end = request.args.get('end')
+        else:
+            end = None
+        if start is not None and end is not None:
+            races = Race.query.filter(Race.date.between(start,end)).all()
+            races_json = []
+            for race in races:
+        
+                races_json.append({"title":race.race_class.name,\
+                                   "start":race.date.strftime('%Y-%m-%d'),\
+                                   "url":url_for('main.race_details',
+                                                 id=race.id),
+                                   "color":race.race_class.color})
+            
+            return json.dumps(races_json)
     races = Race.query.order_by(desc(Race.date)).all()
     return render_template('race.html', races=races)
+
+@main.route('/race/search/', methods=['GET', 'POST'])
+def race_search():
+    form=RaceSearchForm()
+    form.date.render_kw={'data-provide': 'typeahead', 'data-items':'4',
+                         'autocomplete':'off',
+                         'data-source':json.dumps([race.date
+                                                       .strftime('%m/%d/%Y')
+                                                   for race in
+                                                   Race.query
+                                                   .distinct(Race.date)
+                                                   .order_by(Race.date)
+                                                   .all()])}
+
+    if form.validate_on_submit():
+        date = form.date .data      
+        races = Race.query.filter_by(date=date).all()
+        if len(races) == 1:
+            race=races[0]
+            return redirect(url_for('main.race_details',id=race.id))
+        else:
+            return render_template('race_search.html',races=races,\
+                                   form=form)
+            
+            
+
+    return render_template('race_search.html', races=None,form=form)
 
 @main.route('/race/<int:id>/')
 def race_details(id):
@@ -380,7 +430,6 @@ def race_details(id):
     #Let's see if we can figure out if anyone got points in this race
     #We also want to see if they DNFed and put them in a separate list
     for participant in participants:
-        print participant.racer.name
         if participant.points:
             points_race = True
         if participant.dnf:
