@@ -6,13 +6,13 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or '594a44b992b3ed67752f7e9807dd4daa'
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     #BOOTSTRAP_SERVE_LOCAL = True
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp.zoho.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_SUBJECT_PREFIX = '[Oval App]'
-    MAIL_SENDER = 'The Oval App <noreply@oval.jyundt.com>'
+    MAIL_SENDER = 'noreply@theoval.us'
     MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
 
