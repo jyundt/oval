@@ -42,6 +42,7 @@ class Racer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
+    strava_id = db.Column(db.Integer, unique=True)
     birthdate = db.Column(db.Date)
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete', 

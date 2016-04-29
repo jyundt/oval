@@ -206,6 +206,7 @@ def racer_add():
     if form.validate_on_submit():
         name = form.name.data
         usac_license = form.usac_license.data
+        strava_id = form.strava_id.data
         birthdate = form.birthdate.data
         if form.current_team.data:
             current_team_id=Team.query.filter_by(name=form.current_team.data)\
@@ -213,7 +214,8 @@ def racer_add():
         else:
             current_team_id=None
         racer=Racer(name=name, usac_license=usac_license,birthdate=birthdate,
-                    current_team_id=current_team_id)
+                    current_team_id=current_team_id,
+                    strava_id=strava_id)
         db.session.add(racer)
         db.session.commit()
         flash('Racer ' + racer.name + ' created!')
@@ -240,6 +242,8 @@ def racer_edit(id):
         racer.usac_license = usac_license
         birthdate = form.birthdate.data
         racer.birthdate = birthdate
+        strava_id = form.strava_id.data
+        racer.strava_id=strava_id
         if form.current_team.data:
             current_team_id=Team.query.filter_by(name=form.current_team.data)\
                                       .first().id
@@ -253,6 +257,7 @@ def racer_edit(id):
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
     form.birthdate.data = racer.birthdate
+    form.strava_id.data = racer.strava_id
     if racer.current_team_id:
         form.current_team.data = Team.query.get(racer.current_team_id).name
     return render_template('edit.html',
