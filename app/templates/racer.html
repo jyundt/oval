@@ -16,22 +16,16 @@
 <thead>
 <tr>
     <th>Name</th>
-    <th>USAC License</th>
-    <th>Race Age</th>
+    <th>Team</th>
 </tr>
 </thead>
 <tbody>
 {% for racer in racers %}
 <tr>
 <td><a href="{{url_for('main.racer_details',id=racer.id)}}">{{ racer.name}}</a></td> 
-{%if racer.usac_license %}
-<td><a href="https://www.usacycling.org/results/index.php?compid={{racer.usac_license}}">{{racer.usac_license}}</a></td>
+{%if racer.current_team %}
+<td><a href="{{url_for('main.team_details',id=racer.current_team.id)}}">{{racer.current_team.name}}</a></td>
 {%else%}
-<td></td>
-{%endif%}
-{%if racer.birthdate %}
-<td>{{racer.race_age()}}</td>
-{% else %}
 <td></td>
 {%endif%}
 </tr>
