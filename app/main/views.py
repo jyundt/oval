@@ -361,7 +361,7 @@ def team_add_racer(id):
     return render_template('add.html', form=form,type='racer to team')
     
 
-@main.route('/race/')
+@main.route('/race/', methods=['GET', 'POST'])
 def race():
     if request.query_string:
         
@@ -386,7 +386,21 @@ def race():
                                    "color":race.race_class.color})
             
             return json.dumps(races_json)
+    if request.method == 'POST':
+        if session['race_view'] == 'calendar':
+            print 'setting to table'
+            session['race_view'] = 'table'
+            print session['race_view']
+            return redirect(url_for('main.race'))
+        else:
+            print 'setting to calendar'
+            session['race_view']= 'calendar'
+            return redirect(url_for('main.race'))
+             
     races = Race.query.order_by(desc(Race.date)).all()
+    #if session['race_view'] is None:
+    if 'race_view' not in session:
+        session['race_view']= 'calendar'
     return render_template('race.html', races=races)
 
 @main.route('/race/search/', methods=['GET', 'POST'])
