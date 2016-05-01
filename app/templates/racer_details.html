@@ -13,7 +13,7 @@
     {{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
 {% endif %}
 </div>
-{%if racer.strava_profile_url and racer.strava_id%}
+{%if racer.strava_id and racer.strava_profile_url%}
 <img src="{{racer.strava_profile_url}}" class="img-responsive img-circle">
 {%endif%}
 <h2>Racer Bio</h2>
