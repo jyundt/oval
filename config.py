@@ -15,6 +15,7 @@ class Config:
     MAIL_SENDER = 'noreply@theoval.us'
     MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
+    STRAVA_API_TOKEN = os.environ.get('STRAVA_API_TOKEN')
 
     @staticmethod
     def init_app(app):

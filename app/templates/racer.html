@@ -22,7 +22,17 @@
 <tbody>
 {% for racer in racers %}
 <tr>
-<td><a href="{{url_for('main.racer_details',id=racer.id)}}">{{ racer.name}}</a></td> 
+<td><a href="{{url_for('main.racer_details',id=racer.id)}}">{{ racer.name}}</a>
+{%if racer.strava_id%}
+<style>
+  .strava-badge- { display: inline-block; height: 24px;}
+  .strava-badge- img { visibility: hidden; height: 24px; }
+  .strava-badge-:hover { background-position: 0 -37px; }
+  .strava-badge-follow { height: 24px; width: 24px; background: url(//badges.strava.com/echelon-sprite-24.png) no-repeat 0 0; }
+</style>
+<a href="http://strava.com/athletes/{{racer.strava_id}}/badge" class="strava-badge- strava-badge-follow" target="_blank"><img src="//badges.strava.com/echelon-sprite-24.png" alt="Strava" /></a>
+{%endif%}
+</td> 
 {%if racer.current_team %}
 <td><a href="{{url_for('main.team_details',id=racer.current_team.id)}}">{{racer.current_team.name}}</a></td>
 {%else%}

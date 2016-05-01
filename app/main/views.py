@@ -84,11 +84,6 @@ def index():
                                    .first())
     return render_template('index.html',races=races)
 
-@main.route('/changelog')
-def changelog():
-    return render_template('changelog.html')
-
-
 @main.route('/race_class/')
 def race_class():
     race_classes = RaceClass.query.order_by(RaceClass.name).all()
@@ -394,12 +389,9 @@ def race():
             return json.dumps(races_json)
     if request.method == 'POST':
         if session['race_view'] == 'calendar':
-            print 'setting to table'
             session['race_view'] = 'table'
-            print session['race_view']
             return redirect(url_for('main.race'))
         else:
-            print 'setting to calendar'
             session['race_view']= 'calendar'
             return redirect(url_for('main.race'))
              

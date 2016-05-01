@@ -13,6 +13,9 @@
     {{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
 {% endif %}
 </div>
+{%if racer.strava_profile_url%}
+<img src="{{racer.strava_profile_url}}" class="img-responsive img-circle">
+{%endif%}
 <h2>Racer Bio</h2>
 {%if racer.usac_license %}
 <h5>
@@ -21,7 +24,7 @@ USAC License: <a href="https://www.usacycling.org/results/index.php?compid={{rac
 {%endif%}
 {%if racer.birthdate %}
 <h5>
-Race age: {{racer.race_age()}}
+Race age: {{racer.race_age}}
 </h5>
 {%endif%}
 

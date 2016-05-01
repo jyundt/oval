@@ -1,10 +1,14 @@
+import requests
+import json
+import pytz
+from datetime import timedelta,datetime,date
 from . import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import login_manager
 from flask import current_app, request
-from datetime import date
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -43,11 +47,39 @@ class Racer(db.Model):
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     strava_id = db.Column(db.Integer, unique=True)
+    _strava_profile_url = db.Column('strava_profile_url',db.String(200))
+    strava_profile_last_fetch = db.Column(db.DateTime(timezone=True))
     birthdate = db.Column(db.Date)
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete', 
                                    backref='racer')
+    
+    @property
+    def strava_profile_url(self):
+        
+        if self.strava_profile_last_fetch is None or\
+           (datetime.now(pytz.timezone('UTC')) -\
+            self.strava_profile_last_fetch)\
+           > timedelta(minutes=15):
+            self.strava_profile_last_fetch=datetime.now(pytz.timezone('UTC'))
+        
+            response = requests.get('https://www.strava.com/api/v3/athletes/'
+                                    +str(self.strava_id),
+                                    params={'access_token':current_app\
+                                            .config['STRAVA_API_TOKEN']})
+                                            
+            if response.status_code == 200:
+                self.strava_profile_url=json.loads(response.text)['profile']
+        
+        return self._strava_profile_url
+    
 
+    @strava_profile_url.setter
+    def strava_profile_url(self, url):
+        self._strava_profile_url = url
+        db.session.commit()
+ 
+    @hybrid_property
     def race_age(self):
         if self.birthdate:
             race_age = date.today().year - self.birthdate.year
