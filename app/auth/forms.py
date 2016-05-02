@@ -46,7 +46,7 @@ class AdminEditForm(AdminForm):
                                          EqualTo('password2',
                                                  message='Passwords do\
                                                           not match!')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
+    password2 = PasswordField('Confirm password', validators=[Optional()])
 
     def __init__(self, admin, *args, **kwargs):
         super(AdminEditForm, self).__init__(*args, **kwargs)
