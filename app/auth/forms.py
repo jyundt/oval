@@ -21,12 +21,6 @@ class AdminForm(Form):
     email = StringField('Email', validators=[Required(), Email()])
     username = StringField('Username', validators=[Required(), Length(1, 200)])
     roles = SelectMultipleField('Roles', coerce=int, validators=[Optional()])
-    password = PasswordField('Password',
-                             validators=[Required(),
-                                         EqualTo('password2',
-                                                 message='Passwords do\
-                                                          not match!')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
 
     def validate_email(self, field):
         if Admin.query.filter_by(email=field.data).first():
@@ -37,10 +31,22 @@ class AdminForm(Form):
             raise ValidationError('Username already in use!')
 
 class AdminAddForm(AdminForm):
+    password = PasswordField('Password',
+                             validators=[Required(),
+                                         EqualTo('password2',
+                                                 message='Passwords do\
+                                                          not match!')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
     submit = SubmitField('Add')
 
 class AdminEditForm(AdminForm):
     submit = SubmitField('Save')
+    password = PasswordField('Password',
+                             validators=[Optional(),
+                                         EqualTo('password2',
+                                                 message='Passwords do\
+                                                          not match!')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
 
     def __init__(self, admin, *args, **kwargs):
         super(AdminEditForm, self).__init__(*args, **kwargs)
