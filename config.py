@@ -36,6 +36,27 @@ class PostgresConfig(Config):
         '@' + SQLALCHEMY_DATABSE_HOST + ':' + SQLALCHEMY_DATABSE_PORT + '/' + \
         SQLALCHEMY_DATABSE_NAME
 
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+        import logging
+        from logging.handlers import SMTPHandler
+        credentials = None
+        secure = None
+        if getattr(cls, 'MAIL_USERNAME', None) is not None:
+            credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
+            if getattr(cls, 'MAIL_USE_TLS', None):
+                secure = ()
+
+        mail_handler = SMTPHandler(
+            mailhost=(cls.MAIL_SERVER, cls.MAIL_PORT),
+            fromaddr=cls.MAIL_SENDER,
+            toaddrs=[cls.MAIL_FEEDBACK_ADDRESS],
+            subject=cls.MAIL_SUBJECT_PREFIX + ' Application Error',
+            credentials=credentials,
+            secure=secure)
+        mail_handler.setLevel(logging.ERROR)
+        app.logger.addHandler(mail_handler)
 
 config = {
     'postgres': PostgresConfig,
