@@ -101,7 +101,7 @@ def admin_edit(id):
                                            .first())
                 db.session.commit()
         flash('Admin ' + username + ' updated!')
-        return render_template('auth/admin_details.html', admin=admin)
+        return redirect(url_for('auth.admin_details', id=admin.id))
 
     form.username.data = admin.username
     form.email.data = admin.email
