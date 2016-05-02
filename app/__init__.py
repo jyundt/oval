@@ -35,5 +35,22 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
+    from .race_class import race_class as race_class_blueprint
+    app.register_blueprint(race_class_blueprint, url_prefix='/race_class')
+
+    from .racer import racer as racer_blueprint
+    app.register_blueprint(racer_blueprint, url_prefix='/racer')
+
+    from .team import team as team_blueprint
+    app.register_blueprint(team_blueprint, url_prefix='/team')
+
+    from .race import race as race_blueprint
+    app.register_blueprint(race_blueprint, url_prefix='/race')
+
+    from .marshal import marshal as marshal_blueprint
+    app.register_blueprint(marshal_blueprint, url_prefix='/marshal')
+
+    from .official import official as official_blueprint
+    app.register_blueprint(official_blueprint, url_prefix='/official')
 
     return app

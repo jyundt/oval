@@ -7,7 +7,7 @@ def send_async_email(app, msg):
     with app.app_context():
         mail.send(msg)
 
-def send_feedback_email(name,replyaddress,subject,feedback):
+def send_feedback_email(name, replyaddress, subject, feedback):
     app = current_app._get_current_object()
     msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject,
                   sender=app.config['MAIL_SENDER'],

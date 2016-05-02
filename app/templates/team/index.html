@@ -5,8 +5,8 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Teams</h1>
-{% if current_user.is_authenticated %}
-<a class="btn btn-default" href="{{url_for('main.team_add')}}"><span class="glyphicon glyphicon-plus"></span> Add a team</a>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
+<a class="btn btn-default" href="{{url_for('team.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a team</a>
 {% endif %}
 </div>
 <div class="table-responsive">
@@ -19,7 +19,7 @@
 <tbody>
 {% for team in teams %}
 <tr>
-<td><a href="{{url_for('main.team_details',id=team.id)}}">{{ team.name}}</a></td> 
+<td><a href="{{url_for('team.details',id=team.id)}}">{{ team.name}}</a></td> 
 </tr>
 {% endfor %}
 </tbody>

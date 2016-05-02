@@ -30,9 +30,9 @@
               <tr>
                 <td>{{loop.index}}</td>
                 {% if standings_type == 'team' %}
-                  <td><a href="{{url_for('main.team_details', id=result[2])}}">{{result[0]}}</a></td>
+                  <td><a href="{{url_for('team.details', id=result[2])}}">{{result[0]}}</a></td>
                 {% else %}
-                  <td><a href="{{url_for('main.racer_details', id=result[2])}}">{{result[0]}}</a></td>
+                  <td><a href="{{url_for('racer.details', id=result[2])}}">{{result[0]}}</a></td>
                 {%endif%}
                 <td>{{result[1]}}</td>
               </tr>

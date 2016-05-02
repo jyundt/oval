@@ -21,8 +21,8 @@ Recent Results
 <tbody>
 {% for race in races %}
 <tr>
-<td><a href="{{url_for('main.race_details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
-<td><a href="{{url_for('main.race_class_details',id=race.race_class.id)}}">{{race.race_class.name}}</a></td>
+<td><a href="{{url_for('race.details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
+<td><a href="{{url_for('race_class.details',id=race.race_class.id)}}">{{race.race_class.name}}</a></td>
 </tr>
 {%endfor%}
 </tbody>

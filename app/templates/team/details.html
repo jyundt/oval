@@ -7,11 +7,11 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Team: {{team.name}}</h1>
-{% if current_user.is_authenticated %}
-    <a class="btn btn-default" href="{{ url_for('main.team_edit',id=team.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit team details</a>
-    <a class="btn btn-default" href="{{url_for('main.team_add_racer',id=team.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
+    <a class="btn btn-default" href="{{ url_for('team.edit',id=team.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit team details</a>
+    <a class="btn btn-default" href="{{url_for('team.add_racer',id=team.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete team</button>
-    {{ macros.confirm_delete_modal(team,'main.team_delete')}}
+    {{ macros.confirm_delete_modal(team,'team.delete')}}
 {% endif %}
 </div>
 
@@ -19,7 +19,7 @@
 <h2>Team Roster</h2>
 <ul>
 {%for racer in current_racers%}
-<li><a href="{{url_for('main.racer_details',id=racer.id)}}">{{racer.name}}</a></li>
+<li><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a></li>
 {%endfor%}
 </ul>
 {%endif%}
@@ -39,7 +39,7 @@
 {% for result in results %}
 <tr>
 <td>
-<a href="{{url_for('main.race_details',id=result[3])}}">{{result[0].strftime('%m/%d/%Y')}}</a>
+<a href="{{url_for('race.details',id=result[3])}}">{{result[0].strftime('%m/%d/%Y')}}</a>
 </td>
 <td>
 {{result[1]}}

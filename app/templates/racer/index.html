@@ -5,10 +5,10 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Racers</h1>
-{% if current_user.is_authenticated %}
-<a class="btn btn-default" href="{{url_for('main.racer_add')}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
+<a class="btn btn-default" href="{{url_for('racer.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
 {% endif %}
-<a class="btn btn-default" href="{{url_for('main.racer_search')}}"><span class="glyphicon glyphicon-search"></span> Racer search</a>
+<a class="btn btn-default" href="{{url_for('racer.search')}}"><span class="glyphicon glyphicon-search"></span> Racer search</a>
 </div>
 
 <div class="table-responsive">
@@ -22,7 +22,7 @@
 <tbody>
 {% for racer in racers %}
 <tr>
-<td><a href="{{url_for('main.racer_details',id=racer.id)}}">{{ racer.name}}</a>
+<td><a href="{{url_for('racer.details',id=racer.id)}}">{{ racer.name}}</a>
 {%if racer.strava_id%}
 <style>
   .strava-badge- { display: inline-block; height: 24px;}
@@ -34,7 +34,7 @@
 {%endif%}
 </td> 
 {%if racer.current_team %}
-<td><a href="{{url_for('main.team_details',id=racer.current_team.id)}}">{{racer.current_team.name}}</a></td>
+<td><a href="{{url_for('team.details',id=racer.current_team.id)}}">{{racer.current_team.name}}</a></td>
 {%else%}
 <td></td>
 {%endif%}

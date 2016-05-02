@@ -1,13 +1,13 @@
 import requests
 import json
 import pytz
-from datetime import timedelta,datetime,date
+from datetime import timedelta, datetime, date
 from . import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import login_manager
-from flask import current_app, request
+from flask import current_app
 from sqlalchemy.ext.hybrid import hybrid_property
 
 class Official(db.Model):
@@ -15,7 +15,7 @@ class Official(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
     races = db.relationship('RaceOfficial', cascade='all,delete',
-                                            backref='official')
+                            backref='official')
 
     def __repr__(self):
         return '<Official %r>' % self.name
@@ -25,7 +25,7 @@ class Marshal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
     races = db.relationship('RaceMarshal', cascade='all,delete',
-                                           backref='marshal')
+                            backref='marshal')
 
     def __repr__(self):
         return '<Marshal %r>' % self.name
@@ -36,7 +36,6 @@ class RaceClass(db.Model):
     name = db.Column(db.String(200), unique=True, nullable=False)
     color = db.Column(db.String(8))
     races = db.relationship('Race', cascade='all,delete', backref='race_class')
-    
 
     def __repr__(self):
         return '<RaceClass %r>' % self.name
@@ -47,38 +46,34 @@ class Racer(db.Model):
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     strava_id = db.Column(db.Integer, unique=True)
-    _strava_profile_url = db.Column('strava_profile_url',db.String(200))
+    _strava_profile_url = db.Column('strava_profile_url', db.String(200))
     strava_profile_last_fetch = db.Column(db.DateTime(timezone=True))
     birthdate = db.Column(db.Date)
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
-    participants = db.relationship('Participant', cascade='all,delete', 
+    participants = db.relationship('Participant', cascade='all,delete',
                                    backref='racer')
-    
+
     @property
     def strava_profile_url(self):
-        
         if self.strava_profile_last_fetch is None or\
            (datetime.now(pytz.timezone('UTC')) -\
             self.strava_profile_last_fetch)\
            > timedelta(minutes=15):
-            self.strava_profile_last_fetch=datetime.now(pytz.timezone('UTC'))
-        
+            self.strava_profile_last_fetch = datetime.now(pytz.timezone('UTC'))
             response = requests.get('https://www.strava.com/api/v3/athletes/'
                                     +str(self.strava_id),
                                     params={'access_token':current_app\
                                             .config['STRAVA_API_TOKEN']})
-                                            
             if response.status_code == 200:
-                self.strava_profile_url=json.loads(response.text)['profile']
-        
+                self.strava_profile_url = json.loads(response.text)['profile']
+
         return self._strava_profile_url
-    
 
     @strava_profile_url.setter
     def strava_profile_url(self, url):
         self._strava_profile_url = url
         db.session.commit()
- 
+
     @hybrid_property
     def race_age(self):
         if self.birthdate:
@@ -114,11 +109,11 @@ class Race(db.Model):
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
     starters = db.Column(db.Integer)
-    participants= db.relationship('Participant', cascade='all,delete',
+    participants = db.relationship('Participant', cascade='all,delete',\
                                    backref='race')
-    officials = db.relationship('RaceOfficial', cascade='all,delete',
+    officials = db.relationship('RaceOfficial', cascade='all,delete',\
                                    backref='race')
-    marshals = db.relationship('RaceMarshal', cascade='all,delete',
+    marshals = db.relationship('RaceMarshal', cascade='all,delete',\
                                    backref='race')
 
 
@@ -131,7 +126,7 @@ class Participant(db.Model):
     racer_id = db.Column(db.Integer, db.ForeignKey('racer.id'))
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
-    primes = db.relationship('Prime', cascade='all,delete', 
+    primes = db.relationship('Prime', cascade='all,delete',\
                              backref='participant')
     place = db.Column(db.Integer)
     points = db.Column(db.Integer)
@@ -186,8 +181,8 @@ class Admin(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(200))
 
-    roles = db.relationship('Role', secondary='admin_role'
-                                  ,  backref='admin')
+    roles = db.relationship('Role', secondary='admin_role',\
+                            backref='admin')
 
     def has_role(self, *specified_role_names):
         #I took this from Flask-User because I didn't need the whole thing
@@ -206,7 +201,7 @@ class Admin(UserMixin, db.Model):
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
- 
+
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -228,7 +223,7 @@ class Admin(UserMixin, db.Model):
             return False
         self.password = new_password
         db.session.commit()
-        return True 
+        return True
 
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -269,7 +264,7 @@ class Role(db.Model):
 
     @staticmethod
     def insert_roles():
-        roles = ['superadmin','official','moderator']
+        roles = ['superadmin', 'official', 'moderator']
         for role in roles:
             if Role.query.filter_by(name=role).first() is None:
                 db.session.add(Role(name=role))
@@ -281,8 +276,10 @@ class Role(db.Model):
 
 class AdminRole(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    admin_id = db.Column(db.Integer(), db.ForeignKey('admin.id', ondelete='CASCADE'))
-    role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
+    admin_id = db.Column(db.Integer(), db.ForeignKey('admin.id',\
+                                                     ondelete='CASCADE'))
+    role_id = db.Column(db.Integer(), db.ForeignKey('role.id',\
+                                                    ondelete='CASCADE'))
 
     def __repr__(self):
         return '<AdminRole %r>' % self.id

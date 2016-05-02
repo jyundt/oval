@@ -29,10 +29,10 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li><a href="{{ url_for('main.standings') }}">Standings</a></li> 
-                <li><a href="{{ url_for('main.race_class') }}">Categories</a></li> 
-                <li><a href="{{ url_for('main.racer') }}">Racers</a></li> 
-                <li><a href="{{ url_for('main.team') }}">Teams</a></li> 
-                <li><a href="{{ url_for('main.race') }}">Races</a></li> 
+                <li><a href="{{ url_for('race_class.index') }}">Categories</a></li> 
+                <li><a href="{{ url_for('racer.index') }}">Racers</a></li> 
+                <li><a href="{{ url_for('team.index') }}">Teams</a></li> 
+                <li><a href="{{ url_for('race.index') }}">Races</a></li> 
                 <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li> 
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -40,8 +40,8 @@
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Admin<span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{url_for('main.marshal')}}">Marshals</a></li>
-                        <li><a href="{{url_for('main.official')}}">Officials</a></li>
+                        <li><a href="{{url_for('marshal.index')}}">Marshals</a></li>
+                        <li><a href="{{url_for('official.index')}}">Officials</a></li>
                         {% if current_user.has_role('superadmin') %}
                             <li><a href="{{url_for('auth.admin')}}">Admins</a></li>
                         {%endif%}

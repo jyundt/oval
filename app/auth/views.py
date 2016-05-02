@@ -1,10 +1,9 @@
-from flask import render_template, redirect, request, url_for, flash, \
-                  abort
+from flask import render_template, redirect, request, url_for, flash
 from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm,\
                    ChangePasswordForm, ResetPasswordForm,\
                    ResetPasswordRequestForm, ChangeEmailForm
-from ..models import Admin, Role,AdminRole
+from ..models import Admin, Role, AdminRole
 from flask_login import logout_user, login_required, login_user,\
                         current_user
 from .. import db
@@ -13,7 +12,7 @@ from ..decorators import roles_accepted
 
 @auth.route('/login/', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()    
+    form = LoginForm()
     if form.validate_on_submit():
         admin = Admin.query.filter_by(username=form.username.data).first()
         if admin is not None and admin.verify_password(form.password.data):
@@ -40,14 +39,12 @@ def admin():
 @auth.route('/admin/<int:id>')
 @roles_accepted('superadmin')
 def admin_details(id):
-    admin=Admin.query.get_or_404(id)
+    admin = Admin.query.get_or_404(id)
     return render_template('auth/admin_details.html', admin=admin)
 
 @auth.route('/admin/add/', methods=['GET', 'POST'])
 @roles_accepted('superadmin')
 def admin_add():
-    if not current_user.is_authenticated:
-        abort(403)
     form = AdminAddForm()
     form.roles.choices = [(role.id, role.name) for role in
                           Role.query.order_by('name')]
@@ -55,7 +52,7 @@ def admin_add():
         email = form.email.data
         username = form.username.data
         password = form.password.data
-        admin = Admin(email=email,username=username,password=password)
+        admin = Admin(email=email, username=username, password=password)
         db.session.add(admin)
         db.session.commit()
         if form.roles.data:
@@ -65,7 +62,7 @@ def admin_add():
                     db.session.add(AdminRole(role_id=role_id,
                                              admin_id=admin.id))
         db.session.commit()
-        flash ('Admin ' + username + ' added!')
+        flash('Admin ' + username + ' added!')
         return redirect(url_for('auth.admin'))
 
     return render_template('add.html', form=form, type='admin')
@@ -73,20 +70,19 @@ def admin_add():
 @auth.route('/admin/edit/<int:id>/', methods=['GET', 'POST'])
 @roles_accepted('superadmin')
 def admin_edit(id):
-    if not current_user.is_authenticated:
-        abort(403)
     admin = Admin.query.get_or_404(id)
-    form=AdminEditForm(admin)
+    form = AdminEditForm(admin)
     form.roles.choices = [(role.id, role.name) for role in
                           Role.query.order_by('name')]
-    
+
     if form.validate_on_submit():
         email = form.email.data
         username = form.username.data
         if form.password.data != '':
             password = form.password.data
             admin.password = password
-        admin.email=email
+
+        admin.email = email
         admin.username = username
         if form.roles.data:
             for role_id in form.roles.data:
@@ -99,9 +95,9 @@ def admin_edit(id):
             role_id = role.id
             admin_id = admin.id
             if role_id not in form.roles.data:
-                db.session.delete(AdminRole.query
-                                           .filter_by(role_id=role_id)
-                                           .filter_by(admin_id=admin_id)
+                db.session.delete(AdminRole.query\
+                                           .filter_by(role_id=role_id)\
+                                           .filter_by(admin_id=admin_id)\
                                            .first())
                 db.session.commit()
         flash('Admin ' + username + ' updated!')
@@ -110,16 +106,12 @@ def admin_edit(id):
     form.username.data = admin.username
     form.email.data = admin.email
     form.roles.data = [(role.id) for  role in admin.roles]
-    
     return render_template('edit.html', item=admin, form=form, type='admin')
-    
-    
+
 @auth.route('/admin/delete/<int:id>/')
 @roles_accepted('superadmin')
 def admin_delete(id):
-    if not current_user.is_authenticated:
-        abort(403)
-    admin= Admin.query.get_or_404(id)
+    admin = Admin.query.get_or_404(id)
     db.session.delete(admin)
     db.session.commit()
     flash('Admin ' + admin.username + ' deleted!')
@@ -148,11 +140,11 @@ def reset_password_request():
     if form.validate_on_submit():
         admin = Admin.query.filter_by(email=form.email.data).first()
         if admin:
-             token = admin.generate_reset_token()
-             send_email(admin.email, 'Reset Your Password',
-                        'email/reset_password',
-                        admin=admin, token=token,
-                        next=request.args.get('next'))
+            token = admin.generate_reset_token()
+            send_email(admin.email, 'Reset Your Password',
+                       'email/reset_password',
+                       admin=admin, token=token,
+                       next=request.args.get('next'))
         flash('An email with instructions to reset your password has been\
               sent to you.')
         return redirect(url_for('auth.login'))

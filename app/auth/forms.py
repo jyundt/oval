@@ -11,7 +11,7 @@ class MultiCheckboxField(SelectMultipleField):
     option_widget = widgets.CheckboxInput()
 
 class LoginForm(Form):
-    username = StringField('Username', validators=[Required(), Length(1,200)])
+    username = StringField('Username', validators=[Required(), Length(1, 200)])
     password = PasswordField('Password', validators=[Required()])
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
@@ -19,10 +19,15 @@ class LoginForm(Form):
 
 class AdminForm(Form):
     email = StringField('Email', validators=[Required(), Email()])
-    username = StringField('Username', validators=[Required(), Length(1,200)])
+    username = StringField('Username', validators=[Required(), Length(1, 200)])
     roles = SelectMultipleField('Roles', coerce=int, validators=[Optional()])
+    password = PasswordField('Password',
+                             validators=[Required(),
+                                         EqualTo('password2',
+                                                 message='Passwords do\
+                                                          not match!')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
 
-    #roles = MultiCheckboxField('Roles', coerce=int, validators=[Optional()])
     def validate_email(self, field):
         if Admin.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered!')
@@ -31,23 +36,10 @@ class AdminForm(Form):
         if Admin.query.filter_by(username=field.data).first():
             raise ValidationError('Username already in use!')
 
-
-    
 class AdminAddForm(AdminForm):
-    password = PasswordField('Password', validators=[Required(),
-                             EqualTo('password2'
-                                     ,message='Passwords do not match!')])
-    password2 = PasswordField('Confirm password', validators=[Required()])
-
     submit = SubmitField('Add')
 
 class AdminEditForm(AdminForm):
-    password = PasswordField('Password', validators=[Optional(),
-                             EqualTo('password2'
-                                     ,message='Passwords do not match!')])
-    password2 = PasswordField('Confirm password', validators=[Optional(),
-                             EqualTo('password'
-                                     ,message='Passwords do not match!')])
     submit = SubmitField('Save')
 
     def __init__(self, admin, *args, **kwargs):
@@ -63,19 +55,16 @@ class AdminEditForm(AdminForm):
         if field.data != self.admin.email and \
            Admin.query.filter(Admin.email.ilike(field.data)).first():
             raise ValidationError('Email already in use!')
-    
-           
 
 class ChangePasswordForm(Form):
-    old_password = PasswordField('Old password',validators=[Required()])
-    password = PasswordField('New password', 
-                             validators=[Required(),EqualTo('password2',\
+    old_password = PasswordField('Old password', validators=[Required()])
+    password = PasswordField('New password',
+                             validators=[Required(), EqualTo('password2',\
                                          message='Passwords do\
                                                   not match!')])
     password2 = PasswordField('Repeat new password',
                               validators=[Required()])
     submit = SubmitField('Update Password')
-        
 
 class ResetPasswordRequestForm(Form):
     email = StringField('Email', validators=[Required(), Email()])
@@ -83,7 +72,7 @@ class ResetPasswordRequestForm(Form):
 
 class ResetPasswordForm(Form):
     email = StringField('Confirm Email', validators=[Required(), Length(1, 64),
-                                             Email()])
+                                                     Email()])
     password = PasswordField('New Password', validators=[
         Required(), EqualTo('password2', message='Passwords must match')])
     password2 = PasswordField('Confirm password', validators=[Required()])
@@ -99,6 +88,6 @@ class ChangeEmailForm(Form):
     password = PasswordField('Current Password', validators=[Required()])
     submit = SubmitField('Update Email Address')
 
-    def validate_email(self,field):
+    def validate_email(self, field):
         if Admin.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')

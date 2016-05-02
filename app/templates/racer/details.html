@@ -7,10 +7,10 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Racer: {{racer.name}}</h1>
-{% if current_user.is_authenticated %}
-    <a class="btn btn-default" href="{{ url_for('main.racer_edit',id=racer.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit racer details</a>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
+    <a class="btn btn-default" href="{{ url_for('racer.edit',id=racer.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit racer details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete racer</button>
-    {{ macros.confirm_delete_modal(racer,'main.racer_delete')}}
+    {{ macros.confirm_delete_modal(racer,'racer.delete')}}
 {% endif %}
 </div>
 {%if racer.strava_id and racer.strava_profile_url%}
@@ -32,7 +32,7 @@ Race age: {{racer.race_age}}
 <h5>
 Current team: 
 {% if current_team %}
-<a href="{{url_for('main.team_details',id=current_team.id)}}">{{current_team.name}}</a>
+<a href="{{url_for('team.details',id=current_team.id)}}">{{current_team.name}}</a>
 {%else%}
 None
 {%endif%}
@@ -42,7 +42,7 @@ None
 Previous teams:
 <ul>
 {%for team in teams%}
-<li><a href="{{url_for('main.team_details',id=team.id)}}">{{team.name}}</a></li>
+<li><a href="{{url_for('team.details',id=team.id)}}">{{team.name}}</a></li>
 {%endfor%}
 </ul>
 </h5>
@@ -71,15 +71,15 @@ Previous teams:
 <tbody>
 {% for participant in racer.participants|sort(attribute='race.date',reverse = True) %}
 <tr>
-<td><a href="{{ url_for('main.race_details', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
-<td><a href="{{url_for('main.race_class_details', id=participant.race.race_class.id)}}">{{participant.race.race_class.name}}</a></td>
+<td><a href="{{ url_for('race.details', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
+<td><a href="{{url_for('race_class.details', id=participant.race.race_class.id)}}">{{participant.race.race_class.name}}</a></td>
 {% if participant.place is not none %}
 <td>{{participant.place}}</td>
 {% else %}
 <td>-</td>
 {% endif %}
 {%if participant.team is not none %}
-<td><a href="{{url_for('main.team_details', id=participant.team.id)}}">{{ participant.team.name }}</a></td>
+<td><a href="{{url_for('team.details', id=participant.team.id)}}">{{ participant.team.name }}</a></td>
 {%else%}
 <td>-</td>
 {%endif%}

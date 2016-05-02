@@ -7,7 +7,7 @@
 {% block page_content %}
 <div class="page-header">
     <h1>Details for Admin: {{admin.username}}</h1>
-{% if current_user.is_authenticated %}
+{% if current_user.has_role('superadmin') %}
     <a class="btn btn-default" href="{{ url_for('auth.admin_edit',id=admin.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit admin details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete admin</button>
     {{ macros.confirm_delete_modal(admin,'auth.admin_delete')}}
