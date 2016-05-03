@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from .. import db
 from ..models import RaceClass
 from . import race_class
@@ -28,6 +28,7 @@ def add():
         db.session.add(race_class)
         db.session.commit()
         flash('Race type ' + race_class.name + ' created!')
+        current_app.logger.info('%s[%d]', race_class.name, race_class.id)
         return redirect(url_for('race_class.index'))
 
     return render_template('add.html', form=form, type='race class')
@@ -44,6 +45,7 @@ def edit(id):
         race_class.color = color
         db.session.commit()
         flash('Race type ' + race_class.name + ' updated!')
+        current_app.logger.info('%s[%d]', race_class.name, race_class.id)
         return redirect(url_for('race_class.details',
                                 id=race_class.id))
     form.name.data = race_class.name
@@ -55,6 +57,7 @@ def edit(id):
 @roles_accepted('official')
 def delete(id):
     race_class = RaceClass.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', race_class.name, race_class.id)
     db.session.delete(race_class)
     db.session.commit()
     flash('Race type ' + race_class.name + ' deleted!')

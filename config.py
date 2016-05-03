@@ -16,6 +16,7 @@ class Config:
     MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
     STRAVA_API_TOKEN = os.environ.get('STRAVA_API_TOKEN')
+    AUDIT_LOG= 'audit.log'
 
     @staticmethod
     def init_app(app):
@@ -40,7 +41,9 @@ class PostgresConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
         import logging
-        from logging.handlers import SMTPHandler
+        from app.log import ContextFilter
+        from logging import Formatter
+        from logging.handlers import SMTPHandler, RotatingFileHandler
         credentials = None
         secure = None
         if getattr(cls, 'MAIL_USERNAME', None) is not None:
@@ -57,6 +60,14 @@ class PostgresConfig(Config):
             secure=secure)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+
+        context_provider = ContextFilter()
+        app.logger.addFilter(context_provider)
+        audit_log_handler = RotatingFileHandler(cls.AUDIT_LOG, maxBytes=10485760,
+                                                backupCount=5)
+        audit_log_handler.setLevel(logging.INFO)
+        audit_log_handler.setFormatter(Formatter('%(asctime)s %(ip)s %(admin_username)s[%(admin_id)d]: %(blueprint)s-%(funcName)s %(message)s'))
+        app.logger.addHandler(audit_log_handler)
 
 config = {
     'postgres': PostgresConfig,

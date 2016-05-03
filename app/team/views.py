@@ -1,5 +1,5 @@
 import json
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from sqlalchemy import func
 from .. import db
 from ..models import RaceClass, Racer, Team, Race, Participant
@@ -48,6 +48,7 @@ def add():
         db.session.add(team)
         db.session.commit()
         flash('Team ' + team.name + ' created!')
+        current_app.logger.info('%s[%d]', team.name, team.id)
         return redirect(url_for('team.index'))
 
 
@@ -63,6 +64,7 @@ def edit(id):
         team.name = name
         db.session.commit()
         flash('Team ' + team.name + ' updated!')
+        current_app.logger.info('%s[%d]', team.name, team.id)
         return redirect(url_for('team.details', id=team.id))
     form.name.data = team.name
     return render_template('edit.html', item=team, form=form, type='team')
@@ -71,6 +73,7 @@ def edit(id):
 @roles_accepted('official')
 def delete(id):
     team = Team.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', team.name, team.id)
     db.session.delete(team)
     db.session.commit()
     flash('Team ' + team.name + ' deleted!')
@@ -91,6 +94,9 @@ def add_racer(id):
         racer_id = Racer.query.filter_by(name=name).first().id
         Racer.query.get(racer_id).current_team_id = team.id
         db.session.commit()
+        flash('Added ' + name + ' to ' + team.name)
+        current_app.logger.info('%s[%d]:%s[%d]', team.name, team.id, name,
+                                racer_id)
         return redirect(url_for('team.details', id=team.id))
 
     return render_template('add.html', form=form, type='racer to team')

@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from .. import db
 from ..models import Marshal
 from . import marshal
@@ -28,6 +28,7 @@ def add():
         db.session.add(marshal)
         db.session.commit()
         flash('Marshal ' + marshal.name + ' created!')
+        current_app.logger.info('%s[%d]', marshal.name, marshal.id)
         return redirect(url_for('marshal.index'))
 
     return render_template('add.html', form=form, type='marshal')
@@ -43,6 +44,7 @@ def edit(id):
         marshal.name = name
         db.session.commit()
         flash('Marshal ' + marshal.name + ' updated!')
+        current_app.logger.info('%s[%d]', marshal.name, marshal.id)
         return redirect(url_for('marshal.index'))
 
     form.name.data = marshal.name
@@ -53,6 +55,7 @@ def edit(id):
 @roles_accepted('official')
 def delete(id):
     marshal = Marshal.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', marshal.name, marshal.id)
     db.session.delete(marshal)
     db.session.commit()
     flash('Marshal ' + marshal.name + ' deleted!')

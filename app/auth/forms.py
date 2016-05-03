@@ -40,13 +40,13 @@ class AdminAddForm(AdminForm):
     submit = SubmitField('Add')
 
 class AdminEditForm(AdminForm):
-    submit = SubmitField('Save')
     password = PasswordField('Password',
                              validators=[Optional(),
                                          EqualTo('password2',
                                                  message='Passwords do\
                                                           not match!')])
     password2 = PasswordField('Confirm password', validators=[Optional()])
+    submit = SubmitField('Save')
 
     def __init__(self, admin, *args, **kwargs):
         super(AdminEditForm, self).__init__(*args, **kwargs)

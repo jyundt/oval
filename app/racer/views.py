@@ -1,5 +1,5 @@
 import json
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from .. import db
 from ..models import Racer, Team, Race, Participant
 from . import racer
@@ -73,6 +73,7 @@ def add():
         db.session.add(racer)
         db.session.commit()
         flash('Racer ' + racer.name + ' created!')
+        current_app.logger.info('%s[%d]', racer.name, racer.id)
         return redirect(url_for('racer.index'))
 
 
@@ -108,6 +109,7 @@ def edit(id):
         racer.current_team_id = current_team_id
         db.session.commit()
         flash('Racer ' + racer.name + ' updated!')
+        current_app.logger.info('%s[%d]', racer.name, racer.id)
         return redirect(url_for('racer.details', id=racer.id))
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
@@ -122,6 +124,7 @@ def edit(id):
 @roles_accepted('official')
 def delete(id):
     racer = Racer.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', racer.name, racer.id)
     db.session.delete(racer)
     db.session.commit()
     flash('Racer ' + racer.name + ' deleted!')

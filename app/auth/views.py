@@ -1,4 +1,5 @@
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash,\
+                  current_app
 from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm,\
                    ChangePasswordForm, ResetPasswordForm,\
@@ -63,6 +64,7 @@ def admin_add():
                                              admin_id=admin.id))
         db.session.commit()
         flash('Admin ' + username + ' added!')
+        current_app.logger.info('%s[%d]', admin.name, admin.id)
         return redirect(url_for('auth.admin'))
 
     return render_template('add.html', form=form, type='admin')
@@ -101,6 +103,7 @@ def admin_edit(id):
                                            .first())
                 db.session.commit()
         flash('Admin ' + username + ' updated!')
+        current_app.logger.info('%s[%d]', admin.name, admin.id)
         return redirect(url_for('auth.admin_details', id=admin.id))
 
     form.username.data = admin.username
@@ -112,6 +115,7 @@ def admin_edit(id):
 @roles_accepted('superadmin')
 def admin_delete(id):
     admin = Admin.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', admin.name, admin.id)
     db.session.delete(admin)
     db.session.commit()
     flash('Admin ' + admin.username + ' deleted!')

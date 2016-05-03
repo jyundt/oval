@@ -1,6 +1,6 @@
 import json
 from flask import render_template, session, redirect, url_for, flash, abort,\
-                  request
+                  request, current_app
 from sqlalchemy import and_
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
@@ -99,7 +99,9 @@ def details(id):
                                           .having(Participant.mar_place > 0)\
                                           .order_by(Participant.mar_place)\
                                           .all()
-    primes = Prime.query.join(Participant).join(Race).filter(Race.id == id).all()
+    primes = Prime.query.join(Participant)\
+                        .join(Race)\
+                        .filter(Race.id == id).all()
     return render_template('race/details.html', race=race,
                            participants=participants,
                            points_race=points_race,
@@ -142,6 +144,9 @@ def add():
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
+        #current_app.logger.info(str(race.date) + '|' + race.race_class.name
+        #                        + '[' + str(race.id) + ']')
+        current_app.logger.info('%s[%d]', race.name, race.id)
         return redirect(url_for('race.index'))
 
 
@@ -189,6 +194,7 @@ def edit(id):
         race.starters = starters
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
+        current_app.logger.info('%s[%d]', race.name, race.id)
         return redirect(url_for('race.details', id=race.id))
     form.date.data = race.date
     form.class_id.data = race.class_id
@@ -210,6 +216,7 @@ def edit(id):
 @roles_accepted('official')
 def delete(id):
     race = Race.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', race.name, race.id)
     db.session.delete(race)
     db.session.commit()
     flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' deleted!')
@@ -255,6 +262,9 @@ def add_participant(id):
                                   race_id=race_id, place=place)
         db.session.add(participant)
         db.session.commit()
+        flash('Racer ' + participant.racer.name + ' added to race!')
+        current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                                participant.racer.name, participant.id)
         return redirect(url_for('race.details', id=race.id))
     #Let's get the next place and pre-populate the form
     if Participant.query.filter(and_(Participant.race_id == id,
@@ -319,6 +329,9 @@ def edit_participant(race_id, participant_id):
         participant.relegated = relegated
         participant.disqualified = disqualified
         db.session.commit()
+        flash('Racer ' + participant.racer.name + ' updated in race!')
+        current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                                participant.racer.name, participant.id)
         return redirect(url_for('race.details', id=race.id))
 
     form.place.data = participant.place
@@ -344,6 +357,8 @@ def delete_participant(race_id, participant_id):
     participant = Participant.query.get_or_404(participant_id)
     if participant.race_id != race_id:
         abort(404)
+    current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                            participant.racer.name, participant.id)
     db.session.delete(participant)
     flash('Racer ' + participant.racer.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))
@@ -360,10 +375,14 @@ def add_prime(id):
     if form.validate_on_submit():
         participant_id = form.participant_id.data
         name = form.name.data
+        participant = Participant.query.get(participant_id)
         prime = Prime(name=name, participant_id=participant_id)
         db.session.add(prime)
         db.session.commit()
         flash('Prime for ' + prime.participant.racer.name + ' added!')
+        current_app.logger.info('%s[%d]:%s[%d]:%s[%d]', race.name, race.id,
+                                participant.racer.name, participant.id,
+                                prime.name, prime.id)
         return redirect(url_for('race.details', id=race.id))
     return render_template('add.html', form=form, type='prime')
 
@@ -378,9 +397,14 @@ def edit_prime(race_id, prime_id):
     form = PrimeEditForm()
     if form.validate_on_submit():
         name = form.name.data
+        participant_id = prime.participant_id
+        participant = Participant.query.get(participant_id)
         prime.name = name
         db.session.commit()
         flash('Prime for ' + prime.participant.racer.name + ' updated!')
+        current_app.logger.info('%s[%d]:%s[%d]:%s[%d]', race.name, race.id,
+                                participant.racer.name, participant.id,
+                                prime.name, prime.id)
         return redirect(url_for('race.details', id=race.id))
 
     form.name.data = prime.name
@@ -393,6 +417,11 @@ def delete_prime(race_id, prime_id):
     prime = Prime.query.get_or_404(prime_id)
     if prime.participant.race.id != race_id:
         abort(404)
+    participant_id = prime.participant_id
+    participant = Participant.query.get(participant_id)
+    current_app.logger.info('%s[%d]:%s[%d]:%s[%d]', race.name, race.id,
+                            participant.racer.name, participant.id,
+                            prime.name, prime.id)
     db.session.delete(prime)
     flash('Prime for ' + prime.participant.racer.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))
@@ -413,6 +442,9 @@ def add_marshal(id):
         db.session.add(race_marshal)
         db.session.commit()
         flash('Marshal ' + race_marshal.marshal.name + ' added to race!')
+        current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                                race_marshal.marshal.name,
+                                race_marshal.id)
         return redirect(url_for('race.details', id=race.id))
     return render_template('add.html', form=form, type='race marshal')
 
@@ -423,6 +455,8 @@ def delete_marshal(race_id, race_marshal_id):
     race_marshal = RaceMarshal.query.get_or_404(race_marshal_id)
     if race_marshal.race.id != race_id:
         abort(404)
+    current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                            race_marshal.marshal.name, race_marshal.id)
     db.session.delete(race_marshal)
     flash('Marshal ' + race_marshal.marshal.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))
@@ -443,6 +477,9 @@ def add_official(id):
         db.session.add(race_official)
         db.session.commit()
         flash('Official ' + race_official.official.name + ' added to race!')
+        current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                                race_official.official.name,
+                                race_official.id)
         return redirect(url_for('race.details', id=race.id))
     return render_template('add.html', form=form, type='race official')
 
@@ -453,6 +490,9 @@ def delete_official(race_id, race_official_id):
     race_official = RaceOfficial.query.get_or_404(race_official_id)
     if race_official.race.id != race_id:
         abort(404)
+    current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
+                            race_official.official.name,
+                            race_official.id)
     db.session.delete(race_official)
     flash('Official ' + race_official.official.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))

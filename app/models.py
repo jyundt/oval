@@ -116,6 +116,9 @@ class Race(db.Model):
     marshals = db.relationship('RaceMarshal', cascade='all,delete',\
                                    backref='race')
 
+    @property
+    def name(self):
+        return '%s|%s' % (self.date, self.race_class.name)
 
     def __repr__(self):
         return '<Race %r>' % self.date
@@ -183,6 +186,10 @@ class Admin(UserMixin, db.Model):
 
     roles = db.relationship('Role', secondary='admin_role',\
                             backref='admin')
+
+    @property
+    def name(self):
+        return '%s|%s' % (self.username, self.email)
 
     def has_role(self, *specified_role_names):
         #I took this from Flask-User because I didn't need the whole thing
