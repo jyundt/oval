@@ -55,6 +55,9 @@ class Racer(db.Model):
 
     @property
     def strava_profile_url(self):
+        if self.strava_id is None:
+            return None
+
         if self.strava_profile_last_fetch is None or\
            (datetime.now(pytz.timezone('UTC')) -\
             self.strava_profile_last_fetch)\

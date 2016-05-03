@@ -32,6 +32,7 @@ def details(id):
                                                  RaceClass.id,
                                                  Race.id)\
                                        .order_by(Race.date.desc())\
+                                       .order_by(RaceClass.name)\
                                        .all()
 
     return render_template('team/details.html', team=team,\

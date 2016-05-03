@@ -41,7 +41,9 @@ def index():
         else:
             session['race_view'] = 'calendar'
             return redirect(url_for('race.index'))
-    races = Race.query.order_by(Race.date.desc()).all()
+    races = Race.query.join(RaceClass)\
+                      .order_by(Race.date.desc())\
+                      .order_by(RaceClass.name).all()
     if 'race_view' not in session:
         session['race_view'] = 'calendar'
     return render_template('race/index.html', races=races)
