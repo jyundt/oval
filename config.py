@@ -69,6 +69,8 @@ class PostgresConfig(Config):
         audit_log_handler.setFormatter(Formatter('%(asctime)s %(ip)s %(admin_username)s[%(admin_id)d]: %(blueprint)s-%(funcName)s %(message)s'))
         app.logger.addHandler(audit_log_handler)
 
+        app.logger.setLevel(logging.INFO) 
+
 config = {
     'postgres': PostgresConfig,
 	'default': PostgresConfig
