@@ -206,7 +206,7 @@ def change_email_request():
 
     return render_template('auth/change_email.html', form=form)
 
-@auth.route('change-email/<token>')
+@auth.route('/change-email/<token>')
 @login_required
 def change_email(token):
     if current_user.change_email(token):
@@ -217,3 +217,13 @@ def change_email(token):
                                    form.email.data)
         flash('Invalid requiest.')
     return redirect(url_for('main.index'))
+
+@auth.route('/log/')
+@login_required
+@roles_accepted('superadmin')
+def display_log():
+    with open(current_app.config['AUDIT_LOG'], "r") as f:
+        audit_log = f.read()
+
+    return render_template("auth/log.html", audit_log=audit_log)
+        
