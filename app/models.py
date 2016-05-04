@@ -40,6 +40,16 @@ class RaceClass(db.Model):
     def __repr__(self):
         return '<RaceClass %r>' % self.name
 
+class Course(db.Model):
+    __tablename__ = 'course'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), unique=True, nullable=False)
+    races = db.relationship('Race', cascade='all,delete', backref='course')
+
+    def __repr__(self):
+        return '<Course %r>' % self.name
+
+
 class Racer(db.Model):
     __tablename__ = 'racer'
     id = db.Column(db.Integer, primary_key=True)
@@ -104,6 +114,7 @@ class Race(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey('race_class.id'))
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     duration = db.Column(db.Interval)
     slow_lap = db.Column(db.Interval)
     fast_lap = db.Column(db.Interval)
@@ -185,7 +196,6 @@ class Admin(UserMixin, db.Model):
     username = db.Column(db.String(200), unique=True)
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
-    name = db.Column(db.String(200))
 
     roles = db.relationship('Role', secondary='admin_role',\
                             backref='admin')

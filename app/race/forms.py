@@ -11,6 +11,7 @@ class RaceForm(Form):
                      description='MM/DD/YYYY',
                      format='%m/%d/%Y')
     class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
+    course_id = SelectField(u'Course Type', coerce=int, validators=[Required()])
     starters = IntegerField('# of Starters', validators=[Optional()])
     fast_lap = DateTimeField('Fast Lap', validators=[Optional()],
                              description='mm:ss', default=None,

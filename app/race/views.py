@@ -4,7 +4,7 @@ from flask import render_template, session, redirect, url_for, flash, abort,\
 from sqlalchemy import and_
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
-                     Participant, RaceOfficial, RaceMarshal, Prime
+                     Participant, RaceOfficial, RaceMarshal, Prime, Course
 from . import race
 from .forms import RaceEditForm, RaceAddForm, ParticipantAddForm,\
                    ParticipantEditForm, PrimeAddForm,\
@@ -118,6 +118,8 @@ def add():
     form = RaceAddForm()
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                              RaceClass.query.order_by('name')]
+    form.course_id.choices = [(course_id.id, course_id.name) for course_id in
+                             Course.query.order_by('name')]
     if form.validate_on_submit():
         date = form.date.data
         if form.fast_lap.data is not None:
@@ -137,17 +139,16 @@ def add():
             slow_lap = form.slow_lap.data
         weather = form.weather.data
         class_id = form.class_id.data
+        course_id = form.course_id.data
         usac_permit = form.usac_permit.data
         laps = form.laps.data
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
-                    usac_permit=usac_permit, laps=laps)
+                    usac_permit=usac_permit, laps=laps, course_id=course_id)
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
-        #current_app.logger.info(str(race.date) + '|' + race.race_class.name
-        #                        + '[' + str(race.id) + ']')
         current_app.logger.info('%s[%d]', race.name, race.id)
         return redirect(url_for('race.index'))
 
@@ -163,6 +164,8 @@ def edit(id):
     form = RaceEditForm(race)
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                              RaceClass.query.order_by('name')]
+    form.course_id.choices = [(course_id.id, course_id.name) for course_id in
+                             Course.query.order_by('name')]
     if form.validate_on_submit():
         date = form.date.data
         if form.fast_lap.data is not None:
@@ -182,6 +185,7 @@ def edit(id):
             slow_lap = form.slow_lap.data
         weather = form.weather.data
         class_id = form.class_id.data
+        course_id = form.course_id.data
         usac_permit = form.usac_permit.data
         laps = form.laps.data
         starters = form.starters.data
@@ -191,6 +195,7 @@ def edit(id):
         race.slow_lap = slow_lap
         race.weather = weather
         race.class_id = class_id
+        race.course_id = course_id
         race.usac_permit = usac_permit
         race.laps = laps
         race.starters = starters
@@ -200,6 +205,7 @@ def edit(id):
         return redirect(url_for('race.details', id=race.id))
     form.date.data = race.date
     form.class_id.data = race.class_id
+    form.course_id.data = race.course_id
     #This is so clunky :(
     if race.fast_lap is not None:
         form.fast_lap.data = datetime.strptime(str(race.fast_lap), '%H:%M:%S')

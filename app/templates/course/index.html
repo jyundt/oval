@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Course Types{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Course Types</h1>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
+    <a class="btn btn-default" href="{{url_for('course.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a course type</a>
+{% endif %}
+</div>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+    <th>Name</th>
+    <th>Races</th>
+</tr>
+</thead>
+<tbody>
+{% for course in courses %}
+<tr>
+<td><a href="{{url_for('course.details',id=course.id)}}">{{ course.name}}</a></td> 
+<td>{{ course.races|length}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
