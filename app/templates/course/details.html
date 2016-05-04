@@ -18,6 +18,7 @@
 <thead>
 <tr>
 <th>Race Date</th>
+<th>Category</th>
 <th>Starters</th>
 <th>Finishers</th>
 </tr>
@@ -27,6 +28,9 @@
 <tr>
 <td>
 <a href="{{ url_for('race.details', id=race.id) }}">{{ race.date.strftime('%m/%d/%Y') }}</a>
+</td>
+<td>
+<a href="{{ url_for('race_class.details', id=race.id) }}">{{ race.race_class.name }}</a>
 </td>
 {% if race.starters is none %}
 <td>-</td>
