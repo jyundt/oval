@@ -66,7 +66,7 @@ class PostgresConfig(Config):
         audit_log_handler = RotatingFileHandler(cls.AUDIT_LOG, maxBytes=10485760,
                                                 backupCount=5)
         audit_log_handler.setLevel(logging.INFO)
-        audit_log_handler.setFormatter(Formatter('%(asctime)s %(ip)s %(admin_username)s[%(admin_id)d]: %(blueprint)s-%(funcName)s %(message)s'))
+        audit_log_handler.setFormatter(Formatter('%(asctime)s [%(levelname)s] %(ip)s %(admin_username)s[%(admin_id)d]: %(blueprint)s-%(funcName)s %(message)s'))
         app.logger.addHandler(audit_log_handler)
 
         app.logger.setLevel(logging.INFO) 

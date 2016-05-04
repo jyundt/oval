@@ -21,6 +21,8 @@ def login():
             next = request.args.get('next')
             current_app.logger.info('')
             return redirect(next or url_for('main.index'))
+        current_app.logger.warning('failed login attempt %s',
+                                   form.username.data)
         flash('Invalid username or password!')
 
     return render_template('auth/login.html', form=form)
@@ -130,12 +132,14 @@ def change_password():
     if form.validate_on_submit():
         if current_user.verify_password(form.old_password.data):
             current_user.password = form.password.data
-            current_user.password = form.password.data
             db.session.commit()
             flash('Your password has been updated.')
+            current_app.logger.info('')
             return redirect(url_for('main.index'))
         else:
             flash('Invalid password.')
+            current_app.logger.warning('invalid password')
+            return redirect(url_for('auth.change_password'))
     return render_template('auth/change_password.html', form=form)
 
 @auth.route('/reset/', methods=['GET', 'POST'])
@@ -153,6 +157,7 @@ def reset_password_request():
                        next=request.args.get('next'))
         flash('An email with instructions to reset your password has been\
               sent to you.')
+        current_app.logger.info('%s', form.email.data)
         return redirect(url_for('auth.login'))
     return render_template('auth/reset_password.html', form=form)
 
@@ -168,10 +173,13 @@ def reset_password(token):
             return redirect(url_for('main.index'))
         if admin.reset_password(token, form.password.data):
             flash('Your password has been updated.')
+            current_app.logger.info('%s', admin.username)
             return redirect(url_for('auth.login'))
         else:
             flash('Email address does not match password reset token or\
                    token has expired!')
+            current_app.logger.warning('bad/expired reset token %s',
+                                       form.email.data)
             return redirect(url_for('main.index'))
     return render_template('auth/reset_password.html', form=form)
 
@@ -189,9 +197,12 @@ def change_email_request():
                        admin=current_user, token=token)
             flash('An email with instructions to confirm your new email\
                   address has been sent to you.')
+            current_app.logger.info('')
             return redirect(url_for('main.index'))
         else:
+            current_app.logger.warning('invalid password')
             flash('Invalid email or password.')
+            return redirect(url_for('auth.change_email_request'))
 
     return render_template('auth/change_email.html', form=form)
 
@@ -200,6 +211,9 @@ def change_email_request():
 def change_email(token):
     if current_user.change_email(token):
         flash('Your email address has been updated.')
+        current_app.logger.info('')
     else:
+        current_app.logger.warning('bad/expired reset token %s',
+                                   form.email.data)
         flash('Invalid requiest.')
     return redirect(url_for('main.index'))
