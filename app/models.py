@@ -9,6 +9,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from . import login_manager
 from flask import current_app
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func, extract
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -86,6 +87,38 @@ class Racer(db.Model):
     def strava_profile_url(self, url):
         self._strava_profile_url = url
         db.session.commit()
+
+    def season_points(self, year, category_id):
+        result = Participant.query.with_entities(func.sum(Participant.points))\
+                                  .join(Race)\
+                                  .filter(extract('year',Race.date)==year)\
+                                  .join(RaceClass)\
+                                  .filter(RaceClass.id==category_id)\
+                                  .join(Racer)\
+                                  .filter(Racer.name==self.name)\
+                                  .first()
+        if result[0]:
+            points = int(result[0])
+        else:
+            points = 0
+        return points
+
+    def season_mar_points(self, year, category_id):
+        result = Participant.query\
+                            .with_entities(func.sum(Participant.mar_points))\
+                            .join(Race)\
+                            .filter(extract('year',Race.date)==year)\
+                            .join(RaceClass)\
+                            .filter(RaceClass.id==category_id)\
+                            .join(Racer)\
+                            .filter(Racer.name==self.name)\
+                            .first()
+
+        if result[0]:
+            points = int(result[0])
+        else:
+            points = 0
+        return points
 
     @hybrid_property
     def race_age(self):
