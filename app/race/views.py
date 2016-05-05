@@ -243,13 +243,18 @@ def add_participant(id):
                                 'autocomplete':'off',
                                 'data-source':json.dumps([team.name for team in
                                                           Team.query.all()])}
+    form.team_name.description='(Leave blank to assign current team.)'
     if form.validate_on_submit():
         race_id = race.id
         racer_id = Racer.query.filter_by(name=form.name.data).first().id
         if form.team_name.data:
-            team_id = Team.query.filter_by(name=form.team_name.data).first().id
+                team_id = Team.query.filter_by(name=form.team_name.data).first().id
         else:
-            team_id = None
+            if (Race.query.get(race_id).date.year == datetime.now().year) and\
+               Racer.query.get(racer_id).current_team:
+                team_id = Racer.query.get(racer_id).current_team.id 
+            else:
+                team_id = None
 
         place = form.place.data
         points = form.points.data
