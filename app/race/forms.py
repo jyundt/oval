@@ -12,7 +12,9 @@ class RaceForm(Form):
                      format='%m/%d/%Y')
     class_id = SelectField(u'Race Class', coerce=int, validators=[Required()])
     course_id = SelectField(u'Course Type', coerce=int, validators=[Required()])
-    starters = IntegerField('# of Starters', validators=[Optional()])
+    weather = StringField('Weather', validators=[Optional()])
+    usac_permit = StringField('USAC Permit', validators=[Optional()])
+    laps = IntegerField('# of Laps', validators=[Optional()])
     fast_lap = DateTimeField('Fast Lap', validators=[Optional()],
                              description='mm:ss', default=None,
                              format='%M:%S')
@@ -22,9 +24,7 @@ class RaceForm(Form):
     average_lap = DateTimeField('Average Lap', validators=[Optional()],
                                 description='mm:ss', default=None,
                                 format='%M:%S')
-    weather = StringField('Weather', validators=[Optional()])
-    usac_permit = StringField('USAC Permit', validators=[Optional()])
-    laps = IntegerField('# of Laps', validators=[Optional()])
+    starters = IntegerField('# of Starters', validators=[Optional()])
 
 class RaceAddForm(RaceForm):
     submit = SubmitField('Add')
