@@ -38,6 +38,18 @@ class RaceClass(db.Model):
     color = db.Column(db.String(8))
     races = db.relationship('Race', cascade='all,delete', backref='race_class')
 
+    @staticmethod
+    def points_races(year, category_id):
+        races = Race.query.filter(extract('year',Race.date) == year)\
+                          .join(RaceClass)\
+                          .filter(RaceClass.id == category_id)\
+                          .join(Participant)\
+                          .filter(Participant.points > 0)\
+                          .order_by(Race.date)\
+                          .all()
+        return races
+ 
+
     def __repr__(self):
         return '<RaceClass %r>' % self.name
 
