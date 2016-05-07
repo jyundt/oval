@@ -180,7 +180,7 @@ class Race(db.Model):
         return '%s|%s' % (self.date, self.race_class.name)
 
     def __repr__(self):
-        return '<Race %r>' % self.date
+        return '<Race %r>' % self.name
 
 class Participant(db.Model):
     ___tablename__ = 'participant'
