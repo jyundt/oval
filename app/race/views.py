@@ -155,6 +155,10 @@ def add():
 
     form.submit.label.text = 'Add'
     form.date.data = datetime.today()
+    #Set the default course to "Normal"
+    form.course_id.data = Course.query.filter(Course.name == 'Normal')\
+                                      .first()\
+                                      .id
     return render_template('add.html', form=form, type='race')
 
 @race.route('/edit/<int:id>/', methods=['GET', 'POST'])
