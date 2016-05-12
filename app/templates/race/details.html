@@ -239,4 +239,15 @@ Marshals
 {%endfor%}
 </ul>
 {% endif %}
+
+{% if current_user.is_authenticated%}
+  {% if race.notes %}
+    <h3>
+      Race Notes
+    </h3>
+    <pre>
+{{race.notes}}
+    </pre>
+  {%endif%}
+{%endif%}
 {% endblock %}

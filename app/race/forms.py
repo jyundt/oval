@@ -1,6 +1,6 @@
 from flask_wtf import Form
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
-                    SelectField, DateTimeField, BooleanField
+                    SelectField, DateTimeField, BooleanField, TextAreaField
 from wtforms import ValidationError
 from wtforms.validators import Required, Optional, NumberRange
 from ..models import Race, Racer, Team
@@ -25,6 +25,7 @@ class RaceForm(Form):
                                 description='mm:ss', default=None,
                                 format='%M:%S')
     starters = IntegerField('# of Starters', validators=[Optional()])
+    notes = TextAreaField('Race notes', validators=[Optional()])
 
 class RaceAddForm(RaceForm):
     submit = SubmitField('Add')

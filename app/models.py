@@ -168,6 +168,7 @@ class Race(db.Model):
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
     starters = db.Column(db.Integer)
+    notes = db.Column(db.Text)
     participants = db.relationship('Participant', cascade='all,delete',\
                                    backref='race')
     officials = db.relationship('RaceOfficial', cascade='all,delete',\

@@ -189,6 +189,7 @@ def edit(id):
         usac_permit = form.usac_permit.data
         laps = form.laps.data
         starters = form.starters.data
+        notes = form.notes.data
         race.date = date
         race.fast_lap = fast_lap
         race.average_lap = average_lap
@@ -199,6 +200,7 @@ def edit(id):
         race.usac_permit = usac_permit
         race.laps = laps
         race.starters = starters
+        race.notes = notes
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
         current_app.logger.info('%s[%d]', race.name, race.id)
@@ -218,6 +220,7 @@ def edit(id):
     form.usac_permit.data = race.usac_permit
     form.laps.data = race.laps
     form.starters.data = race.starters
+    form.notes.data = race.notes
     return render_template('edit.html', item=race, form=form, type='race')
 
 @race.route('/delete/<int:id>/')
