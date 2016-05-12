@@ -29,6 +29,7 @@ class RaceForm(Form):
 
 class RaceAddForm(RaceForm):
     submit = SubmitField('Add')
+    submit_another = SubmitField('Add + add another')
 
     def validate(self):
         if not super(RaceForm, self).validate():
@@ -119,6 +120,7 @@ class ParticipantForm(Form):
 
 class ParticipantAddForm(ParticipantForm):
     submit = SubmitField('Add')
+    submit_another = SubmitField('Add + add another')
 
 class ParticipantEditForm(ParticipantForm):
     submit = SubmitField('Save')

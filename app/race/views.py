@@ -150,10 +150,15 @@ def add():
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
         current_app.logger.info('%s[%d]', race.name, race.id)
-        return redirect(url_for('race.index'))
+        if 'submit' in request.form:
+            return redirect(url_for('race.index'))
+        elif 'submit_another' in request.form:
+            return redirect(url_for('race.add'))
+        else:
+            abort(404)
+           
 
 
-    form.submit.label.text = 'Add'
     form.date.data = datetime.today()
     #Set the default course to "Normal"
     form.course_id.data = Course.query.filter(Course.name == 'Normal')\
@@ -285,7 +290,12 @@ def add_participant(id):
         flash('Racer ' + participant.racer.name + ' added to race!')
         current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
                                 participant.racer.name, participant.id)
-        return redirect(url_for('race.details', id=race.id))
+        if 'submit' in request.form:
+            return redirect(url_for('race.details', id=race.id))
+        elif 'submit_another' in request.form:
+            return redirect(url_for('race.add_participant',id=race.id))
+        else:
+            abort(404)
     #Let's get the next place and pre-populate the form
     if Participant.query.filter(and_(Participant.race_id == id,
                                      Participant.place > 0)).count():
