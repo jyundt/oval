@@ -142,6 +142,7 @@ def add():
         course_id = form.course_id.data
         usac_permit = form.usac_permit.data
         laps = form.laps.data
+        starters = form.starters.data
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
