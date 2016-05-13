@@ -119,7 +119,7 @@ def add():
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                              RaceClass.query.order_by('name')]
     form.course_id.choices = [(course_id.id, course_id.name) for course_id in
-                             Course.query.order_by('name')]
+                              Course.query.order_by('name')]
     if form.validate_on_submit():
         date = form.date.data
         if form.fast_lap.data is not None:
@@ -156,8 +156,6 @@ def add():
             return redirect(url_for('race.add'))
         else:
             abort(404)
-           
-
 
     form.date.data = datetime.today()
     #Set the default course to "Normal"
@@ -174,7 +172,7 @@ def edit(id):
     form.class_id.choices = [(class_id.id, class_id.name) for class_id in
                              RaceClass.query.order_by('name')]
     form.course_id.choices = [(course_id.id, course_id.name) for course_id in
-                             Course.query.order_by('name')]
+                              Course.query.order_by('name')]
     if form.validate_on_submit():
         date = form.date.data
         if form.fast_lap.data is not None:
@@ -255,16 +253,17 @@ def add_participant(id):
                                 'autocomplete':'off',
                                 'data-source':json.dumps([team.name for team in
                                                           Team.query.all()])}
-    form.team_name.description='(Leave blank to assign current team.)'
+    form.team_name.description = '(Leave blank to assign current team.)'
     if form.validate_on_submit():
         race_id = race.id
         racer_id = Racer.query.filter_by(name=form.name.data).first().id
         if form.team_name.data:
-                team_id = Team.query.filter_by(name=form.team_name.data).first().id
+            team_id = Team.query.filter_by(name=form.team_name.data)\
+                                .first().id
         else:
             if (Race.query.get(race_id).date.year == datetime.now().year) and\
-               Racer.query.get(racer_id).current_team:
-                team_id = Racer.query.get(racer_id).current_team.id 
+            Racer.query.get(racer_id).current_team:
+                team_id = Racer.query.get(racer_id).current_team.id
             else:
                 team_id = None
 
@@ -293,7 +292,7 @@ def add_participant(id):
         if 'submit' in request.form:
             return redirect(url_for('race.details', id=race.id))
         elif 'submit_another' in request.form:
-            return redirect(url_for('race.add_participant',id=race.id))
+            return redirect(url_for('race.add_participant', id=race.id))
         else:
             abort(404)
     #Let's get the next place and pre-populate the form

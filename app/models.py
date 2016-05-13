@@ -40,7 +40,7 @@ class RaceClass(db.Model):
 
     @staticmethod
     def points_races(year, category_id):
-        races = Race.query.filter(extract('year',Race.date) == year)\
+        races = Race.query.filter(extract('year', Race.date) == year)\
                           .join(RaceClass)\
                           .filter(RaceClass.id == category_id)\
                           .join(Participant)\
@@ -48,7 +48,7 @@ class RaceClass(db.Model):
                           .order_by(Race.date)\
                           .all()
         return races
- 
+
 
     def __repr__(self):
         return '<RaceClass %r>' % self.name
@@ -103,11 +103,11 @@ class Racer(db.Model):
     def season_points(self, year, category_id):
         result = Participant.query.with_entities(func.sum(Participant.points))\
                                   .join(Race)\
-                                  .filter(extract('year',Race.date)==year)\
+                                  .filter(extract('year', Race.date) == year)\
                                   .join(RaceClass)\
-                                  .filter(RaceClass.id==category_id)\
+                                  .filter(RaceClass.id == category_id)\
                                   .join(Racer)\
-                                  .filter(Racer.name==self.name)\
+                                  .filter(Racer.name == self.name)\
                                   .first()
         if result[0]:
             points = int(result[0])
@@ -119,11 +119,11 @@ class Racer(db.Model):
         result = Participant.query\
                             .with_entities(func.sum(Participant.mar_points))\
                             .join(Race)\
-                            .filter(extract('year',Race.date)==year)\
+                            .filter(extract('year', Race.date) == year)\
                             .join(RaceClass)\
-                            .filter(RaceClass.id==category_id)\
+                            .filter(RaceClass.id == category_id)\
                             .join(Racer)\
-                            .filter(Racer.name==self.name)\
+                            .filter(Racer.name == self.name)\
                             .first()
 
         if result[0]:
