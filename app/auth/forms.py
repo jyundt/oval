@@ -2,7 +2,7 @@ from flask_wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField,\
                     SelectMultipleField
 from wtforms.validators import Required, Length, Email, EqualTo, Optional
-from ..models import Admin
+from ..models import Admin, NotificationEmail
 from wtforms import ValidationError
 from wtforms import widgets
 
@@ -97,3 +97,29 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if Admin.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+class NotificationEmailForm(Form):
+    email = StringField('Email', validators=[Required(), Email()])
+    description = StringField('Description', validators=[Optional()])
+
+    def validate_email(self, field):
+        if NotificationEmail.query.filter_by(email=field.data).first():
+            raise ValidationError('Email already registered!')
+
+class NotificationEmailAddForm(NotificationEmailForm):
+    submit = SubmitField('Add')
+
+class NotificationEmailEditForm(NotificationEmailForm):
+    submit = SubmitField('Save')
+
+    def __init__(self, notificationemail, *args, **kwargs):
+        super(NotificationEmailEditForm, self).__init__(*args, **kwargs)
+        self.notificationemail = notificationemail
+
+    def validate_email(self, field):
+        if field.data != self.notificationemail.email and \
+           NotificationEmail.query\
+                            .filter(NotificationEmail.email.ilike(field.data))\
+                            .first():
+            raise ValidationError('Email already in use!')
+

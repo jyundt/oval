@@ -3,8 +3,9 @@ from flask import render_template, redirect, request, url_for, flash,\
 from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm,\
                    ChangePasswordForm, ResetPasswordForm,\
-                   ResetPasswordRequestForm, ChangeEmailForm
-from ..models import Admin, Role, AdminRole
+                   ResetPasswordRequestForm, ChangeEmailForm,\
+                   NotificationEmailAddForm, NotificationEmailEditForm
+from ..models import Admin, Role, AdminRole, NotificationEmail
 from flask_login import logout_user, login_required, login_user,\
                         current_user
 from .. import db
@@ -226,4 +227,61 @@ def display_log():
         audit_log = f.read()
 
     return render_template("auth/log.html", audit_log=audit_log)
-        
+
+@auth.route('/email/')
+@roles_accepted('superadmin')
+def notificationemail():
+    notificationemails = NotificationEmail.query\
+                                          .order_by(NotificationEmail.email)\
+                                          .all()
+    return render_template('auth/email.html',\
+                           notificationemails=notificationemails)
+
+@auth.route('/email/add/', methods=['GET', 'POST'])
+@roles_accepted('superadmin')
+def notificationemail_add():
+    form = NotificationEmailAddForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        description = form.description.data
+        notificationemail = NotificationEmail(email=email,\
+                                              description=description)
+        db.session.add(notificationemail)
+        db.session.commit()
+        flash('Email ' + email + ' added!')
+        current_app.logger.info('%s[%d]', notificationemail.name,\
+                                notificationemail.id)
+        return redirect(url_for('auth.notificationemail'))
+
+    return render_template('add.html', form=form, type='email')
+
+@auth.route('/email/edit/<int:id>/', methods=['GET', 'POST'])
+@roles_accepted('superadmin')
+def notificationemail_edit(id):
+    notificationemail = NotificationEmail.query.get_or_404(id)
+    form = NotificationEmailEditForm(notificationemail)
+    if form.validate_on_submit():
+        email = form.email.data
+        description = form.description.data
+        notificationemail.email = email
+        notificationemail.description = description
+        db.session.commit()
+        flash('Email ' + email + ' updated!')
+        current_app.logger.info('%s[%d]', notificationemail.name,\
+                                notificationemail.id)
+        return redirect(url_for('auth.notificationemail'))
+    form.email.data = notificationemail.email
+    form.description.data = notificationemail.description
+    return render_template('edit.html', item=notificationemail,\
+                           form=form, type='email')
+
+@auth.route('/email/delete/<int:id>/')
+@roles_accepted('superadmin')
+def notificationemail_delete(id):
+    notificationemail = NotificationEmail.query.get_or_404(id)
+    current_app.logger.info('%s[%d]', notificationemail.name,\
+                            notificationemail.id)
+    db.session.delete(notificationemail)
+    db.session.commit()
+    flash('Email ' + notificationemail.email + ' deleted!')
+    return redirect(url_for('auth.notificationemail'))

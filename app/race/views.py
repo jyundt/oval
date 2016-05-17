@@ -4,7 +4,8 @@ from flask import render_template, session, redirect, url_for, flash, abort,\
 from sqlalchemy import and_
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
-                     Participant, RaceOfficial, RaceMarshal, Prime, Course
+                     Participant, RaceOfficial, RaceMarshal, Prime, Course,\
+                     NotificationEmail
 from . import race
 from .forms import RaceEditForm, RaceAddForm, ParticipantAddForm,\
                    ParticipantEditForm, PrimeAddForm,\
@@ -12,6 +13,7 @@ from .forms import RaceEditForm, RaceAddForm, ParticipantAddForm,\
                    RaceSearchForm
 from datetime import timedelta, datetime
 from ..decorators import roles_accepted
+from ..email import send_email
 
 @race.route('/', methods=['GET', 'POST'])
 def index():
@@ -526,3 +528,21 @@ def delete_official(race_id, race_official_id):
     db.session.delete(race_official)
     flash('Official ' + race_official.official.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))
+
+@race.route('/<int:id>/email')
+@roles_accepted('official')
+def email(id):
+    race = Race.query.get_or_404(id)
+    participants = sorted(race.participants,
+                          key=lambda x: (x.place is None, x.place))
+    notificationemails = NotificationEmail.query.all()
+    recipients = [r.email for r in notificationemails]
+    for recipient in recipients:
+        send_email(recipient,
+                   race.date.strftime('%m/%d/%Y') + ' ' + race.race_class.name\
+                   + ' Race Results Posted',
+                   'email/new_results',
+                   race=race, participants=participants[:3])
+    current_app.logger.info('%s[%d]', race.name, race.id)
+    flash('Results for race on ' + race.date.strftime('%m/%d/%Y') + ' emailed!')
+    return redirect(url_for('race.details', id=id))

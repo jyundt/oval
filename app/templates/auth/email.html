@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Emails{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Notification Emails Recipients</h1>
+{% if current_user.has_role('superadmin') %}
+<a class="btn btn-default" href="{{url_for('auth.notificationemail_add')}}"><span class="glyphicon glyphicon-plus"></span> Add an email</a>
+{% endif %}
+</div>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+    <th></th>
+    <th>Email</th>
+    <th>Description</th>
+</tr>
+</thead>
+<tbody> 
+{% for notificationemail in notificationemails%}
+<tr>    
+<td class="col-md-1">
+<a role="button" class="btn btn-default btn-xs" href="{{url_for('auth.notificationemail_edit', id=notificationemail.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#notificationemail{{notificationemail.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_email_modal(notificationemail, 'auth.notificationemail_delete')}}
+</td>
+<td>{{notificationemail.email}}</td> 
+<td>{{notificationemail.description}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
+

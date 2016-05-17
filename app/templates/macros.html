@@ -17,6 +17,25 @@
 </div>
 {% endmacro %}
 
+{% macro confirm_email_modal(object,endpoint) %}
+<div class="modal fade" id="email" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete email the race results for {{object.name}}. Are you sure you want to continue?</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-success" href="{{ url_for(endpoint,id=object.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
 {% macro confirm_delete_participant_modal(participant,race,endpoint) %}
 <div class="modal fade" id="participant{{participant.id}}" role="dialog">
   <div class="modal-dialog">
@@ -92,3 +111,23 @@
   </div>
 </div>
 {% endmacro %}
+
+{% macro confirm_delete_email_modal(notificationemail,endpoint) %}
+<div class="modal fade" id="notificationemail{{notificationemail.id}}" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h4 class="modal-title" id=delete>Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        <p>Warning, you are about to delete {{notificationemail.email}} from the email notification list. Are you sure you want to continue? (This may cause irreparable damage to the database.)</p>
+      </div>
+      <div class="modal-footer">
+      <button type=button class="btn btn-default" data-dismiss="modal">No</button>
+      <a class="btn btn-danger" href="{{ url_for(endpoint,id=notificationemail.id)}}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+

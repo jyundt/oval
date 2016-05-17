@@ -1,0 +1,20 @@
+<h3>Good news, new Oval results are available!</h3>
+<p><u>Category:</u> {{race.race_class.name}}</p>
+<p><u>Race Date:</u> {{race.date.strftime('%m/%d/%Y')}}</p>
+
+<h3>Podium</h3>
+<ol>
+{% for participant in participants %}
+<li>
+{%if participant.team is not none%}
+{{participant.racer.name}} [{{participant.team.name}}]
+{%else%}
+{{participant.racer.name}}
+{%endif%}
+</li>
+{%endfor%}
+</ol>
+<p>Click <a href={{url_for('race.details', id=race.id, _external=True)}}>here</a> for detailed results.</p>
+<p>Sincerely,</p>
+<p>The Oval App Team</p>
+<p><small>Note: replies to this email address are not monitored.</small></p>

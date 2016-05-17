@@ -1,0 +1,18 @@
+Good news, new Oval results are available!
+Category: {{race.race_class.name}}
+Race Date: {{race.date.strftime('%m/%d/%Y')}}
+
+Podium
+{% for participant in participants %}
+{%if participant.team is not none%}
+{{loop.index}}. {{participant.racer.name}}  [{{participant.team.name}}]
+{%else%}
+{{loop.index}}. {{participant.racer.name}}
+{%endif%}
+{%endfor%}
+Detailed race results can be found here: {{url_for('race.details', id=race.id, _external=True)}}
+
+Sincerely,
+The Oval App Team
+Note: replies to this email address are not monitored.
+

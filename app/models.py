@@ -62,6 +62,18 @@ class Course(db.Model):
     def __repr__(self):
         return '<Course %r>' % self.name
 
+class NotificationEmail(db.Model):
+    __tablename__ = 'notificationemail'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(100))
+
+    @property
+    def name(self):
+        return '%s|%s' % (self.email, self.description)
+
+    def __repr__(self):
+        return '<Email %r>' % self.name
 
 class Racer(db.Model):
     __tablename__ = 'racer'
