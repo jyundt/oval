@@ -1,6 +1,6 @@
 import json
 from flask import render_template, session, redirect, url_for, flash, abort,\
-                  request, current_app
+                  request, current_app, make_response
 from sqlalchemy import and_
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
@@ -529,7 +529,7 @@ def delete_official(race_id, race_official_id):
     flash('Official ' + race_official.official.name + ' deleted from race!')
     return redirect(url_for('race.details', id=race.id))
 
-@race.route('/<int:id>/email')
+@race.route('/<int:id>/email/')
 @roles_accepted('official')
 def email(id):
     race = Race.query.get_or_404(id)
@@ -546,3 +546,49 @@ def email(id):
     current_app.logger.info('%s[%d]', race.name, race.id)
     flash('Results for race on ' + race.date.strftime('%m/%d/%Y') + ' emailed!')
     return redirect(url_for('race.details', id=id))
+
+@race.route('/<int:id>/download_text/')
+def download_text(id):
+    race = Race.query.get_or_404(id)
+    points_race = False
+    dnf_list = []
+    #I had to do this sort because jinja doesn't support lambas
+    participants = sorted(race.participants,
+                          key=lambda x: (x.place is None, x.place))
+
+    #Let's see if we can figure out if anyone got points in this race
+    #We also want to see if they DNFed and put them in a separate list
+    for participant in participants:
+        if participant.points:
+            points_race = True
+        if participant.dnf:
+            dnf_list.append(participant)
+
+
+	#for some reason I couldn't remove dnf riders from the previous
+    #loop, I couldn't figure out why so I needed to split this up
+    for dnf_rider in dnf_list:
+        participants.remove(dnf_rider)
+
+    #Generate list of MAR winners
+    mar_list = Participant.query.join(Race).filter(Race.id == id)\
+                                          .group_by(Participant.id)\
+                                          .having(Participant.mar_place > 0)\
+                                          .order_by(Participant.mar_place)\
+                                          .all()
+    primes = Prime.query.join(Participant)\
+                        .join(Race)\
+                        .filter(Race.id == id).all()
+    textfile = render_template('race/details.txt', race=race,
+                               participants=participants,
+                               points_race=points_race,
+                               mar_list=mar_list,
+                               dnf_list=dnf_list,
+                               primes=primes)
+    response = make_response(textfile)
+    response.headers['Content-Type'] = "application/octet-stream"
+    response.headers['Content-Disposition'] = "inline; filename=cr" +\
+                                              race.date.strftime('%m%d%y') +\
+                                              '_' + race.race_class.name +\
+                                              '.txt' 
+    return response

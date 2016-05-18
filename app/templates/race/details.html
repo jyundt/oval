@@ -15,8 +15,10 @@
     <a class="btn btn-default" href="{{url_for('race.add_prime',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a prime</a>
     <a class="btn btn-default" href="{{url_for('race.add_official',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add an official</a>
     <a class="btn btn-default" href="{{url_for('race.add_marshal',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a marshal</a>
+    <br>
     <button type=button class="btn btn-success" data-toggle="modal" data-target="#email"><span class="glyphicon glyphicon-envelope"></span> Email race results</button>
     {{ macros.confirm_email_modal(race,'race.email')}}
+    <a class="btn btn-default" href="{{url_for('race.download_text',id=race.id)}}"><span class="glyphicon glyphicon-download"></span> Download txt results</a>
 {% endif %}
 </div>
 <div class="table-responsive">
