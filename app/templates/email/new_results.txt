@@ -12,6 +12,8 @@ Podium
 {%endfor%}
 Detailed race results can be found here: {{url_for('race.details', id=race.id, _external=True)}}
 
+Missing team info? Incorrectly spelled name? Please use the feedback link to send corrections: {{url_for('main.send_feedback', _external=True)}}
+
 Sincerely,
 The Oval App Team
 Note: replies to this email address are not monitored.
