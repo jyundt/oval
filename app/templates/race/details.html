@@ -8,17 +8,23 @@
 <div class="page-header">
     <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}
+    <div class="btn-toolbar" role="group">
     <a class="btn btn-default" href="{{ url_for('race.edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
-    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
-    {{ macros.confirm_delete_modal(race,'race.delete')}}
-    <a class="btn btn-default" href="{{url_for('race.add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant</a>
-    <a class="btn btn-default" href="{{url_for('race.add_prime',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a prime</a>
-    <a class="btn btn-default" href="{{url_for('race.add_official',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add an official</a>
-    <a class="btn btn-default" href="{{url_for('race.add_marshal',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a marshal</a>
-    <br>
+    <div class="btn-group" role="group">
+      <a class="btn btn-default" href="{{url_for('race.add_participant',id=race.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a participant</a>
+      <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span></button>
+      <ul class="dropdown-menu">
+        <li><a href="{{url_for('race.add_prime',id=race.id)}}">Prime</a></li>
+        <li><a href="{{url_for('race.add_official',id=race.id)}}">Official</a></li>
+        <li><a href="{{url_for('race.add_marshal',id=race.id)}}">Marshal</a></li>
+      </ul>
+    </div>
+    <a class="btn btn-default" href="{{url_for('race.download_text',id=race.id)}}"><span class="glyphicon glyphicon-download"></span> Download txt results</a>
     <button type=button class="btn btn-success" data-toggle="modal" data-target="#email"><span class="glyphicon glyphicon-envelope"></span> Email race results</button>
     {{ macros.confirm_email_modal(race,'race.email')}}
-    <a class="btn btn-default" href="{{url_for('race.download_text',id=race.id)}}"><span class="glyphicon glyphicon-download"></span> Download txt results</a>
+    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
+    {{ macros.confirm_delete_modal(race,'race.delete')}}
+    </div>
 {% endif %}
 </div>
 <div class="table-responsive">
