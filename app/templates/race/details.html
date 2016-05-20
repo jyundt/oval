@@ -20,10 +20,10 @@
       </ul>
     </div>
     <a class="btn btn-default" href="{{url_for('race.download_text',id=race.id)}}"><span class="glyphicon glyphicon-download"></span> Download txt results</a>
-    <button type=button class="btn btn-success" data-toggle="modal" data-target="#email"><span class="glyphicon glyphicon-envelope"></span> Email race results</button>
-    {{ macros.confirm_email_modal(race,'race.email')}}
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
     {{ macros.confirm_delete_modal(race,'race.delete')}}
+    <button type=button class="btn btn-success" data-toggle="modal" data-target="#email"><span class="glyphicon glyphicon-envelope"></span> Email race results</button>
+    {{ macros.confirm_email_modal(race,'race.email')}}
     </div>
 {% endif %}
 </div>
