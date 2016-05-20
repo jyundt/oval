@@ -154,7 +154,7 @@ def add():
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
         current_app.logger.info('%s[%d]', race.name, race.id)
         if 'submit' in request.form:
-            return redirect(url_for('race.index'))
+            return redirect(url_for('race.details',id=race.id))
         elif 'submit_another' in request.form:
             return redirect(url_for('race.add'))
         else:
