@@ -139,6 +139,11 @@ def add():
                                  + form.slow_lap.data.second)
         else:
             slow_lap = form.slow_lap.data
+        if form.winning_time.data is not None:
+            winning_time = timedelta(0, form.winning_time.data.minute * 60
+                                     + form.winning_time.data.second)
+        else:
+            winning_time = form.winning_time.data
         weather = form.weather.data
         class_id = form.class_id.data
         course_id = form.course_id.data
@@ -148,7 +153,8 @@ def add():
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
-                    usac_permit=usac_permit, laps=laps, course_id=course_id)
+                    usac_permit=usac_permit, laps=laps, course_id=course_id,
+                    winning_time=winning_time)
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
@@ -193,6 +199,11 @@ def edit(id):
                                  + form.slow_lap.data.second)
         else:
             slow_lap = form.slow_lap.data
+        if form.winning_time.data is not None:
+            winning_time = timedelta(0, form.winning_time.data.minute * 60
+                                     + form.winning_time.data.second)
+        else:
+            winning_time = form.winning_time.data
         weather = form.weather.data
         class_id = form.class_id.data
         course_id = form.course_id.data
@@ -204,6 +215,7 @@ def edit(id):
         race.fast_lap = fast_lap
         race.average_lap = average_lap
         race.slow_lap = slow_lap
+        race.winning_time = winning_time
         race.weather = weather
         race.class_id = class_id
         race.course_id = course_id
@@ -226,6 +238,9 @@ def edit(id):
                                                   '%H:%M:%S')
     if race.slow_lap is not None:
         form.slow_lap.data = datetime.strptime(str(race.slow_lap), '%H:%M:%S')
+    if race.winning_time is not None:
+        form.winning_time.data = datetime.strptime(str(race.winning_time),
+                                                   '%H:%M:%S')
     form.weather.data = race.weather
     form.usac_permit.data = race.usac_permit
     form.laps.data = race.laps

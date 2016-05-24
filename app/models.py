@@ -176,6 +176,7 @@ class Race(db.Model):
     slow_lap = db.Column(db.Interval)
     fast_lap = db.Column(db.Interval)
     average_lap = db.Column(db.Interval)
+    winning_time = db.Column(db.Interval)
     weather = db.Column(db.String(200))
     usac_permit = db.Column(db.String(200))
     laps = db.Column(db.Integer)
