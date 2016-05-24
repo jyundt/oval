@@ -6,7 +6,12 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}</h1>
+    {% if race.course and race.course.name != "Normal" %}
+      <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}} [{{race.course.name|title}}]</h1>
+    {% else %}
+      <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}</h1>
+    {% endif %}
+   
 {% if current_user.is_authenticated and current_user.has_role('official') %}
     <div class="btn-toolbar" role="group">
     <a class="btn btn-default" href="{{ url_for('race.edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
