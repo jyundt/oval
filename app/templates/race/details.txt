@@ -75,10 +75,49 @@ Name	Prime
 {%- endfor -%}
 {%- endif -%}
 
+{%- if race.winning_time -%}
+{{nl}}
+Winning Time: {{(race.winning_time|string)[2:]}}
+{%- else -%}
+{{nl}}
+Winning Time:
+{%- endif -%}
+{%- if race.fast_lap -%}
+{{nl}}
+Fast Lap: {{(race.fast_lap|string)[2:]}}
+{%- else -%}
+{{nl}}
+Fast Lap:
+{%- endif -%}
+{%- if race.slow_lap -%}
+{{nl}}
+Slow Lap: {{(race.slow_lap|string)[2:]}}
+{%- else -%}
+{{nl}}
+Slow Lap:
+{%- endif -%}
+{%- if race.average_lap -%}
+{{nl}}
+Ave Lap: {{(race.average_lap|string)[2:]}}
+{%- else -%}
+{{nl}}
+Ave Lap:
+{%- endif -%}
+{% if race.starters -%}
+{{nl}}
+Number of Starters: {{race.starters}}
+{%- else -%}
+{{nl}}
+Number of Starters:
+{%- endif -%}
+{{nl}}
+{{nl}}
 {%- if race.officials |length>0 -%}
 {{nl}}
 Officials
 {{nl}}
+
+
 {%- for race_official in race.officials -%}
 {{race_official.official.name}}
 {{nl}}
