@@ -1,7 +1,7 @@
 {%- set tab='	' -%}
 {%- set nl='' -%}
 Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}
-{% if points_race %}
+{% if race.points_race %}
 Place	Name	Team	Points	Team Points
 {% else %}
 Place	Name	Team
@@ -18,7 +18,7 @@ Place	Name	Team
 {%- else -%}
 {{tab}}-
 {%- endif -%}
-{%- if points_race -%}
+{%- if race.points_race -%}
 {%- if participant.points is not none -%}
 {{tab}}{{ participant.points }}
 {%- else -%}
@@ -37,7 +37,7 @@ Place	Name	Team
 {{nl}}
 MAR
 {{nl}}
-{%- if points_race -%}
+{%- if race.points_race -%}
 MAR Place	Name	Team	MAR Points
 {{nl}}
 {%- else -%}
@@ -51,7 +51,7 @@ MAR Place	Name	Team
 {%- else -%}
 {{tab}}-
 {%- endif -%}
-{%- if points_race -%}
+{%- if race.points_race -%}
 {%- if mar_participant.mar_points is not none -%}
 {{tab}}{{ mar_participant.mar_points }}
 {%- else -%}

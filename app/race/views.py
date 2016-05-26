@@ -77,7 +77,6 @@ def search():
 @race.route('/<int:id>/')
 def details(id):
     race = Race.query.get_or_404(id)
-    points_race = False
     dnf_list = []
     #I had to do this sort because jinja doesn't support lambas
     participants = sorted(race.participants,
@@ -86,8 +85,6 @@ def details(id):
     #Let's see if we can figure out if anyone got points in this race
     #We also want to see if they DNFed and put them in a separate list
     for participant in participants:
-        if participant.points:
-            points_race = True
         if participant.dnf:
             dnf_list.append(participant)
 
@@ -108,7 +105,6 @@ def details(id):
                         .filter(Race.id == id).all()
     return render_template('race/details.html', race=race,
                            participants=participants,
-                           points_race=points_race,
                            mar_list=mar_list,
                            dnf_list=dnf_list,
                            primes=primes)
@@ -150,23 +146,27 @@ def add():
         usac_permit = form.usac_permit.data
         laps = form.laps.data
         starters = form.starters.data
+        points_race = form.points_race.data
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
                     usac_permit=usac_permit, laps=laps, course_id=course_id,
-                    winning_time=winning_time)
+                    winning_time=winning_time, points_race=points_race)
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
         current_app.logger.info('%s[%d]', race.name, race.id)
         if 'submit' in request.form:
-            return redirect(url_for('race.details',id=race.id))
+            return redirect(url_for('race.details', id=race.id))
         elif 'submit_another' in request.form:
             return redirect(url_for('race.add'))
         else:
             abort(404)
 
     form.date.data = datetime.today()
+    #Let's also prepopulate the points_race field if we are in June/July/Aug
+    if (form.date.data.month >= 6) and (form.date.data.month <= 8):
+        form.points_race.data = True
     #Set the default course to "Normal"
     form.course_id.data = Course.query.filter(Course.name == 'Normal')\
                                       .first()\
@@ -211,6 +211,7 @@ def edit(id):
         laps = form.laps.data
         starters = form.starters.data
         notes = form.notes.data
+        points_race = form.points_race.data
         race.date = date
         race.fast_lap = fast_lap
         race.average_lap = average_lap
@@ -223,6 +224,7 @@ def edit(id):
         race.laps = laps
         race.starters = starters
         race.notes = notes
+        race.points_race = points_race
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
         current_app.logger.info('%s[%d]', race.name, race.id)
@@ -246,6 +248,7 @@ def edit(id):
     form.laps.data = race.laps
     form.starters.data = race.starters
     form.notes.data = race.notes
+    form.points_race.data = race.points_race
     return render_template('edit.html', item=race, form=form, type='race')
 
 @race.route('/delete/<int:id>/')
@@ -326,6 +329,11 @@ def add_participant(id):
         next_place = 0
     form.place.data = next_place + 1
 
+    if race.points_race:
+        #Let's define a dict for place -> point mapping
+        point_dict = {1: 10, 2: 8, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2,\
+                      8: 1}
+        form.points.data = point_dict[form.place.data]
     return render_template('add.html', form=form, type='participant')
 
 @race.route('/<int:race_id>/participant/edit/<int:participant_id>',
@@ -565,7 +573,6 @@ def email(id):
 @race.route('/<int:id>/download_text/')
 def download_text(id):
     race = Race.query.get_or_404(id)
-    points_race = False
     dnf_list = []
     #I had to do this sort because jinja doesn't support lambas
     participants = sorted(race.participants,
@@ -574,8 +581,6 @@ def download_text(id):
     #Let's see if we can figure out if anyone got points in this race
     #We also want to see if they DNFed and put them in a separate list
     for participant in participants:
-        if participant.points:
-            points_race = True
         if participant.dnf:
             dnf_list.append(participant)
 
@@ -596,7 +601,6 @@ def download_text(id):
                         .filter(Race.id == id).all()
     textfile = render_template('race/details.txt', race=race,
                                participants=participants,
-                               points_race=points_race,
                                mar_list=mar_list,
                                dnf_list=dnf_list,
                                primes=primes)
@@ -605,5 +609,5 @@ def download_text(id):
     response.headers['Content-Disposition'] = "inline; filename=cr" +\
                                               race.date.strftime('%m%d%y') +\
                                               '_' + race.race_class.name +\
-                                              '.txt' 
+                                              '.txt'
     return response

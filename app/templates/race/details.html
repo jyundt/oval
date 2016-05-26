@@ -42,7 +42,7 @@
 <th>Place</th>
 <th>Name</th>
 <th>Team</th>
-{% if points_race %}
+{% if race.points_race %}
 <th>Points</th>
 <th>Team Points</th>
 {% endif %}
@@ -69,7 +69,7 @@
 {%else%}
 <td>-</td>
 {%endif%}
-{% if points_race %}
+{% if race.points_race %}
 {% if participant.points is not none %}
 <td> {{ participant.points }}</td>
 {% else %}
@@ -98,7 +98,7 @@ MAR
 <th>MAR Place</th>
 <th>Name</th>
 <th>Team</th>
-{% if points_race %}
+{% if race.points_race %}
 <th>MAR Points</th>
 {% endif %}
 </tr>
@@ -113,7 +113,7 @@ MAR
 {%else%}
 <td>-</td>
 {%endif%}
-{% if points_race %}
+{% if race.points_race %}
 {% if mar_participant.mar_points is not none %}
 <td> {{ mar_participant.mar_points }}</td>
 {% else %}
@@ -177,7 +177,7 @@ DNF Riders
 <th>Place</th>
 <th>Name</th>
 <th>Team</th>
-{% if points_race %}
+{% if race.points_race %}
 <th>Points</th>
 <th>Team Points</th>
 {% endif %}
@@ -202,7 +202,7 @@ DNF Riders
 {%else%}
 <td>-</td>
 {%endif%}
-{% if points_race %}
+{% if race.points_race %}
 {% if participant.points is not none %}
 <td> {{ participant.points }}</td>
 {% else %}

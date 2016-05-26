@@ -84,6 +84,7 @@ class Racer(db.Model):
     _strava_profile_url = db.Column('strava_profile_url', db.String(200))
     strava_profile_last_fetch = db.Column(db.DateTime(timezone=True))
     birthdate = db.Column(db.Date)
+    aca_member = db.Column(db.Boolean, default=False)
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete',
                                    backref='racer')
@@ -182,6 +183,7 @@ class Race(db.Model):
     laps = db.Column(db.Integer)
     starters = db.Column(db.Integer)
     notes = db.Column(db.Text)
+    points_race = db.Column(db.Boolean, default=False)
     participants = db.relationship('Participant', cascade='all,delete',\
                                    backref='race')
     officials = db.relationship('RaceOfficial', cascade='all,delete',\

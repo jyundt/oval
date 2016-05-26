@@ -1,5 +1,6 @@
 from flask_wtf import Form
-from wtforms import StringField, SubmitField, DateField, IntegerField
+from wtforms import StringField, SubmitField, DateField, IntegerField,\
+                    BooleanField
 from wtforms import ValidationError
 from wtforms.validators import Required, Optional
 from ..models import Racer, Team
@@ -12,6 +13,7 @@ class RacerForm(Form):
                           format='%m/%d/%Y')
     current_team = StringField('Current Team', validators=[Optional()])
     strava_id = IntegerField('Strava athlete ID', validators=[Optional()])
+    aca_member = BooleanField('Current ACA Member', validators=[Optional()])
 
 
     def validate_current_team(self, field):
