@@ -7,9 +7,9 @@
 {% block page_content %}
 <div class="page-header">
     {% if race.course and race.course.name != "Normal" %}
-      <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}} [{{race.course.name|title}}]</h1>
+      <h1>{{race.date.strftime('%B %d, %Y')}} - Class {{race.race_class.name}} Race - {{race.laps}} laps [{{race.course.name|title}}] </h1>
     {% else %}
-      <h1>Details for Race: {{race.date.strftime('%m/%d/%Y')}} - {{race.race_class.name}}</h1>
+      <h1>{{race.date.strftime('%B %d, %Y')}} - Class {{race.race_class.name}} Race - {{race.laps}} laps </h1>
     {% endif %}
    
 {% if current_user.is_authenticated and current_user.has_role('official') %}
@@ -32,6 +32,24 @@
     </div>
 {% endif %}
 </div>
+<h4>
+{%if race.winning_time %}
+Winning time: {{(race.winning_time|string)[2:]}}
+<br>
+{%endif%}
+{%if race.fast_lap %}
+ Fast lap: {{(race.fast_lap|string)[2:]}}
+<br>
+{%endif%}
+{%if race.slow_lap%}
+Slow lap: {{(race.slow_lap|string)[2:]}}
+<br>
+{%endif%}
+{%if race.average_lap %}
+Average lap: {{(race.average_lap|string)[2:]}}
+<br>
+{%endif%}
+</h4>
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
 <thead>
@@ -86,6 +104,14 @@
 </tbody>
 </table>
 </div>
+
+{% if race.starters %}
+<h4>
+Starters: {{race.starters}}
+<br>
+<br>
+</h4>
+{%endif%}
 
 {%if mar_list|length >0%}
 <h3>

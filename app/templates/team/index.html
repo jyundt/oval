@@ -14,12 +14,14 @@
 <thead>
 <tr>
     <th>Name</th>
+    <th>Racers</th>
 </tr>
 </thead>
 <tbody>
 {% for team in teams %}
 <tr>
 <td><a href="{{url_for('team.details',id=team.id)}}">{{ team.name}}</a></td> 
+<td>{{team.current_racers|length}}</td>
 </tr>
 {% endfor %}
 </tbody>

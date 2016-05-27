@@ -6,7 +6,11 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Racer: {{racer.name}}</h1>
+    <h1>{{racer.name}}
+    {% if racer.aca_member %}
+        <h4><span class="label label-info">ACA Member</span></h4>
+    {% endif %}
+    </h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}
     <a class="btn btn-default" href="{{ url_for('racer.edit',id=racer.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit racer details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete racer</button>

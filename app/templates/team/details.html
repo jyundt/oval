@@ -6,7 +6,7 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Team: {{team.name}}</h1>
+    <h1>{{team.name}}</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}
     <a class="btn btn-default" href="{{ url_for('team.edit',id=team.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit team details</a>
     <a class="btn btn-default" href="{{url_for('team.add_racer',id=team.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
