@@ -5,6 +5,13 @@
 {% endblock %}
 
 {% block page_content %}
+<h6>
+<ul class="breadcrumb"> 
+  <li><a href="{{url_for('main.index')}}">Home</a></li> 
+  <li><a href="{{url_for('racer.index')}}">Racers</a></li>
+  <li class="active">{{racer.name}}</li>
+</ul>
+</h6>
 <div class="page-header">
     <h1>{{racer.name}}
     {% if racer.aca_member %}

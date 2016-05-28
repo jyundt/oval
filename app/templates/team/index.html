@@ -3,6 +3,12 @@
 {% block title %}Teams{% endblock %}
 
 {% block page_content %}
+<h6>
+<ul class="breadcrumb"> 
+  <li><a href="{{url_for('main.index')}}">Home</a></li> 
+  <li class="active">Teams</li>
+</ul>
+</h6>
 <div class="page-header">
     <h1>Teams</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}

@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block page_content %}
+<ul class="breadcrumb"> 
+  <li><a href="{{url_for('main.index')}}">Home</a></li> 
+  <li><a href="{{url_for('race_class.index')}}">Categories</a></li>
+  <li class="active">{{race_class.name}}</li>
+</ul>
 <div class="page-header">
     <h1>Details for Category: {{race_class.name}}</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}

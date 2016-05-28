@@ -3,6 +3,12 @@
 {% block title %}Racers{% endblock %}
 
 {% block page_content %}
+<h6>
+<ul class="breadcrumb">
+  <li><a href="{{url_for('main.index')}}">Home</a></l>
+  <li class="active">Racers</li>
+</ul>
+</h6>
 <div class="page-header">
     <h1>Racers</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}

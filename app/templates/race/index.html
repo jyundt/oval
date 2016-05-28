@@ -3,6 +3,12 @@
 {% block title %}Races{% endblock %}
 
 {% block page_content %}
+<h6>
+<ul class="breadcrumb"> 
+  <li><a href="{{url_for('main.index')}}">Home</a></li> 
+  <li class="active">Races</li>
+</ul>
+</h6>
 <div class="page-header">
     <h1>Races</h1>
 <form method="post">
