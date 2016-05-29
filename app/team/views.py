@@ -40,7 +40,7 @@ def details(id):
                            results=results)
 
 @team.route('/add/', methods=['GET', 'POST'])
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def add():
     form = TeamAddForm()
     if form.validate_on_submit():
@@ -56,7 +56,7 @@ def add():
     return render_template('add.html', form=form, type='team')
 
 @team.route('/edit/<int:id>/', methods=['GET', 'POST'])
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def edit(id):
     team = Team.query.get_or_404(id)
     form = TeamEditForm(team)
@@ -71,7 +71,7 @@ def edit(id):
     return render_template('edit.html', item=team, form=form, type='team')
 
 @team.route('/delete/<int:id>/')
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def delete(id):
     team = Team.query.get_or_404(id)
     current_app.logger.info('%s[%d]', team.name, team.id)
@@ -81,7 +81,7 @@ def delete(id):
     return redirect(url_for('team.index'))
 
 @team.route('/<int:id>/racer/add/', methods=['GET', 'POST'])
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def add_racer(id):
     team = Team.query.get_or_404(id)
     form = RacerAddToTeamForm()

@@ -47,7 +47,7 @@ def details(id):
                            current_team=current_team, teams=teams)
 
 @racer.route('/add/', methods=['GET', 'POST'])
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def add():
     form = RacerAddForm()
     form.current_team.render_kw = {'data-provide': 'typeahead',
@@ -81,7 +81,7 @@ def add():
     return render_template('add.html', form=form, type='racer')
 
 @racer.route('/edit/<int:id>/', methods=['GET', 'POST'])
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def edit(id):
     racer = Racer.query.get_or_404(id)
     form = RacerEditForm(racer)
@@ -125,7 +125,7 @@ def edit(id):
                            item=racer, form=form, type='racer')
 
 @racer.route('/delete/<int:id>/')
-@roles_accepted('official')
+@roles_accepted('official', 'moderator')
 def delete(id):
     racer = Racer.query.get_or_404(id)
     current_app.logger.info('%s[%d]', racer.name, racer.id)

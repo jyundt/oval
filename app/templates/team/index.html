@@ -11,7 +11,7 @@
 </h6>
 <div class="page-header">
     <h1>Teams</h1>
-{% if current_user.is_authenticated and current_user.has_role('official') %}
+{% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
 <a class="btn btn-default" href="{{url_for('team.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a team</a>
 {% endif %}
 </div>

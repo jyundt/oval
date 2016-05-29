@@ -14,7 +14,7 @@
 </h6>
 <div class="page-header">
     <h1>{{team.name}}</h1>
-{% if current_user.is_authenticated and current_user.has_role('official') %}
+{% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
     <a class="btn btn-default" href="{{ url_for('team.edit',id=team.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit team details</a>
     <a class="btn btn-default" href="{{url_for('team.add_racer',id=team.id)}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete team</button>
