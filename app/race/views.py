@@ -354,6 +354,11 @@ def add_participant(id):
                       8: 1}
         form.points.data = point_dict[form.place.data]
         form.team_points.data = point_dict[form.place.data]
+    else:
+        #I guess we don't need the points fields
+        del form.points
+        del form.team_points
+        del form.mar_points
     return render_template('add.html', form=form, type='participant')
 
 @race.route('/<int:race_id>/participant/edit/<int:participant_id>',
