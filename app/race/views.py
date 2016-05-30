@@ -289,15 +289,34 @@ def add_participant(id):
                 team_id = None
 
         place = form.place.data
-        points = form.points.data
-        team_points = form.team_points.data
         mar_place = form.mar_place.data
-        mar_points = form.mar_points.data
         point_prime = form.point_prime.data
         dnf = form.dnf.data
         dns = form.dns.data
         relegated = form.relegated.data
         disqualified = form.disqualified.data
+        #Let's check to see if we are in a points race
+        if Race.query.get(race_id).points_race and\
+           Race.query.get(race_id).date.year == datetime.now().year:
+            if Racer.query.get(racer_id).aca_member:
+                points = form.points.data
+                mar_points = form.mar_points.data
+                if team_id:
+                    team_points = form.team_points.data
+                else:
+                    team_points = None
+                    flash(Racer.query.get(racer_id).name + ' is not on a team,\
+                          removing team points.')
+            else:
+                flash(Racer.query.get(racer_id).name + ' is not a current \
+                      ACA member, removing points.')
+                points = None
+                mar_points = None
+                team_points = None
+        else:
+            points = form.points.data
+            mar_points = form.mar_points.data
+            team_points = form.team_points.data
         participant = Participant(racer_id=racer_id, team_id=team_id,
                                   points=points, team_points=team_points,
                                   mar_place=mar_place, mar_points=mar_points,
@@ -334,6 +353,7 @@ def add_participant(id):
         point_dict = {1: 10, 2: 8, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2,\
                       8: 1}
         form.points.data = point_dict[form.place.data]
+        form.team_points.data = point_dict[form.place.data]
     return render_template('add.html', form=form, type='participant')
 
 @race.route('/<int:race_id>/participant/edit/<int:participant_id>',
