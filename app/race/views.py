@@ -303,10 +303,24 @@ def add_participant(id):
                 points = form.points.data
                 #Check to see if we manually specified mar points
                 #if not, guess at them
+                if point_prime:
+                    points += 1
                 if mar_place:
                     mar_points = mar_point_dict[mar_place]
+                else:
+                    mar_points = None
                 if team_id:
-                    team_points = form.team_points.data
+                #Verify that 3 members of the team didn't already get points
+                    if Participant.query\
+                                  .filter(Participant.race_id == race_id)\
+                                  .filter(Participant.team_id == team_id)\
+                                  .filter(Participant.team_points > 0)\
+                                  .count() >= 3:
+                        team_points = None
+                        flash(Team.query.get(team_id).name + ' already scored\
+                              points for three places, removing team points.')
+                    else:
+                        team_points = form.team_points.data
                 else:
                     team_points = None
                     flash(Racer.query.get(racer_id).name + ' is not on a team,\
