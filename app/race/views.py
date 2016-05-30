@@ -298,9 +298,13 @@ def add_participant(id):
         #Let's check to see if we are in a points race
         if Race.query.get(race_id).points_race and\
            Race.query.get(race_id).date.year == datetime.now().year:
+            mar_point_dict = {1: 3, 2: 2, 3: 1}
             if Racer.query.get(racer_id).aca_member:
                 points = form.points.data
-                mar_points = form.mar_points.data
+                #Check to see if we manually specified mar points
+                #if not, guess at them
+                if mar_place:
+                    mar_points = mar_point_dict[mar_place]
                 if team_id:
                     team_points = form.team_points.data
                 else:
@@ -364,6 +368,7 @@ def add_participant(id):
         del form.points
         del form.team_points
         del form.mar_points
+        del form.point_prime
     return render_template('add.html', form=form, type='participant')
 
 @race.route('/<int:race_id>/participant/edit/<int:participant_id>',
