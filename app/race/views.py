@@ -317,6 +317,7 @@ def add_participant(id):
             points = form.points.data
             mar_points = form.mar_points.data
             team_points = form.team_points.data
+        #Add point_prime == True -> points++
         participant = Participant(racer_id=racer_id, team_id=team_id,
                                   points=points, team_points=team_points,
                                   mar_place=mar_place, mar_points=mar_points,
@@ -349,11 +350,15 @@ def add_participant(id):
     form.place.data = next_place + 1
 
     if race.points_race:
-        #Let's define a dict for place -> point mapping
         point_dict = {1: 10, 2: 8, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2,\
                       8: 1}
-        form.points.data = point_dict[form.place.data]
-        form.team_points.data = point_dict[form.place.data]
+        #Let's define a dict for place -> point mapping
+        if form.place.data in point_dict:
+            form.points.data = point_dict[form.place.data]
+            form.team_points.data = point_dict[form.place.data]
+        else:
+            form.points.data = None
+            form.team_points.data = None
     else:
         #I guess we don't need the points fields
         del form.points
