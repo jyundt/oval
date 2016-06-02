@@ -16,10 +16,12 @@
     <h4><small>{{race.date.strftime('%B %-d, %Y')}}</small></h4>
     {% if race.course and race.course.name != "Normal" %}
       <div class="pull-left">
-      <h1>Class {{race.race_class.name}} Race - {{race.laps}} laps [{{race.course.name|title}}]</h1>
-       </div>
+      <h1>Class {{race.race_class.name}} Race {%if race.laps %} - {{race.laps}} laps{%endif%} [{{race.course.name|title}}]</h1>
+      </div>
     {% else %}
-      <h1>Class {{race.race_class.name}} Race - {{race.laps}} laps </h1>
+      <div class="pull-left">
+      <h1>Class {{race.race_class.name}} Race {%if race.laps %}- {{race.laps}} laps {%endif%}</h1>
+      </div>
     {% endif %}
     <div class="pull-right">
       <h4 class="text-right">
