@@ -110,6 +110,13 @@ Number of Starters: {{race.starters}}
 {{nl}}
 Number of Starters:
 {%- endif -%}
+{%- if race.laps -%}
+{{nl}}
+Number of Laps: {{race.laps}}
+{%- else -%}
+{{nl}}
+Number of Laps:
+{%- endif -%}
 {{nl}}
 {{nl}}
 {%- if race.officials |length>0 -%}
