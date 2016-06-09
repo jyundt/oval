@@ -137,7 +137,8 @@ def add():
             slow_lap = form.slow_lap.data
         if form.winning_time.data is not None:
             winning_time = timedelta(0, form.winning_time.data.minute * 60
-                                     + form.winning_time.data.second)
+                                     + form.winning_time.data.second
+                                     + form.winning_time.data.hour * 3600)
         else:
             winning_time = form.winning_time.data
         weather = form.weather.data
@@ -201,7 +202,8 @@ def edit(id):
             slow_lap = form.slow_lap.data
         if form.winning_time.data is not None:
             winning_time = timedelta(0, form.winning_time.data.minute * 60
-                                     + form.winning_time.data.second)
+                                     + form.winning_time.data.second
+                                     + form.winning_time.data.hour * 3600)
         else:
             winning_time = form.winning_time.data
         weather = form.weather.data

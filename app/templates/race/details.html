@@ -111,7 +111,7 @@ Average lap: {{(race.average_lap|string)[2:]}}
 {% endif %}
 {% if participant.place is not none %}
   {% if participant.place == 1 and race.winning_time is not none %}
-      <td>{{participant.place}} &nbsp &nbsp{{(race.winning_time|string)[2:]}}</td>
+      <td>{{participant.place}} &nbsp &nbsp{{race.winning_time}}</td>
   {%else %}
       <td>{{ participant.place }}</td>
   {%endif%}

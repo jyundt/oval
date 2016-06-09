@@ -16,8 +16,8 @@ class RaceForm(Form):
     usac_permit = StringField('USAC Permit', validators=[Optional()])
     laps = IntegerField('# of Laps', validators=[Optional()])
     winning_time = DateTimeField('Winning Time', validators=[Optional()],
-                                description='mm:ss', default=None,
-                                format='%M:%S')
+                                description='hh:mm:ss', default=None,
+                                format='%H:%M:%S')
     fast_lap = DateTimeField('Fast Lap', validators=[Optional()],
                              description='mm:ss', default=None,
                              format='%M:%S')
