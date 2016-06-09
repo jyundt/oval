@@ -340,7 +340,9 @@ def add_participant(id):
             points = form.points.data
             mar_points = form.mar_points.data
             team_points = form.team_points.data
-        #Add point_prime == True -> points++
+        #Because we are pre-populating Place, let's set it to None for DNF
+        if dnf:
+            place = None
         participant = Participant(racer_id=racer_id, team_id=team_id,
                                   points=points, team_points=team_points,
                                   mar_place=mar_place, mar_points=mar_points,
