@@ -92,7 +92,12 @@ def details(id):
 	#for some reason I couldn't remove dnf riders from the previous
     #loop, I couldn't figure out why so I needed to split this up
     for dnf_rider in dnf_list:
-        participants.remove(dnf_rider)
+        if dnf_rider.point_prime:
+            #If a DNF rider won the point prime, put them at the end
+            participants.remove(dnf_rider)
+            participants.append(dnf_rider)
+        else:
+            participants.remove(dnf_rider)
 
     #Generate list of MAR winners
     mar_list = Participant.query.join(Race).filter(Race.id == id)\
@@ -309,7 +314,7 @@ def add_participant(id):
                 if point_prime:
                     #If points is "blank", set it to zero
                     if points is None:
-                        points = 0 
+                        points = 0
                     points += 1
                 if mar_place:
                     mar_points = mar_point_dict[mar_place]
