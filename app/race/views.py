@@ -304,12 +304,12 @@ def add_participant(id):
             mar_point_dict = {1: 3, 2: 2, 3: 1}
             if Racer.query.get(racer_id).aca_member:
                 points = form.points.data
-                #If points is "blank", set it to zero
-                if points is None:
-                    points = 0 
                 #Check to see if we manually specified mar points
                 #if not, guess at them
                 if point_prime:
+                    #If points is "blank", set it to zero
+                    if points is None:
+                        points = 0 
                     points += 1
                 if mar_place:
                     mar_points = mar_point_dict[mar_place]
