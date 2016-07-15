@@ -1,4 +1,7 @@
+import datetime
 import requests
+from collections import OrderedDict
+
 from flask import render_template, redirect, url_for, current_app, flash
 from sqlalchemy import extract, func, and_
 from ..models import RaceClass, Racer, Team, Race,\
@@ -11,8 +14,15 @@ from .forms import StandingsSearchForm, FeedbackForm
 #a given season
 #e.g. Place Name Team Points
 def generate_standings(year, race_class_id, standings_type):
+    results = []
+    
+    dates = Race.query.with_entities(Race.date).\
+                    filter(and_(extract("year", Race.date) == year, Race.points_race == True))\
+                    .filter(Race.class_id == race_class_id).all()
+    dates = [d.strftime("%m-%d") for (d,) in dates]
+
     if standings_type == 'team':
-        results = Team.query.with_entities(Team.name,
+        teams = Team.query.with_entities(Team.name,
                                            func.sum(Participant.team_points),\
                                            Team.id)\
                             .join(Participant)\
@@ -25,19 +35,52 @@ def generate_standings(year, race_class_id, standings_type):
                             .order_by(func.sum(Participant.team_points)\
                             .desc()).all()
 
+        for team in teams:
+            points = Participant.query.with_entities(Participant.team_points, Race.date).\
+                join(Race).\
+                filter(and_(team[2] == Participant.racer_id, Race.points_race == True)).\
+                filter(extract("year", Race.date) == year).\
+                filter(Race.class_id == race_class_id).all()
+
+            date_dict = OrderedDict([(date, "-") for date in sorted(dates)])
+            result = {"name": team[0], "id": team[2], "total_pts": team[1],
+                    "race_pts": date_dict}
+            
+            for point, date in points:
+                if point:
+                    result["race_pts"][date.strftime("%m-%d")] = point
+
+            results.append(result)
+
     elif standings_type == 'individual':
-        results = Racer.query.with_entities(Racer.name,
-                                            func.sum(Participant.points),\
-                                            Racer.id)\
+        racers = Racer.query.with_entities(Racer.name, func.sum(Participant.points), Racer.id)\
                              .join(Participant)\
                              .join(Race)\
                              .join(RaceClass)\
                              .group_by(Racer.id)\
-                             .filter(and_(Race.class_id == race_class_id,\
-                                          extract('year', Race.date) == year))\
+                             .filter(and_(and_(Race.class_id == race_class_id, extract('year', Race.date) == year),
+                                     Race.points_race == True))\
                              .having(func.sum(Participant.points) > 0)\
                              .order_by(func.sum(Participant.points)\
                              .desc()).all()
+
+        for racer in racers:
+            points = Participant.query.with_entities(Participant.points, Race.date).\
+                join(Racer).\
+                join(Race).\
+                filter(and_(racer[2] == Participant.racer_id, Race.points_race == True)).\
+                filter(extract("year", Race.date) == year).\
+                filter(Race.class_id == race_class_id).all()
+
+            date_dict = OrderedDict([(date, "-") for date in sorted(dates)])
+            result = {"name": racer[0], "id": racer[2], "total_pts": racer[1],
+                    "race_pts": date_dict}
+            
+            for point, date in points:
+                if point:
+                    result["race_pts"][date.strftime("%m-%d")] = point
+
+            results.append(result)
 
     elif standings_type == 'mar':
         results = Racer.query.with_entities(Racer.name,
@@ -54,8 +97,8 @@ def generate_standings(year, race_class_id, standings_type):
                              .desc()).all()
     else:
         results = None
-
-    return results
+    
+    return (results, dates)
 
 @main.route('/')
 def index():
@@ -83,9 +126,9 @@ def standings():
         year = form.year.data
         race_class_id = form.race_class_id.data
         standings_type = form.standings_type.data
-        results = generate_standings(year, race_class_id, standings_type)
+        results, dates = generate_standings(year, race_class_id, standings_type)
         return render_template('standings.html', form=form, results=results,
-                               standings_type=standings_type)
+                               standings_type=standings_type, dates=dates)
     return render_template('standings.html', form=form, results=None)
 
 @main.route('/feedback/', methods=['GET', 'POST'])
