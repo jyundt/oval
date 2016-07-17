@@ -24,7 +24,8 @@
             <tr>
               <th>Place</th>
               <th>Name</th>
-              {% for date_ in dates %}
+              <!-- This is safe because results is guaranteed here by checks-->
+              {% for date_ in results[0]['race_pts'].keys() %}
                 <th>{{ date_ }}</th>
               {% endfor %}
               <th>Points</th>
@@ -35,7 +36,7 @@
               <tr>
                 <td>{{loop.index}}</td>
                 {% if standings_type == 'team' %}
-                  <td><a href="{{url_for('team.details', id=result[2])}}">{{result[0]}}</a></td>
+                  <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
                 {% else %}
                   <td><a href="{{url_for('racer.details', id=result['id'])}}">{{result['name']}}</a></td>
                 {%endif%}

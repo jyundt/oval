@@ -1,108 +1,169 @@
 import datetime
 import requests
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from flask import render_template, redirect, url_for, current_app, flash
 from sqlalchemy import extract, func, and_
-from ..models import RaceClass, Racer, Team, Race,\
-    Participant
+from ..models import RaceClass, Racer, Team, Race, Participant
 from ..email import send_feedback_email
 from . import main
 from .forms import StandingsSearchForm, FeedbackForm
 
-#The goal of this function is return a table for the current standings for
-#a given season
-#e.g. Place Name Team Points
-def generate_standings(year, race_class_id, standings_type):
-    results = []
-    
-    dates = Race.query.with_entities(Race.date).\
-                    filter(and_(extract("year", Race.date) == year, Race.points_race == True))\
+
+def _gen_default(year, race_class_id, race_calendar):
+    """Default error case for standings type parameter
+
+    It seems useful to create a full function here in case any logging,
+    or more important work should be done on error.
+    """
+    return None
+
+
+def _gen_race_calendar(year, race_class_id):
+    """Returns the full calendar of dates for a class and year of racing
+
+    This is necessary because dates where individuals do not participate will
+    not exist in their individual results otherwise.
+    """
+    dates = Race.query.with_entities(Race.date)\
+                    .filter(extract("year", Race.date) == year)\
+                    .filter(Race.points_race == True)\
                     .filter(Race.class_id == race_class_id).all()
     dates = [d.strftime("%m-%d") for (d,) in dates]
 
-    if standings_type == 'team':
-        teams = Team.query.with_entities(Team.name,
-                                           func.sum(Participant.team_points),\
-                                           Team.id)\
-                            .join(Participant)\
-                            .join(Race)\
-                            .join(RaceClass)\
-                            .group_by(Team.id)\
-                            .filter(and_(Race.class_id == race_class_id,\
-                                         extract('year', Race.date) == year))\
-                            .having(func.sum(Participant.team_points) > 0)\
-                            .order_by(func.sum(Participant.team_points)\
-                            .desc()).all()
+    return sorted(dates)
 
-        for team in teams:
-            points = Participant.query.with_entities(Participant.team_points, Race.date).\
-                join(Race).\
-                filter(and_(team[2] == Participant.racer_id, Race.points_race == True)).\
-                filter(extract("year", Race.date) == year).\
-                filter(Race.class_id == race_class_id).all()
 
-            date_dict = OrderedDict([(date, "-") for date in sorted(dates)])
-            result = {"name": team[0], "id": team[2], "total_pts": team[1],
-                    "race_pts": date_dict}
-            
-            for point, date in points:
-                if point:
-                    result["race_pts"][date.strftime("%m-%d")] = point
+def _make_result(name, id_, total_pts, pts, race_calendar):
+    """Create result dictionary to make html templates more readable
+    """
+    result = {"name": name,
+              "id": id_,
+              "total_pts": total_pts,
+              "race_pts": OrderedDict([(date, "-") for date in race_calendar])}
 
-            results.append(result)
+    for point, date in pts:
+        if point:
+            result["race_pts"][date.strftime("%m-%d")] = point
 
-    elif standings_type == 'individual':
-        racers = Racer.query.with_entities(Racer.name, func.sum(Participant.points), Racer.id)\
-                             .join(Participant)\
-                             .join(Race)\
-                             .join(RaceClass)\
-                             .group_by(Racer.id)\
-                             .filter(and_(and_(Race.class_id == race_class_id, extract('year', Race.date) == year),
-                                     Race.points_race == True))\
-                             .having(func.sum(Participant.points) > 0)\
-                             .order_by(func.sum(Participant.points)\
-                             .desc()).all()
+    return result
 
-        for racer in racers:
-            points = Participant.query.with_entities(Participant.points, Race.date).\
-                join(Racer).\
-                join(Race).\
-                filter(and_(racer[2] == Participant.racer_id, Race.points_race == True)).\
-                filter(extract("year", Race.date) == year).\
-                filter(Race.class_id == race_class_id).all()
 
-            date_dict = OrderedDict([(date, "-") for date in sorted(dates)])
-            result = {"name": racer[0], "id": racer[2], "total_pts": racer[1],
-                    "race_pts": date_dict}
-            
-            for point, date in points:
-                if point:
-                    result["race_pts"][date.strftime("%m-%d")] = point
+def _gen_team_standings(year, race_class_id, race_calendar):
+    """Return team standings with individual race and total points
+    """
+    results = []
+    teams = Team.query.with_entities(Team.name,
+                                       func.sum(Participant.team_points),\
+                                       Team.id)\
+                        .join(Participant)\
+                        .join(Race)\
+                        .join(RaceClass)\
+                        .group_by(Team.id)\
+                        .filter(and_(Race.class_id == race_class_id,\
+                                     extract('year', Race.date) == year))\
+                        .having(func.sum(Participant.team_points) > 0)\
+                        .order_by(func.sum(Participant.team_points)\
+                        .desc()).all()
+    for team in teams:
+        points = Participant.query.with_entities(func.sum(Participant.team_points), Race.date)\
+            .join(Race)\
+            .group_by(Participant.team_id, Race.date)\
+            .filter(team[2] == Participant.team_id)\
+            .filter(extract("year", Race.date) == year)\
+            .filter(Race.points_race == True)\
+            .filter(Race.class_id == race_class_id).all()
 
-            results.append(result)
+        result = _make_result(name=team[0], id_=team[2], total_pts=team[1], pts=points, race_calendar=race_calendar)
+        
+        results.append(result)
 
-    elif standings_type == 'mar':
-        results = Racer.query.with_entities(Racer.name,
-                                            func.sum(Participant.mar_points),\
-                                            Racer.id)\
-                             .join(Participant)\
-                             .join(Race)\
-                             .join(RaceClass)\
-                             .group_by(Racer.id)\
-                             .filter(and_(Race.class_id == race_class_id,\
-                                          extract('year', Race.date) == year))\
-                             .having(func.sum(Participant.mar_points) > 0)\
-                             .order_by(func.sum(Participant.mar_points)\
-                             .desc()).all()
-    else:
-        results = None
+    return results
+
+
+def _gen_ind_standings(year, race_class_id, race_calendar):
+    """Return top individual racer standings with individual race and total points
+    """
+    results = []
+    racers = Racer.query.with_entities(Racer.name, func.sum(Participant.points), Racer.id)\
+                         .join(Participant)\
+                         .join(Race)\
+                         .join(RaceClass)\
+                         .group_by(Racer.id)\
+                         .filter(and_(and_(Race.class_id == race_class_id, extract('year', Race.date) == year),
+                                 Race.points_race == True))\
+                         .having(func.sum(Participant.points) > 0)\
+                         .order_by(func.sum(Participant.points)\
+                         .desc()).all()
+
+    for racer in racers:
+        points = Participant.query.with_entities(Participant.points, Race.date)\
+            .join(Racer)\
+            .join(Race)\
+            .filter(and_(racer[2] == Participant.racer_id, Race.points_race == True))\
+            .filter(extract("year", Race.date) == year)\
+            .filter(Race.class_id == race_class_id).all()
+
+        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1], pts=points, race_calendar=race_calendar)
+        
+        results.append(result)
+
+    return results
+
+
+def _gen_mar_standings(year, race_class_id, race_calendar):
+    """Return top MAR standings with individual race and total points
+    """
+    results = []
+    mars = Racer.query.with_entities(Racer.name,
+                                        func.sum(Participant.mar_points),\
+                                        Racer.id)\
+                         .join(Participant)\
+                         .join(Race)\
+                         .join(RaceClass)\
+                         .group_by(Racer.id)\
+                         .filter(and_(Race.class_id == race_class_id,\
+                                      extract('year', Race.date) == year))\
+                         .having(func.sum(Participant.mar_points) > 0)\
+                         .order_by(func.sum(Participant.mar_points)\
+                         .desc()).all()
+    for racer in mars:
+        points = Participant.query.with_entities(Participant.mar_points, Race.date)\
+            .join(Racer)\
+            .join(Race)\
+            .filter(and_(racer[2] == Participant.racer_id, Race.points_race == True))\
+            .filter(extract("year", Race.date) == year)\
+            .filter(Race.class_id == race_class_id).all()
+
+        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1], pts=points, race_calendar=race_calendar)
+
+        results.append(result)
+
+    return results     
+
+
+def generate_standings(year, race_class_id, standings_type):
+    """Returns a table for the current standings in a specific season.
     
-    return (results, dates)
+    """
+    STANDING_TYPES = defaultdict(_gen_default,
+                                team=_gen_team_standings,
+                                individual=_gen_ind_standings,
+                                mar=_gen_mar_standings)
+    
+    race_calendar = _gen_race_calendar(year, race_class_id)
+
+    results =  STANDING_TYPES[standings_type](year, race_class_id, race_calendar)
+
+    return results
+
 
 @main.route('/')
 def index():
-    #Let's hard code the categories that we'd like to see on the front page
+    """Fills and renders the front page index.html template
+    
+    Let's hard code the categories that we'd like to see on the front page
+    """
     categories = ['A', 'B', 'C', 'Masters 40+/Women']
     races = []
     for category in categories:
@@ -111,6 +172,8 @@ def index():
                                .order_by(Race.date.desc())\
                                .first())
     return render_template('index.html', races=races)
+
+
 @main.route('/standings/', methods=['GET', 'POST'])
 def standings():
     form = StandingsSearchForm()
@@ -126,10 +189,12 @@ def standings():
         year = form.year.data
         race_class_id = form.race_class_id.data
         standings_type = form.standings_type.data
-        results, dates = generate_standings(year, race_class_id, standings_type)
+        results = generate_standings(year, race_class_id, standings_type)
         return render_template('standings.html', form=form, results=results,
-                               standings_type=standings_type, dates=dates)
+                               standings_type=standings_type)
+
     return render_template('standings.html', form=form, results=None)
+
 
 @main.route('/feedback/', methods=['GET', 'POST'])
 def send_feedback():
@@ -160,6 +225,7 @@ def send_feedback():
         flash('Feedback sent!')
         return redirect(url_for('main.index'))
     return render_template('feedback.html', form=form)
+
 
 @main.route('/robots.txt')
 def serve_static():
