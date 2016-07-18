@@ -26,7 +26,7 @@ Create your database:
 #### Download the code
 Grabbing everything from [The Oval App](https://github.com/jyundt/oval) is probably the easiest way.
 #### Create a virtual environment
-`virtual venv`
+`virtualenv venv`
 #### Activate virtual environment and install python reqs
 `. ./venv/bin/activate`
 

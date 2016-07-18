@@ -29,7 +29,7 @@ def _gen_race_calendar(year, race_class_id):
                     .filter(extract("year", Race.date) == year)\
                     .filter(Race.points_race == True)\
                     .filter(Race.class_id == race_class_id).all()
-    dates = [d.strftime("%m-%d") for (d,) in dates]
+    dates = [d.strftime("%m/%d") for (d,) in dates]
 
     return sorted(dates)
 
@@ -44,7 +44,7 @@ def _make_result(name, id_, total_pts, pts, race_calendar):
 
     for point, date in pts:
         if point:
-            result["race_pts"][date.strftime("%m-%d")] = point
+            result["race_pts"][date.strftime("%m/%d")] = point
 
     return result
 
