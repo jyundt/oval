@@ -1,3 +1,6 @@
+.table-hover tr:hover td, .table-hover tr:hover th {
+  background-color: #e9f2fb;
+}
 .navbar-default {
   background-color: #32ace2;
   border-color: #2a738c;

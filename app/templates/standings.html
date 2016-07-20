@@ -19,7 +19,7 @@
       <h2>No Results!</h2>
     {%else%}
         <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered table-hover">
           <thead>
             <tr>
               <th>Place</th>
@@ -28,7 +28,7 @@
               {% for date_ in results[0]['race_pts'].keys() %}
                 <th>{{ date_ }}</th>
               {% endfor %}
-              <th>Points</th>
+              <th>Total Points</th>
             </tr>
           </thead>
           <tbody>
