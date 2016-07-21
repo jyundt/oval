@@ -361,6 +361,17 @@ def add_participant(id):
         flash('Racer ' + participant.racer.name + ' added to race!')
         current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
                                 participant.racer.name, participant.id)
+        #Let's also add a Prime of "Point Prime" if necessary
+        participant_id = participant.id
+        name = "Point Prime"
+        prime = Prime(name=name, participant_id=participant_id)
+        db.session.add(prime)
+        db.session.commit()
+        flash('Prime for ' + prime.participant.racer.name + ' added!')
+        current_app.logger.info('%s[%d]:%s[%d]:%s[%d]', race.name, race.id,
+                                participant.racer.name, participant.id,
+                                prime.name, prime.id)
+ 
         if 'submit' in request.form:
             return redirect(url_for('race.details', id=race.id))
         elif 'submit_another' in request.form:
