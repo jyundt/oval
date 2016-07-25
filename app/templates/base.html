@@ -10,6 +10,8 @@
 {{ super() }}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"> 
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.0/fullcalendar.min.css">
+{% block ogmeta %}
+{% endblock ogmeta %}
 {% endblock %}
 
 
