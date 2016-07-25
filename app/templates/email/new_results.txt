@@ -15,6 +15,6 @@ Detailed race results can be found here: {{url_for('race.details', id=race.id, _
 Missing team info? Incorrectly spelled name? Please use the feedback link to send corrections: {{url_for('main.send_feedback', _external=True)}}
 
 Sincerely,
-The Oval App Team
+The Oval Team
 Note: replies to this email address are not monitored.
 
