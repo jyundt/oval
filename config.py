@@ -13,7 +13,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_SUBJECT_PREFIX = '[Oval App]'
     MAIL_SENDER = 'noreply@theoval.us'
-    MAIL_FEEDBACK_ADDRESS = 'jyundt@gmail.com'
+    MAIL_FEEDBACK_ADDRESS = 'feedback@theoval.us'
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
     STRAVA_API_TOKEN = os.environ.get('STRAVA_API_TOKEN')
     AUDIT_LOG= 'audit.log'
