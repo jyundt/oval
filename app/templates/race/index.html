@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block head %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.0/fullcalendar.min.css">
+{% endblock %}
+
 {% block title %}Races{% endblock %}
 
 {% block page_content %}
@@ -57,6 +62,7 @@
 {% endblock %}
 {% block scripts %}
 {{super()}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.0/fullcalendar.min.js"></script>
 <script>
 $(document).ready(function() {
   $('#calendar').fullCalendar({
