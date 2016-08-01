@@ -24,9 +24,8 @@
             <tr>
               <th>Place</th>
               <th>Name</th>
-              <!-- This is safe because results is guaranteed here by checks-->
-              {% for date_ in results[0]['race_pts'].keys() %}
-                <th>{{ date_ }}</th>
+              {% for race in race_calendar %}
+                <th><a href="{{url_for('race.details', id=race[1])}}">{{ race[0].strftime('%m/%d') }}</a></th>
               {% endfor %}
               <th>Total Points</th>
             </tr>

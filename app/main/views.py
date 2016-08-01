@@ -25,13 +25,13 @@ def _gen_race_calendar(year, race_class_id):
     This is necessary because dates where individuals do not participate will
     not exist in their individual results otherwise.
     """
-    dates = Race.query.with_entities(Race.date)\
+    dates = Race.query.with_entities(Race.date, Race.id)\
                     .filter(extract("year", Race.date) == year)\
                     .filter(Race.points_race == True)\
                     .filter(Race.class_id == race_class_id).all()
-    dates = [d.strftime("%m/%d") for (d,) in dates]
+    dates = sorted(dates, key=lambda x: x[0])
 
-    return sorted(dates)
+    return dates
 
 
 def _make_result(name, id_, total_pts, pts, race_calendar):
@@ -40,11 +40,11 @@ def _make_result(name, id_, total_pts, pts, race_calendar):
     result = {"name": name,
               "id": id_,
               "total_pts": total_pts,
-              "race_pts": OrderedDict([(date, "-") for date in race_calendar])}
+              "race_pts": OrderedDict([(date, "-") for date,_ in race_calendar])}
 
     for point, date in pts:
         if point:
-            result["race_pts"][date.strftime("%m/%d")] = point
+            result["race_pts"][date] = point
 
     return result
 
@@ -155,7 +155,7 @@ def generate_standings(year, race_class_id, standings_type):
 
     results =  STANDING_TYPES[standings_type](year, race_class_id, race_calendar)
 
-    return results
+    return results, race_calendar
 
 
 @main.route('/')
@@ -189,9 +189,11 @@ def standings():
         year = form.year.data
         race_class_id = form.race_class_id.data
         standings_type = form.standings_type.data
-        results = generate_standings(year, race_class_id, standings_type)
+        results, race_calendar = generate_standings(year, race_class_id,\
+                                                    standings_type)
         return render_template('standings.html', form=form, results=results,
-                               standings_type=standings_type)
+                               standings_type=standings_type,\
+                               race_calendar=race_calendar)
 
     return render_template('standings.html', form=form, results=None)
 
