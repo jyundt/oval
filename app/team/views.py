@@ -1,6 +1,7 @@
 import json
-from flask import render_template, redirect, url_for, flash, current_app
-from sqlalchemy import func
+from flask import render_template, redirect, url_for, flash, current_app,\
+                  request
+from sqlalchemy import func, extract
 from .. import db
 from ..models import RaceClass, Racer, Team, Race, Participant
 from .forms import TeamAddForm, TeamEditForm, RacerAddToTeamForm
@@ -10,6 +11,39 @@ from ..decorators import roles_accepted
 
 @team.route('/')
 def index():
+    if request.query_string:
+        if 'year' in request.args:
+            year = request.args.get('year')
+        else:
+            year = None
+        if 'team_id' in request.args:
+            team_id = request.args.get('team_id')
+        else:
+            team_id = None
+        if year is not None and team_id is not None:
+            results = Participant.query\
+                                 .with_entities(Participant.team_points,\
+                                                Race.date,\
+                                                Racer.name,\
+                                                RaceClass.name)\
+                                 .filter(Participant.team_points > 0)\
+                                 .join(Team)\
+                                 .filter(Team.id == team_id)\
+                                 .join(Race)\
+                                 .filter(extract('year', Race.date) == year)\
+                                 .filter(Race.points_race == True)\
+                                 .join(Racer, Participant.racer_id == Racer.id)\
+                                 .join(RaceClass,\
+                                       Race.class_id == RaceClass.id)\
+                                 .all()
+            results_json = []
+            for result in results:
+                results_json.append({"points": int(result[0]),\
+                                     "date": result[1].strftime('%m/%y'),\
+                                     "name": str(result[2]),\
+                                     "class": str(result[3])})
+            return json.dumps(results_json)
+ 
     teams = Team.query.order_by(Team.name).all()
     return render_template('team/index.html', teams=teams)
 

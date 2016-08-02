@@ -22,14 +22,27 @@
 {% endif %}
 </div>
 
-{%if current_racers|length >0%}
-<h2>Team Roster</h2>
-<ul>
-{%for racer in current_racers%}
-<li><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a></li>
-{%endfor%}
-</ul>
-{%endif%}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-4">
+      {%if current_racers|length >0%}
+      <h2>Team Roster</h2>
+      <ul>
+      {%for racer in current_racers%}
+      <li><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a></li>
+      {%endfor%}
+      </ul>
+      {%endif%}
+    </div>
+    <div class="col-md-8 data-vis">
+    <h2>insert vis here</h2>
+      <div>
+        text
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 <h2>All Team Result</h2>
