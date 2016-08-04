@@ -100,7 +100,7 @@ class ParticipantForm(Form):
                                                      place!')])
     mar_points = IntegerField('MAR Points',
                               validators=[Optional(),
-                                          NumberRange(min=1,
+                                          NumberRange(min=0,
                                                       max=3,
                                                       message='Invalid MAR\
                                                       points!')])
