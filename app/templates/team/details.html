@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block page_content %}
+
 <h6>
 <ul class="breadcrumb"> 
   <li><a href="{{url_for('main.index')}}">Home</a></li> 
@@ -12,6 +13,7 @@
   <li class="active">{{team.name}}</li>
 </ul>
 </h6>
+
 <div class="page-header">
     <h1>{{team.name}}</h1>
 {% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
@@ -34,12 +36,23 @@
       </ul>
       {%endif%}
     </div>
+
+    <!-- Data for d3 -->
+    <script>
+        var team_id = {{team.id}};
+        var current_year = {{data_years[0]}};
+        var end_year = {{data_years[-1]}};
+    </script>
+
+    <select id="yearDropDown" onchange="handleTeamYearChoice(this.value)">
+        {%for year in data_years%}
+            <option value={{year}}>{{year}}</option>
+        {%endfor%}
+    </select>
+    
     <div class="col-md-8 data-vis">
-    <h2>insert vis here</h2>
-      <div>
-        text
-      </div>
     </div>
+
   </div>
 </div>
 
@@ -74,6 +87,9 @@
 </div>
 {% block scripts %}
 {{super()}}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.0/d3.min.js"></script>
+<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.0/d3.min.js"></script>-->
+<script src='https://d3js.org/d3.v4.min.js'></script>
+<script src="https://d3js.org/d3-time.v1.min.js"></script>
+<script type="text/javascript" src="../../static/lib/team.js"></script>
 {%endblock%}
 {% endblock %}

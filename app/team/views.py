@@ -1,7 +1,10 @@
 import json
+import sys
+
 from flask import render_template, redirect, url_for, flash, current_app,\
                   request
 from sqlalchemy import func, extract
+from sqlalchemy.sql.expression import distinct
 from .. import db
 from ..models import RaceClass, Racer, Team, Race, Participant
 from .forms import TeamAddForm, TeamEditForm, RacerAddToTeamForm
@@ -69,9 +72,12 @@ def details(id):
                                        .order_by(RaceClass.name)\
                                        .all()
 
+    years = [int(y[0]) for y in Race.query.with_entities(distinct(extract("year", Race.date))).\
+                                                        order_by(extract("year", Race.date).desc()).all()]
+
     return render_template('team/details.html', team=team,\
                            current_racers=current_racers,\
-                           results=results)
+                           results=results, data_years=years)
 
 @team.route('/add/', methods=['GET', 'POST'])
 @roles_accepted('official', 'moderator')
