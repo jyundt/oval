@@ -42,7 +42,7 @@ def index():
             results_json = []
             for result in results:
                 results_json.append({"points": int(result[0]),\
-                                     "date": result[1].strftime('%m/%y'),\
+                                     "date": result[1].strftime('%m/%d'),\
                                      "name": str(result[2]),\
                                      "class": str(result[3])})
             return json.dumps(results_json)
