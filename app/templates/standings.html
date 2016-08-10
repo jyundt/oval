@@ -41,7 +41,11 @@
                   <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
                 {% else %}
                   <td><a href="{{url_for('racer.details', id=result['id'])}}">{{result['name']}}</a></td>
-                  <td><a href="{{url_for('team.details', id=result['team_id'])}}">{{result['team_name']}}</a></td>
+                  {% if result['team_id'] != None %}
+                    <td><a href="{{url_for('team.details', id=result['team_id'])}}">{{result['team_name']}}</a></td>
+                  {% else %}
+                    <td>-</td>
+                  {%endif%}
                 {%endif%}
                 {% for date_, points in result['race_pts'].iteritems() %}
                     <td>{{points}}</td>
