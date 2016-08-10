@@ -34,13 +34,15 @@ def _gen_race_calendar(year, race_class_id):
     return dates
 
 
-def _make_result(name, id_, total_pts, pts, race_calendar):
+def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
     """Create result dictionary to make html templates more readable
     """
     result = {"name": name,
               "id": id_,
               "total_pts": total_pts,
-              "race_pts": OrderedDict([(date, "-") for date,_ in race_calendar])}
+              "race_pts": OrderedDict([(date, "-") for date,_ in race_calendar]),
+              "team_name": team_name,
+              "team_id": team_id}
 
     for point, date in pts:
         if point:
@@ -74,7 +76,9 @@ def _gen_team_standings(year, race_class_id, race_calendar):
             .filter(Race.points_race == True)\
             .filter(Race.class_id == race_class_id).all()
 
-        result = _make_result(name=team[0], id_=team[2], total_pts=team[1], pts=points, race_calendar=race_calendar)
+        result = _make_result(name=team[0], id_=team[2], total_pts=team[1],
+                              pts=points, race_calendar=race_calendar,
+                              team_name=None, team_id=None)
         
         results.append(result)
 
@@ -104,7 +108,21 @@ def _gen_ind_standings(year, race_class_id, race_calendar):
             .filter(extract("year", Race.date) == year)\
             .filter(Race.class_id == race_class_id).all()
 
-        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1], pts=points, race_calendar=race_calendar)
+        team = Team.query.with_entities(Team.name, Team.id)\
+                         .join(Participant)\
+                         .join(Racer)\
+                         .filter(Racer.id==racer[2])\
+                         .join(Race)\
+                         .filter(and_(and_(Race.class_id == race_class_id,
+                                           extract('year', Race.date) == year),
+                                           Race.points_race == True))\
+                         .all()[-1]
+
+
+
+        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1],
+                              pts=points, race_calendar=race_calendar,
+                              team_name=team[0], team_id=team[1])
         
         results.append(result)
 
@@ -135,7 +153,21 @@ def _gen_mar_standings(year, race_class_id, race_calendar):
             .filter(extract("year", Race.date) == year)\
             .filter(Race.class_id == race_class_id).all()
 
-        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1], pts=points, race_calendar=race_calendar)
+        team = Team.query.with_entities(Team.name, Team.id)\
+                         .join(Participant)\
+                         .join(Racer)\
+                         .filter(Racer.id==racer[2])\
+                         .join(Race)\
+                         .filter(and_(and_(Race.class_id == race_class_id,
+                                           extract('year', Race.date) == year),
+                                           Race.points_race == True))\
+                         .all()[-1]
+
+
+
+        result = _make_result(name=racer[0], id_=racer[2], total_pts=racer[1],
+                              pts=points, race_calendar=race_calendar,
+                              team_name=team[0], team_id=team[1])
 
         results.append(result)
 

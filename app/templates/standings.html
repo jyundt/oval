@@ -24,6 +24,9 @@
             <tr>
               <th>Place</th>
               <th>Name</th>
+              {% if standings_type != 'team' %}
+              <th>Team</th>
+              {%endif%}
               {% for race in race_calendar %}
                 <th><a href="{{url_for('race.details', id=race[1])}}">{{ race[0].strftime('%m/%d') }}</a></th>
               {% endfor %}
@@ -38,6 +41,7 @@
                   <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
                 {% else %}
                   <td><a href="{{url_for('racer.details', id=result['id'])}}">{{result['name']}}</a></td>
+                  <td><a href="{{url_for('team.details', id=result['team_id'])}}">{{result['team_name']}}</a></td>
                 {%endif%}
                 {% for date_, points in result['race_pts'].iteritems() %}
                     <td>{{points}}</td>
