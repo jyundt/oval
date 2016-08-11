@@ -113,6 +113,7 @@ def _gen_ind_standings(year, race_class_id, race_calendar):
                          .join(Racer)\
                          .filter(Racer.id==racer[2])\
                          .join(Race)\
+                         .order_by(Race.date.asc())\
                          .filter(and_(and_(Race.class_id == race_class_id,
                                            extract('year', Race.date) == year),
                                            Race.points_race == True))\
@@ -164,10 +165,12 @@ def _gen_mar_standings(year, race_class_id, race_calendar):
                          .join(Racer)\
                          .filter(Racer.id==racer[2])\
                          .join(Race)\
+                         .order_by(Race.date.asc())\
                          .filter(and_(and_(Race.class_id == race_class_id,
                                            extract('year', Race.date) == year),
                                            Race.points_race == True))\
                          .all()
+
         if team:
             team = team[-1]
         else:
