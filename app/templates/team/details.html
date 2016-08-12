@@ -27,14 +27,16 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-4">
+    <div id="teamRoster">
       {%if current_racers|length >0%}
       <h2>Team Roster</h2>
       <ul>
       {%for racer in current_racers%}
-      <li><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a></li>
+      <li id="{{racer.name + "LI"}}"><a id="{{racer.name + "AHREF"}}" href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a></li>
       {%endfor%}
       </ul>
       {%endif%}
+    </div>
     </div>
 
     <!-- Data for d3 -->
