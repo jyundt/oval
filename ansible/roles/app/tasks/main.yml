@@ -1,0 +1,71 @@
+---
+- include_vars: "{{ansible_nodename}}.yml"
+
+- name: Create application group
+  group: name={{oval_group}} gid={{oval_gid}}
+
+- name: Create application account
+  user: name={{oval_user}} uid={{oval_uid}} group={{oval_group}}
+
+- name: Copy ssh key for application account
+  authorized_key: user={{oval_user}} key="{{ lookup('file', lookup('env','HOME') + "/.ssh/id_rsa.pub") }}"
+
+- name: Create ENV var file for application account
+  template: src=templates/oval_vars.j2 dest={{oval_vars}} mode=0600 owner={{oval_user}} group={{oval_group}}
+
+- name: Add ENV var file to .bashrc
+  blockinfile:
+    dest: /home/{{oval_user}}/.bashrc
+    block: |
+      set -a
+      source {{oval_vars}}
+      set +a
+
+- name: Create pgpass file
+  template: src=templates/pgpass.j2 dest=/home/{{oval_user}}/.pgpass mode=0600 owner={{oval_user}} group={{oval_group}}
+
+- name: Create backup directory
+  file: path=/home/{{oval_user}}/db_backup state=directory owner={{oval_user}} group={{oval_group}}
+
+- name: Create DB backup job
+  cron: name="db backup" minute="0" hour="*/6" job="/usr/bin/pg_dump {{db_name}} > /home/{{oval_user}}/db_backup/oval_db_`date +\%s`.sql" user={{oval_user}}
+
+- name: Install git client
+  yum: name=git update_cache=yes
+
+- name: Pull code from git
+  git: repo={{git_repo}} dest={{app_dir}}
+  become: yes
+  become_user: "{{oval_user}}"
+  notify: 
+    - Restart uWSGI
+    - Create tables
+
+- name: Install virtualenv and python deps
+  yum: name={{item}} update_cache=yes
+  with_items:
+    - gcc
+    - python-virtualenv
+    - postgresql-devel
+
+- name: Create virtualenv and install pip requirements
+  pip: requirements="{{app_dir}}/requirements.txt" virtualenv="{{venv_dir}}"
+  become: yes
+  become_user: "{{oval_user}}"
+
+- name: Install uWSGI binaries
+  yum: name={{item}} update_cache=yes
+  with_items:
+    - uwsgi
+    - uwsgi-plugin-python
+
+- name: Create uWSGI application .ini
+  template: src=templates/oval.ini.j2 dest="/etc/uwsgi.d/oval.ini" owner={{oval_user}} group={{oval_group}}
+  notify: Restart uWSGI
+
+- name: Configure proper SELinux booleans for uWSGI
+  seboolean: name=httpd_can_network_connect state=yes persistent=yes
+  notify: Restart uWSGI
+
+- name: Start uWSGI application server
+  service: name=uwsgi state=started enabled=yes

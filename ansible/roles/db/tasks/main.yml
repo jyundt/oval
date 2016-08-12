@@ -1,0 +1,32 @@
+---
+- include_vars: "{{ansible_nodename}}.yml"
+
+- name: Install Postgres    
+  yum: name=postgresql-server update_cache=yes
+
+- name: Install psycopg2
+  yum: name=python-psycopg2 update_cache=yes
+
+- name: Initialize Postgres
+  command: /usr/bin/postgresql-setup initdb creates=/var/lib/pgsql/data/pg_hba.conf
+
+- name: Enable password based auth for localhost ipv4
+  lineinfile: dest=/var/lib/pgsql/data/pg_hba.conf regexp="^host    all             all             127.0.0.1/32" line="host    all             all             127.0.0.1/32            md5"
+  notify: Restart postgres
+
+- name: Enable password based auth for localhost ipv6
+  lineinfile: dest=/var/lib/pgsql/data/pg_hba.conf regexp="^host    all             all             ::1/128" line="host    all             all             ::1/128                 md5"
+  notify: Restart postgres
+  
+- name: Start/enable Postgres
+  service: name=postgresql state=started enabled=yes
+
+- name: Create database user
+  postgresql_user: name={{db_user}} password={{db_pass}} login_unix_socket=/var/run/postgresql/
+  become: true
+  become_user: postgres
+
+- name: Create database
+  postgresql_db: name={{db_name}} owner={{db_user}} login_unix_socket=/var/run/postgresql/
+  become: true
+  become_user: postgres

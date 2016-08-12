@@ -1,0 +1,30 @@
+---
+- name: Install SElinux deps
+  yum: name={{item}} update_cache=yes
+  with_items:
+  - libsemanage-python
+  - libselinux-python
+
+- name: Install our ssh pub key for root
+  authorized_key: user=root key="{{ lookup('file', lookup('env','HOME') + "/.ssh/id_rsa.pub") }}"
+
+- name: Disable password based root access
+  lineinfile: dest=/etc/ssh/sshd_config line="PermitRootLogin without-password" state=present
+  notify: Restart sshd
+
+- name: Enable SELinux
+  selinux: policy=targeted state=enforcing
+
+- name: Install firewalld
+  yum: name=firewalld update_cache=yes
+
+- name: Enable firewalld
+  service: name=firewalld state=started enabled=yes
+
+- name: Open firewalld for specified services
+  firewalld: service={{item}} state=enabled permanent=true
+  with_items: "{{firewall_exceptions}}"
+  notify: Restart firewalld
+
+- name: Install EPEL
+  yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm

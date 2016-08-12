@@ -1,0 +1,8 @@
+---
+- name: Restart uWSGI
+  service: name=uwsgi state=restarted
+
+- name: Create tables
+  shell: ". {{venv_dir}}/bin/activate ; echo \"db.create_all()\" | {{app_dir}}/manage.py shell"
+  become: true
+  become_user: "{{oval_user}}"

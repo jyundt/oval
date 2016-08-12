@@ -1,0 +1,74 @@
+---
+- include_vars: "{{ansible_nodename}}.yml"
+
+- name: Install Apache
+  yum: name=httpd update_cache=yes
+
+- name: Install uWSGI Apache Module
+  yum: name=mod_proxy_uwsgi update_cache=yes
+
+- name: Install mod_ssl Apache Module
+  yum: name=mod_ssl update_cache=yes
+
+- name: Copy force SSL rewrite rule
+  copy: src=files/rewrite.conf dest=/etc/httpd/conf.d/
+  notify: 
+  - Restart Apache
+
+- name: Copy uWSGI Apache Module config
+  template: src=templates/uwsgi.conf.j2 dest=/etc/httpd/conf.d/uwsgi.conf
+  notify: 
+  - Restart Apache
+
+- name: Copy /server-status Apache config
+  copy: src=files/status.conf dest=/etc/httpd/conf.d/
+  notify: 
+  - Restart Apache
+
+- name: Copy SSL key
+  copy: content="{{ssl_key}}" dest=/etc/pki/tls/private/{{ansible_nodename}}.key
+  notify: 
+  - Restart Apache
+
+- name: Update Apache ssl.conf with SSL key
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf regexp="^SSLCertificateKeyFile" line="SSLCertificateKeyFile /etc/pki/tls/private/{{ansible_nodename}}.key"
+  notify: 
+  - Restart Apache
+
+- name: Copy SSL cert
+  copy: content="{{ssl_cert}}" dest=/etc/pki/tls/certs/{{ansible_nodename}}.crt
+  notify: 
+  - Restart Apache
+
+- name: Update Apache ssl.conf with SSL cert
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf regexp="^SSLCertificateFile" line="SSLCertificateFile /etc/pki/tls/certs/{{ansible_nodename}}.crt"
+  notify: 
+  - Restart Apache
+
+- name: Copy SSL bundle
+  copy: content="{{ssl_bundle}}" dest=/etc/pki/tls/certs/{{ansible_nodename}}_bundle.crt
+  notify: 
+  - Restart Apache
+
+- name: Update Apache ssl.conf with SSL bundle
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf regexp="^SSLCertificateChainFile" line="SSLCertificateChainFile /etc/pki/tls/certs/{{ansible_nodename}}_bundle.crt"
+  notify: 
+  - Restart Apache
+
+- name: Enable strong Apche ciphers
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf regexp="^SSLCipherSuite" line="SSLCipherSuite ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS"
+  notify: 
+  - Restart Apache
+
+- name: Disable SSLv2 and SSLv3
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf regexp="^SSLProtocol" line="SSLProtocol all -SSLv2 -SSLv3"
+  notify: 
+  - Restart Apache
+
+- name: Force Apache server cipher preference
+  lineinfile: dest=/etc/httpd/conf.d/ssl.conf state=present line="SSLHonorCipherOrder On" insertafter="^SSLProtocol"
+  notify: 
+  - Restart Apache
+
+- name: Start/enable Apache
+  service: name=httpd state=started enabled=yes
