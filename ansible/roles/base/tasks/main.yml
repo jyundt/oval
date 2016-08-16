@@ -1,4 +1,13 @@
 ---
+- name: Upgrade all packages
+  yum: name=* state=latest  update_cache=yes
+
+- name: Install NTP
+  yum: name=ntp update_cache=yes
+
+- name: Enable NTP
+  service: name=ntpd state=started enabled=yes
+
 - name: Install SElinux deps
   yum: name={{item}} update_cache=yes
   with_items:
