@@ -10,6 +10,7 @@ from . import login_manager
 from flask import current_app
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import func, extract
+from stravalib import Client
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -81,7 +82,9 @@ class Racer(db.Model):
     name = db.Column(db.String(200), nullable=False)
     usac_license = db.Column(db.Integer, unique=True)
     strava_id = db.Column(db.Integer, unique=True)
+    strava_access_token = db.Column(db.String(40), unique=True)
     _strava_profile_url = db.Column('strava_profile_url', db.String(200))
+    _strava_email = db.Column('strava_email', db.String(200))
     strava_profile_last_fetch = db.Column(db.DateTime(timezone=True))
     birthdate = db.Column(db.Date)
     aca_member = db.Column(db.Boolean, default=False)
@@ -91,26 +94,47 @@ class Racer(db.Model):
 
     @property
     def strava_profile_url(self):
-        if self.strava_id is None:
+        if self.strava_access_token is None:
             return None
 
         if self.strava_profile_last_fetch is None or\
            (datetime.now(pytz.timezone('UTC')) -\
             self.strava_profile_last_fetch)\
-           > timedelta(minutes=15):
+           > timedelta(minutes=5):
             self.strava_profile_last_fetch = datetime.now(pytz.timezone('UTC'))
-            response = requests.get('https://www.strava.com/api/v3/athletes/'
-                                    +str(self.strava_id),
-                                    params={'access_token':current_app\
-                                            .config['STRAVA_API_TOKEN']})
-            if response.status_code == 200:
-                self.strava_profile_url = json.loads(response.text)['profile']
+            strava_client = Client(self.strava_access_token)
+            strava_athlete = strava_client.get_athlete()
+            if strava_athlete.profile == 'avatar/athlete/large.png':
+                self.strava_profile_url = None
+            else:
+                self.strava_profile_url = strava_athlete.profile
 
         return self._strava_profile_url
 
     @strava_profile_url.setter
     def strava_profile_url(self, url):
         self._strava_profile_url = url
+        db.session.commit()
+
+    @property
+    def strava_email(self):
+        if self.strava_access_token is None:
+            return None
+
+        if self.strava_profile_last_fetch is None or\
+           (datetime.now(pytz.timezone('UTC')) -\
+            self.strava_profile_last_fetch)\
+           > timedelta(minutes=5):
+            self.strava_profile_last_fetch = datetime.now(pytz.timezone('UTC'))
+            strava_client = Client(self.strava_access_token)
+            strava_athlete = strava_client.get_athlete()
+            self.strava_email = strava_athlete.email
+
+        return self._strava_email
+
+    @strava_email.setter
+    def strava_email(self, email):
+        self._strava_email = email
         db.session.commit()
 
     def season_points(self, year, category_id):

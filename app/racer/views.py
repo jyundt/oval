@@ -1,11 +1,14 @@
 import json
-from flask import render_template, redirect, url_for, flash, current_app
+import requests
+from flask import render_template, redirect, url_for, flash, current_app,\
+                  request
 from .. import db
 from ..models import Racer, Team, Race, Participant
 from . import racer
 from .forms import RacerAddForm, RacerEditForm, RacerSearchForm
 from flask_login import current_user
 from ..decorators import roles_accepted
+from stravalib import Client
 
 @racer.route('/')
 def index():
@@ -43,8 +46,34 @@ def details(id):
     current_team = racer.current_team
     if current_team in teams:
         teams.remove(current_team)
+
+    strava_client = Client()
+    strava_client_id = current_app.config['STRAVA_CLIENT_ID']
+    strava_url = strava_client.\
+                 authorization_url(client_id=strava_client_id,\
+                                   redirect_uri=\
+                                     url_for('racer.authorize_strava',\
+                                             _external=True),\
+                                   state=racer.id,\
+                                   approval_prompt='force')
+
+    if racer.strava_access_token:
+        access_token = racer.strava_access_token
+        try:
+            strava_client = Client(access_token)
+            strava_athlete = strava_client.get_athlete()
+        except:
+            racer.strava_access_token = None
+            racer.strava_id = None
+            racer.strava_email = None
+            racer.strava_profile_url = None
+            racer.strava_profile_last_fetch = None
+            current_app.logger.info('forced strava deauth %s[%d]', racer.name, racer.id)
+            db.session.commit()
+            
     return render_template('racer/details.html', racer=racer,
-                           current_team=current_team, teams=teams)
+                           current_team=current_team, teams=teams,
+                           strava_url=strava_url)
 
 @racer.route('/add/', methods=['GET', 'POST'])
 @roles_accepted('official', 'moderator')
@@ -60,7 +89,6 @@ def add():
     if form.validate_on_submit():
         name = form.name.data
         usac_license = form.usac_license.data
-        strava_id = form.strava_id.data
         birthdate = form.birthdate.data
         aca_member = form.aca_member.data
         if form.current_team.data:
@@ -69,8 +97,7 @@ def add():
         else:
             current_team_id = None
         racer = Racer(name=name, usac_license=usac_license, birthdate=birthdate,
-                      current_team_id=current_team_id,
-                      strava_id=strava_id, aca_member=aca_member)
+                      current_team_id=current_team_id, aca_member=aca_member)
         db.session.add(racer)
         db.session.commit()
         flash('Racer ' + racer.name + ' created!')
@@ -99,8 +126,6 @@ def edit(id):
         racer.usac_license = usac_license
         birthdate = form.birthdate.data
         racer.birthdate = birthdate
-        strava_id = form.strava_id.data
-        racer.strava_id = strava_id
         aca_member = form.aca_member.data
         racer.aca_member = aca_member
         if form.current_team.data:
@@ -117,7 +142,6 @@ def edit(id):
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
     form.birthdate.data = racer.birthdate
-    form.strava_id.data = racer.strava_id
     form.aca_member.data = racer.aca_member
     if racer.current_team_id:
         form.current_team.data = Team.query.get(racer.current_team_id).name
@@ -133,3 +157,68 @@ def delete(id):
     db.session.commit()
     flash('Racer ' + racer.name + ' deleted!')
     return redirect(url_for('racer.index'))
+
+@racer.route('/authorize/strava/')
+def authorize_strava():
+    if request.args.get('state') and request.args.get('code'):
+        racer_id=request.args.get('state')     
+        strava_code=request.args.get('code')     
+
+        strava_client_id = current_app.config['STRAVA_CLIENT_ID']
+        strava_client_secret= current_app.config['STRAVA_CLIENT_SECRET']
+      
+        strava_client = Client()
+        try:
+            access_token = strava_client.\
+                             exchange_code_for_token(client_id=strava_client_id,
+                                                     client_secret=\
+                                                       strava_client_secret,\
+                                                     code=strava_code)
+
+        except:
+            return redirect(url_for('racer.index'))
+        else:
+            racer = Racer.query.get_or_404(racer_id) 
+            strava_client = Client(access_token)
+            strava_athlete = strava_client.get_athlete()
+            existing_racer = Racer.query\
+                                  .filter_by(strava_id=strava_athlete.id)\
+                                  .first()
+            if existing_racer:
+                flash('Racer ' + existing_racer.name +\
+                      ' already linked with Strava account for '+\
+                        strava_athlete.firstname + ' ' +\
+                        strava_athlete.lastname + '!')
+                current_app.logger.info('%s[%d] failed against %s[%d]',\
+                                        racer.name, racer.id,\
+                                        existing_racer.name, existing_racer.id)
+                return redirect(url_for('racer.details', id=racer_id))
+            else:
+                racer.strava_access_token = access_token
+                racer.strava_id = strava_athlete.id
+                racer.strava_email = strava_athlete.email
+                racer.profile_url = strava_athlete.profile
+                db.session.commit()
+                current_app.logger.info('%s[%d]',racer.name, racer.id)
+                flash('Racer ' + racer.name + ' linked with Strava!') 
+            return redirect(url_for('racer.details', id=racer_id))
+
+    return redirect(url_for('racer.index'))
+
+@racer.route('/deauthorize/strava/<int:id>/')
+@roles_accepted('official', 'moderator')
+def deauthorize_strava(id):
+    racer = Racer.query.get_or_404(id)
+    if racer.strava_access_token:
+        strava_access_token = racer.strava_access_token 
+        strava_client = Client(strava_access_token)
+        strava_client.deauthorize()
+        racer.strava_access_token = None
+        racer.strava_id = None
+        racer.strava_email = None
+        racer.strava_profile_url = None
+        racer.strava_profile_last_fetch = None
+        current_app.logger.info('%s[%d]', racer.name, racer.id)
+        db.session.commit()
+        flash('Racer ' + racer.name + ' deauthorized from Strava!')
+    return redirect(url_for('racer.details',id=id))

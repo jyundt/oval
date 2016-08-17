@@ -21,7 +21,11 @@
 {% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
     <a class="btn btn-default" href="{{ url_for('racer.edit',id=racer.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit racer details</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete racer</button>
+    {% if racer.strava_id %}
     {{ macros.confirm_delete_modal(racer,'racer.delete')}}
+    <button type=button class="btn btn-danger" data-toggle="modal" data-target="#deauthorizestrava"><span class="glyphicon glyphicon-remove"></span> Deauthorize Strava</button>
+    {{ macros.confirm_deauthorize_strava_modal(racer,'racer.deauthorize_strava')}}
+    {% endif %}
 {% endif %}
 </div>
 {%if racer.strava_id and racer.strava_profile_url%}
@@ -64,6 +68,8 @@ Previous teams:
   Follow me on
   <img src='http://badges.strava.com/logo-strava.png' alt='Strava' style='margin-left:2px;vertical-align:text-bottom' height=13 width=51 />
 </a>
+{%else%}
+  <a href="{{strava_url}}"><img src="https://strava.github.io/api/images/ConnectWithStrava.png"></a>
 {%endif%}
 
 <h2>All Race Results</h2>

@@ -16,6 +16,8 @@ class Config:
     MAIL_FEEDBACK_ADDRESS = 'feedback@theoval.us'
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or 'UA-76360864-1'
     STRAVA_API_TOKEN = os.environ.get('STRAVA_API_TOKEN')
+    STRAVA_CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
+    STRAVA_CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
     AUDIT_LOG= 'audit.log'
 
     @staticmethod

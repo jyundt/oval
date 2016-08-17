@@ -12,14 +12,11 @@
 
 - name: Create ENV var file for application account
   template: src=templates/oval_vars.j2 dest={{oval_vars}} mode=0600 owner={{oval_user}} group={{oval_group}}
+  notify:
+    - Restart uWSGI
 
 - name: Add ENV var file to .bashrc
-  blockinfile:
-    dest: /home/{{oval_user}}/.bashrc
-    block: |
-      set -a
-      source {{oval_vars}}
-      set +a
+  lineinfile: dest=/home/{{oval_user}}/.bashrc line="export $(cat {{oval_vars}} | xargs)" state=present 
 
 - name: Create pgpass file
   template: src=templates/pgpass.j2 dest=/home/{{oval_user}}/.pgpass mode=0600 owner={{oval_user}} group={{oval_group}}
