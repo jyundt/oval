@@ -34,7 +34,7 @@
   yum: name=git update_cache=yes
 
 - name: Pull code from git
-  git: repo={{git_repo}} dest={{app_dir}}
+  git: repo={{git_repo}} dest={{app_dir}} version={{git_branch}}
   become: yes
   become_user: "{{oval_user}}"
   notify: 
@@ -47,6 +47,11 @@
     - gcc
     - python-virtualenv
     - postgresql-devel
+
+- name: Upgrade pip version in virtualenv
+  pip: name=pip virtualenv="{{venv_dir}}" version=8.1.2
+  become: yes
+  become_user: "{{oval_user}}"
 
 - name: Create virtualenv and install pip requirements
   pip: requirements="{{app_dir}}/requirements.txt" virtualenv="{{venv_dir}}"
