@@ -251,23 +251,6 @@ def send_feedback():
         subject = form.subject.data
         feedback = form.feedback.data
         send_feedback_email(name, replyaddress, subject, feedback)
-        #This is clunky, but I'm going to also add the feedback to a gdoc
-        url = 'https://docs.google.com/forms/u/0/d/\
-               1zIzQcf-T-R15LBZXTekcOXtD-DuBthlTBX_W4KZXId8/formResponse'
-        form_data = {'entry.1964141134': name,
-                     'entry.768109921':replyaddress,
-                     'entry.994423798':subject,
-                     'entry.282921535': feedback,
-                     'draftResponse':[],
-                     'pageHistory':0}
-        user_agent = {'Referer':'https://docs.google.com/forms/d/\
-                                 1zIzQcf-T-R15LBZXTekcOXtD-DuBthlTBX_W4KZXId8/\
-                                 viewform',
-                      'User-Agent':"Mozilla/5.0 (X11; Linux i686)\
-                                    AppleWebKit/537.36 (KHTML, like Gecko)\
-                                    Chrome/28.0.1500.52 Safari/537.36"}
-
-        resp = requests.post(url, data=form_data, headers=user_agent)
         flash('Feedback sent!')
         return redirect(url_for('main.index'))
     return render_template('feedback.html', form=form)
