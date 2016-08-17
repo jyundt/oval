@@ -31,6 +31,28 @@ Grabbing everything from [The Oval App](https://github.com/jyundt/oval) is proba
 `. ./venv/bin/activate`
 
 `pip install -r requirements.txt`
+
+If you get an error installing `stravalib`, you might need to update `pip` (either in your virtualenv or system-wide) and then deactivate/reactivate your venv. Any version of pip >= 8.1.2 should work.
+
+Example of the error:
+
+```
+  File "<string>", line 16, in <module>
+
+  File "/home/user/oval/venv/build/stravalib/setup.py", line 33, in <module>
+
+    install_reqs = parse_requirements(os.path.join(os.path.dirname(__file__), 'requirements.txt'), session=False)
+
+TypeError: parse_requirements() got an unexpected keyword argument 'session'
+
+```
+
+Example of upgrading pip (using pip) in your virtualenv:
+```
+. ./venv/bin/activate && pip install -U pip==8.1.2 
+```
+
+
 #### Define application variables.
 Environmental variables are used to set various application settings.
 

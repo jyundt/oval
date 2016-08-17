@@ -9,7 +9,7 @@ def send_async_email(app, msg):
 
 def send_feedback_email(name, replyaddress, subject, feedback):
     app = current_app._get_current_object()
-    msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+    msg = Message('[' + app.config['MAIL_SUBJECT_PREFIX'] + ']' + ' ' + subject,
                   sender=app.config['MAIL_SENDER'],
                   recipients=[app.config['MAIL_FEEDBACK_ADDRESS']],
                   reply_to=name + '<' + replyaddress + '>')
@@ -22,7 +22,7 @@ def send_feedback_email(name, replyaddress, subject, feedback):
 
 def send_email(to, subject, template, **kwargs):
     app = current_app._get_current_object()
-    msg = Message(app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+    msg = Message('[' + app.config['MAIL_SUBJECT_PREFIX'] + ']' + ' ' + subject,
                   sender=app.config['MAIL_SENDER'],
                   recipients=[to],
                   reply_to=app.config['MAIL_SENDER'])
