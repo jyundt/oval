@@ -37,3 +37,31 @@
 
 - name: Install EPEL
   yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+
+- name: Install sysstat
+  yum: name=sysstat update_cache=yes
+
+- name: Enable sysstat
+  service: name=sysstat state=started enabled=yes
+
+- command: grep "^/swapfile" /proc/swaps
+  register: swapfile_result 
+  ignore_errors: true
+
+- name: Create swap file
+  command: dd if=/dev/zero of=/swapfile bs=1M count=2048
+  when: swapfile_result.rc != 0
+
+- name: Format swap file
+  command: mkswap /swapfile 
+  when: swapfile_result.rc != 0
+  
+- name: Change perms on swap file
+  file: path=/swapfile owner=root group=root mode=0600
+
+- name: Swapon swap file
+  command: swapon /swapfile
+  when: swapfile_result.rc != 0
+
+- name: Update fstab with swap file
+  mount: name=none src=/swapfile fstype=swap opts=sw passno=0 dump=0 state=present
