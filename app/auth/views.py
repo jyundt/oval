@@ -1,5 +1,7 @@
+import time
+import subprocess
 from flask import render_template, redirect, request, url_for, flash,\
-                  current_app
+                  current_app, make_response
 from . import auth
 from .forms import LoginForm, AdminAddForm, AdminEditForm,\
                    ChangePasswordForm, ResetPasswordForm,\
@@ -285,3 +287,19 @@ def notificationemail_delete(id):
     db.session.commit()
     flash('Email ' + notificationemail.email + ' deleted!')
     return redirect(url_for('auth.notificationemail'))
+
+@auth.route('/download_db/')
+@roles_accepted('superadmin')
+def download_db():
+    cmd = ['pg_dump', '-h', current_app.config['SQLALCHEMY_DATABASE_HOST'],
+           '-U', current_app.config['SQLALCHEMY_DATABASE_USER'],
+           current_app.config['SQLALCHEMY_DATABASE_NAME']]
+    p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
+    db_dump = p.communicate()[0]
+    db_file='oval_db_' + str(int(time.time())) + '.sql'
+    
+    response = make_response(db_dump)
+    response.headers['Content-Type'] = "application/octet-stream"
+    response.headers['Content-Disposition'] = "inline; filename=" + db_file
+                                               
+    return response 

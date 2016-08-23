@@ -14,7 +14,7 @@ The Oval App uses python (flask) and postgres.  It's prety straightforward and b
 ### Database setup
 For local development, I run my postgres DB in Docker.
 
-One such example: `docker run -d --name oval-db -p 5432:5432 postgres:9`
+One such example: `docker run -d --name oval-db -p 5432:5432 postgres:9.2`
 
 If you don' want to use docker, that's a-ok, just get a postgres DB that has write access to a database.
 

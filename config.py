@@ -27,18 +27,18 @@ class Config:
 
 class PostgresConfig(Config):
     SQLALCHEMY_DATABASE_USER = os.environ.get('DB_USER') or 'postgres'
-    SQLALCHEMY_DATABSE_HOST = os.environ.get('DB_HOST') or 'localhost'
-    SQLALCHEMY_DATABSE_PORT = os.environ.get('DB_PORT') or '5432'
-    SQLALCHEMY_DATABSE_NAME = os.environ.get('DB_NAME') or 'oval'
+    SQLALCHEMY_DATABASE_HOST = os.environ.get('DB_HOST') or 'localhost'
+    SQLALCHEMY_DATABASE_PORT = os.environ.get('DB_PORT') or '5432'
+    SQLALCHEMY_DATABASE_NAME = os.environ.get('DB_NAME') or 'oval'
     if os.environ.get('DB_PASS'):
-        SQLALCHEMY_DATABSE_PASSWORD = os.environ.get('DB_PASS')
+        SQLALCHEMY_DATABASE_PASSWORD = os.environ.get('DB_PASS')
         SQLALCHEMY_DATABASE_URI = 'postgresql://' + SQLALCHEMY_DATABASE_USER + \
-        ':' + SQLALCHEMY_DATABSE_PASSWORD + '@' + SQLALCHEMY_DATABSE_HOST + \
-        ':' + SQLALCHEMY_DATABSE_PORT + '/' + SQLALCHEMY_DATABSE_NAME 
+        ':' + SQLALCHEMY_DATABASE_PASSWORD + '@' + SQLALCHEMY_DATABASE_HOST + \
+        ':' + SQLALCHEMY_DATABASE_PORT + '/' + SQLALCHEMY_DATABASE_NAME 
     else:
         SQLALCHEMY_DATABASE_URI = 'postgresql://' + SQLALCHEMY_DATABASE_USER + \
-        '@' + SQLALCHEMY_DATABSE_HOST + ':' + SQLALCHEMY_DATABSE_PORT + '/' + \
-        SQLALCHEMY_DATABSE_NAME
+        '@' + SQLALCHEMY_DATABASE_HOST + ':' + SQLALCHEMY_DATABASE_PORT + '/' + \
+        SQLALCHEMY_DATABASE_NAME
 
     @classmethod
     def init_app(cls, app):
