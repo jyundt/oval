@@ -302,4 +302,5 @@ def download_db():
     response.headers['Content-Type'] = "application/octet-stream"
     response.headers['Content-Disposition'] = "inline; filename=" + db_file
                                                
+    current_app.logger.info('')
     return response 
