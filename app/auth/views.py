@@ -294,6 +294,7 @@ def notificationemail_delete(id):
 def download_db():
     cmd = ['pg_dump', '-h', current_app.config['SQLALCHEMY_DATABASE_HOST'],
            '-U', current_app.config['SQLALCHEMY_DATABASE_USER'],
+           '--clean', '--no-owner', '-t', 'public.*',
            current_app.config['SQLALCHEMY_DATABASE_NAME']]
     pgenv = os.environ.copy()
     if current_app.config.get('SQLALCHEMY_DATABASE_PASSWORD'):
