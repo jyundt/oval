@@ -1,4 +1,5 @@
 import datetime
+import os
 import subprocess
 from flask import render_template, redirect, request, url_for, flash,\
                   current_app, make_response
@@ -294,7 +295,10 @@ def download_db():
     cmd = ['pg_dump', '-h', current_app.config['SQLALCHEMY_DATABASE_HOST'],
            '-U', current_app.config['SQLALCHEMY_DATABASE_USER'],
            current_app.config['SQLALCHEMY_DATABASE_NAME']]
-    p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
+    pgenv = os.environ.copy()
+    if current_app.config.get('SQLALCHEMY_DATABASE_PASSWORD'):
+        pgenv['PGPASSWORD'] = current_app.config['SQLALCHEMY_DATABASE_PASSWORD']
+    p = subprocess.Popen(cmd,stdout=subprocess.PIPE, env=pgenv)
     db_dump = p.communicate()[0]
     db_file='oval_db_{:%Y%m%d%H%M%S}.sql'.format(datetime.datetime.now())
 
