@@ -1,4 +1,4 @@
-import time
+import datetime
 import subprocess
 from flask import render_template, redirect, request, url_for, flash,\
                   current_app, make_response
@@ -296,8 +296,8 @@ def download_db():
            current_app.config['SQLALCHEMY_DATABASE_NAME']]
     p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
     db_dump = p.communicate()[0]
-    db_file='oval_db_' + str(int(time.time())) + '.sql'
-    
+    db_file='oval_db_{:%Y%m%d%H%M%S}.sql'.format(datetime.datetime.now())
+
     response = make_response(db_dump)
     response.headers['Content-Type'] = "application/octet-stream"
     response.headers['Content-Disposition'] = "inline; filename=" + db_file
