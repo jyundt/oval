@@ -1,4 +1,5 @@
-import time
+import datetime
+import os
 import subprocess
 from flask import render_template, redirect, request, url_for, flash,\
                   current_app, make_response
@@ -293,11 +294,18 @@ def notificationemail_delete(id):
 def download_db():
     cmd = ['pg_dump', '-h', current_app.config['SQLALCHEMY_DATABASE_HOST'],
            '-U', current_app.config['SQLALCHEMY_DATABASE_USER'],
+           '--clean', '--no-owner', '-t', 'public.*',
            current_app.config['SQLALCHEMY_DATABASE_NAME']]
-    p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
-    db_dump = p.communicate()[0]
-    db_file='oval_db_' + str(int(time.time())) + '.sql'
-    
+    pgenv = os.environ.copy()
+    if current_app.config.get('SQLALCHEMY_DATABASE_PASSWORD'):
+        pgenv['PGPASSWORD'] = current_app.config['SQLALCHEMY_DATABASE_PASSWORD']
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=pgenv)
+    db_dump, db_dump_err = p.communicate()
+    if 0 != p.returncode:
+        current_app.logger.error("pg_dump: %s" % db_dump_err)
+        return render_template('500.html'), 500
+    db_file='oval_db_{:%Y%m%d%H%M%S}.sql'.format(datetime.datetime.now())
+
     response = make_response(db_dump)
     response.headers['Content-Type'] = "application/octet-stream"
     response.headers['Content-Disposition'] = "inline; filename=" + db_file
