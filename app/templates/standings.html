@@ -10,63 +10,87 @@
 </ul>
 </h6>
 <div class="page-header">
-    <h1>Standings</h1>
+    <h1>{{selected_year}} Standings</h1>
 </div>
 
-<div class="row">
-  {% if results is not none %}
-    {% if results | length == 0 %}
-      <h2>No Results!</h2>
-    {%else%}
-        <div class="table-responsive">
-        <table class="table table-striped table-bordered table-hover">
-          <thead>
-            <tr>
-              <th>Place</th>
-              <th>Name</th>
-              {% if standings_type != 'team' %}
-              <th>Team</th>
-              {%endif%}
-              {% for race in race_calendar %}
-                <th><a href="{{url_for('race.details', id=race[1])}}">{{ race[0].strftime('%m/%d') }}</a></th>
-              {% endfor %}
-              <th>Total Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for result in results %}
-              <tr>
-                <td>{{loop.index}}</td>
-                {% if standings_type == 'team' %}
-                  <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
-                {% else %}
-                  <td><a href="{{url_for('racer.details', id=result['id'])}}">{{result['name']}}</a></td>
-                  {% if result['team_id'] != None %}
-                    <td><a href="{{url_for('team.details', id=result['team_id'])}}">{{result['team_name']}}</a></td>
-                  {% else %}
-                    <td>-</td>
-                  {%endif%}
-                {%endif%}
-                {% for date_, points in result['race_pts'].iteritems() %}
-                    <td>{{points}}</td>
-                {% endfor %}
-                <td>{{result['total_pts']}}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        </div>
-      {% endif %}
+{% if race_classes %}
+  <ul class="nav nav-tabs">
+  {% for race_class_id, race_class_name in race_classes %}
+    {% if selected_race_class_id == race_class_id %}
+    <li role="presentation" class="active">
+    {% else %}
+    <li role="presentation">
     {% endif %}
-</div>
+      <a href="{{url_for('.standings', year=selected_year, race_class_id=race_class_id)}}">{{race_class_name}}</a>
+    </li>
+  {% endfor %}
+    <li role="presentation" class="navbar-right">
+        <a data-toggle="dropdown" role="button">
+          Season
+          <span class="caret"></span>
+        </a>
 
+        <ul class="dropdown-menu">
+        {% for year in years %}
+          {% if selected_year == year %}
+          <li class="active">
+          {% else %}
+          <li>
+          {% endif %}
+            <a href="{{url_for('.standings', year=year, race_class_id=selected_race_class_id)}}">{{year}}</a>
+          </li>
+        {% endfor %}
+        </ul>
+    </li>
+  </ul>
+{% endif %}
+
+{% if results is none %}
+{% elif race_calendar | length == 0 %}
+  <h2>No Results!</h2>
+{%else%}
+  {% for standings_type, standings in results %}
+    <h2>{{standings_type}}</h2>
+    <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Place</th>
+          <th>Name</th>
+          {% if standings_type != 'Team' %}
+          <th>Team</th>
+          {%endif%}
+          {% for race in race_calendar %}
+            <th><a href="{{url_for('race.details', id=race[1])}}">{{ race[0].strftime('%m/%d') }}</a></th>
+          {% endfor %}
+          <th>Total Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in standings %}
+          <tr>
+            <td>{{loop.index}}</td>
+            {% if standings_type == 'Team' %}
+              <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
+            {% else %}
+              <td><a href="{{url_for('racer.details', id=result['id'])}}">{{result['name']}}</a></td>
+              {% if result['team_id'] != None %}
+                <td><a href="{{url_for('team.details', id=result['team_id'])}}">{{result['team_name']}}</a></td>
+              {% else %}
+                <td>-</td>
+              {%endif%}
+            {%endif%}
+            {% for date_, points in result['race_pts'].iteritems() %}
+                <td>{{points}}</td>
+            {% endfor %}
+            <td>{{result['total_pts']}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  {% endfor %}
+{% endif %}
 <br>
-
-<div class="row">
-  <div class="col-md-4">
-    {{wtf.quick_form(form)}}
-  <br>
-  </div>
-</div>
 
 {% endblock %}
