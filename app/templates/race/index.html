@@ -38,6 +38,7 @@
 <tr>
     <th>Race Date</th>
     <th>Category</th>
+    <th>Course</th>
     <th>Points</th>
     <th>Results</th>
 </tr>
@@ -46,7 +47,8 @@
 {% for race in races %}
 <tr>
 <td><a href="{{url_for('race.details',id=race.id)}}">{{ race.date.strftime('%m/%d/%Y')}}</a></td> 
-<td>{{ race.race_class.name}}</td>
+<td>{{race.race_class.name}}</td>
+<td>{{race.course.name}}</td>
 <td>
   {% if race.points_race %}
      <center>
