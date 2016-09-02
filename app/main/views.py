@@ -3,12 +3,12 @@ from itertools import groupby
 from operator import itemgetter
 
 from flask import render_template, redirect, request, url_for, current_app, flash
-from sqlalchemy import extract
+from sqlalchemy import extract, or_
 
 from . import main
 from .forms import FeedbackForm
 from ..email import send_feedback_email
-from ..models import RaceClass, Racer, Team, Race, Participant
+from ..models import Course, RaceClass, Racer, Team, Race, Participant
 
 
 def _gen_default(year, race_class_id, race_calendar):
@@ -217,6 +217,106 @@ def standings():
             results=results, race_calendar=race_calendar)
 
     return render_template('standings.html', results=None)
+
+
+@main.route('/results/')
+def results():
+    years = sorted(set(
+        int(date.year) for (date,) in Race.query.with_entities(Race.date).all()),
+        reverse=True)
+    try:
+        req_year = int(request.args.get('year'))
+    except (ValueError, TypeError):
+        req_year = None
+    year = req_year if req_year is not None else (years[0] if years else None)
+
+    race_classes = [
+        (race_class_id.id, race_class_id.name)
+        for race_class_id in
+        RaceClass.query.with_entities(
+            RaceClass.id, RaceClass.name)
+            .join(Race)
+            .filter(extract("year", Race.date) == year)
+            .group_by(RaceClass.id)
+            .order_by(RaceClass.name)]
+    year_race_class_ids = [race_class_id for race_class_id, _ in race_classes]
+    try:
+        req_race_class_id = int(request.args.get('race_class_id'))
+    except (ValueError, TypeError):
+        req_race_class_id = None
+    race_class_id = (
+        req_race_class_id if req_race_class_id in year_race_class_ids
+        else (year_race_class_ids[0] if year_race_class_ids else None))
+
+    if year is not None and race_class_id is not None:
+        race_info = (Race.query.with_entities(
+            Race.id, Race.date,
+            Race.course_id, Race.average_lap, Race.fast_lap, Race.winning_time, Race.laps,
+            Racer.id, Racer.name,
+            Team.id, Team.name,
+            RaceClass.id, RaceClass.name,
+            Participant.place, Participant.mar_place,
+            Course.name)
+                     .join(RaceClass)
+                     .join(Participant)
+                     .join(Racer, isouter=True)
+                     .join(Team, Team.id == Participant.team_id, isouter=True)
+                     .join(Course)
+                     .filter(or_(Participant.place == 1, Participant.mar_place == 1))
+                     .filter(extract("year", Race.date) == year)
+                     .filter(Race.class_id == race_class_id)
+                     .order_by(Race.date)
+                     .all())
+
+        results = []
+        for date, date_group in groupby(race_info, key=itemgetter(1)):
+            winner = None
+            mar_winner = None
+            race_id = None
+            fast_lap = None
+            average_lap = None
+            winning_time = None
+            laps = None
+            course_name = None
+            avg_speed = None
+            for (
+                    race_id_, race_date,
+                    course_id, average_lap_, fast_lap_, winning_time_, laps_,
+                    racer_id, racer_name,
+                    team_id, team_name,
+                    race_class_id, race_class_name,
+                    place, mar_place, course_name_) in date_group:
+                if place == 1:
+                    winner = (racer_id, racer_name, team_id, team_name)
+                if mar_place == 1:
+                    mar_winner = (racer_id, racer_name, team_id, team_name)
+                race_id = race_id_
+                average_lap = average_lap_
+                fast_lap = fast_lap_
+                winning_time = winning_time_
+                course_name = course_name_
+                laps = laps_
+            avg_lap = (average_lap.total_seconds()) if average_lap else (
+                (winning_time.total_seconds() / laps)
+                if (winning_time and laps) else None)
+            # TODO: get lengths for non-normal courses
+            if course_name == 'Normal' and avg_lap:
+                avg_speed = 0.5 / (avg_lap / 3600)
+            results.append({
+                'race_id': race_id,
+                'date': date,
+                'course_name': course_name,
+                'winner': winner,
+                'mar_winner': mar_winner,
+                'fast_lap': fast_lap,
+                'avg_speed': avg_speed})
+
+        return render_template(
+            'results.html',
+            selected_year=year, selected_race_class_id=race_class_id,
+            years=years, race_classes=race_classes, results=results)
+
+    return render_template('results.html', results=None)
 
 
 @main.route('/feedback/', methods=['GET', 'POST'])
