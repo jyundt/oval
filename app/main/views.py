@@ -255,7 +255,7 @@ def results():
             Participant.place, Participant.mar_place,
             Race.id, Race.date,
             Race.course_id, Race.average_lap, Race.fast_lap,
-            Race.winning_time, Race.laps, Race.starters,
+            Race.winning_time, Race.laps, Race.starters, Race.points_race,
             RaceClass.id, RaceClass.name,
             Course.name)
             .join(Participant, Participant.racer_id == Racer.id)
@@ -275,7 +275,8 @@ def results():
         results = []
         for date, date_group in race_info_by_date:
             (race_id, race_date, course_id, average_lap, fast_lap, winning_time,
-                laps, starters, race_class_id, race_class_name, course_name) = date_group[0][6:]
+                laps, starters, points_race, race_class_id, race_class_name,
+                course_name) = date_group[0][6:]
             winner = None
             mar_winner = None
             for maybe_winner in date_group:
@@ -300,7 +301,8 @@ def results():
                 'mar_winner': mar_winner,
                 'fast_lap': fast_lap,
                 'avg_speed': avg_speed,
-                'starters': starters})
+                'starters': starters,
+                'points_race': points_race})
 
         return render_template(
             'results.html',
