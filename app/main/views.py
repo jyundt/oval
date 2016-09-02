@@ -235,10 +235,10 @@ def results():
         for race_class_id in
         RaceClass.query.with_entities(
             RaceClass.id, RaceClass.name)
-            .join(Race)
-            .filter(extract("year", Race.date) == year)
-            .group_by(RaceClass.id)
-            .order_by(RaceClass.name)]
+        .join(Race)
+        .filter(extract("year", Race.date) == year)
+        .group_by(RaceClass.id)
+        .order_by(RaceClass.name)]
     year_race_class_ids = [race_class_id for race_class_id, _ in race_classes]
     try:
         req_race_class_id = int(request.args.get('race_class_id'))
@@ -249,59 +249,49 @@ def results():
         else (year_race_class_ids[0] if year_race_class_ids else None))
 
     if year is not None and race_class_id is not None:
-        race_info = (Race.query.with_entities(
-            Race.id, Race.date,
-            Race.course_id, Race.average_lap, Race.fast_lap, Race.winning_time, Race.laps,
+        race_info = (Racer.query.with_entities(
             Racer.id, Racer.name,
             Team.id, Team.name,
-            RaceClass.id, RaceClass.name,
             Participant.place, Participant.mar_place,
+            Race.id, Race.date,
+            Race.course_id, Race.average_lap, Race.fast_lap,
+            Race.winning_time, Race.laps, Race.starters,
+            RaceClass.id, RaceClass.name,
             Course.name)
-                     .join(RaceClass)
-                     .join(Participant)
-                     .join(Racer, isouter=True)
-                     .join(Team, Team.id == Participant.team_id, isouter=True)
-                     .join(Course)
-                     .filter(or_(Participant.place == 1, Participant.mar_place == 1))
-                     .filter(extract("year", Race.date) == year)
-                     .filter(Race.class_id == race_class_id)
-                     .order_by(Race.date)
-                     .all())
+            .join(Participant, Participant.racer_id == Racer.id)
+            .join(Team, Team.id == Participant.team_id, isouter=True)
+            .join(Race, Race.id == Participant.race_id)
+            .join(RaceClass, RaceClass.id == Race.class_id)
+            .join(Course, Course.id == Race.course_id)
+            .filter(or_(Participant.place == 1, Participant.mar_place == 1))
+            .filter(extract("year", Race.date) == year)
+            .filter(Race.class_id == race_class_id)
+            .order_by(Race.date)
+            .all())
 
+        race_info_by_date = [
+            (date, list(date_group))
+            for date, date_group in groupby(race_info, key=itemgetter(7))]
         results = []
-        for date, date_group in groupby(race_info, key=itemgetter(1)):
+        for date, date_group in race_info_by_date:
+            (race_id, race_date, course_id, average_lap, fast_lap, winning_time,
+                laps, starters, race_class_id, race_class_name, course_name) = date_group[0][6:]
             winner = None
             mar_winner = None
-            race_id = None
-            fast_lap = None
-            average_lap = None
-            winning_time = None
-            laps = None
-            course_name = None
-            avg_speed = None
-            for (
-                    race_id_, race_date,
-                    course_id, average_lap_, fast_lap_, winning_time_, laps_,
-                    racer_id, racer_name,
-                    team_id, team_name,
-                    race_class_id, race_class_name,
-                    place, mar_place, course_name_) in date_group:
+            for maybe_winner in date_group:
+                racer_id, racer_name, team_id, team_name, place, mar_place = maybe_winner[0:6]
                 if place == 1:
                     winner = (racer_id, racer_name, team_id, team_name)
                 if mar_place == 1:
                     mar_winner = (racer_id, racer_name, team_id, team_name)
-                race_id = race_id_
-                average_lap = average_lap_
-                fast_lap = fast_lap_
-                winning_time = winning_time_
-                course_name = course_name_
-                laps = laps_
             avg_lap = (average_lap.total_seconds()) if average_lap else (
                 (winning_time.total_seconds() / laps)
                 if (winning_time and laps) else None)
             # TODO: get lengths for non-normal courses
-            if course_name == 'Normal' and avg_lap:
-                avg_speed = 0.5 / (avg_lap / 3600)
+            avg_speed = (
+                0.5 / (avg_lap / 3600)
+                if course_name == 'Normal' and avg_lap
+                else None)
             results.append({
                 'race_id': race_id,
                 'date': date,
@@ -309,7 +299,8 @@ def results():
                 'winner': winner,
                 'mar_winner': mar_winner,
                 'fast_lap': fast_lap,
-                'avg_speed': avg_speed})
+                'avg_speed': avg_speed,
+                'starters': starters})
 
         return render_template(
             'results.html',
