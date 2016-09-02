@@ -24,7 +24,6 @@
 <tr>
 <th>Race Date</th>
 <th>Starters</th>
-<th>Finishers</th>
 </tr>
 </thead>
 <tbody>
@@ -38,9 +37,6 @@
 {% else %}
 <td>{{race.starters}}</td>
 {%endif%}
-<td>
-{{race.participants|count}}
-</td>
 </tr>
 {% endfor %}
 </tbody>
