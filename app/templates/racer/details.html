@@ -92,7 +92,7 @@ Previous teams:
 {% for participant in racer.participants|sort(attribute='race.date',reverse = True) %}
 <tr>
 <td><a href="{{ url_for('race.details', id=participant.race.id) }}">{{ participant.race.date.strftime('%m/%d/%Y') }}</a></td>
-<td><a href="{{url_for('race_class.details', id=participant.race.race_class.id)}}">{{participant.race.race_class.name}}</a></td>
+<td>{{participant.race.race_class.name}}</td>
 {% if participant.place is not none %}
 <td>{{participant.place}}</td>
 {% else %}

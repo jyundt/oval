@@ -30,7 +30,7 @@
 <a href="{{ url_for('race.details', id=race.id) }}">{{ race.date.strftime('%m/%d/%Y') }}</a>
 </td>
 <td>
-<a href="{{ url_for('race_class.details', id=race.id) }}">{{ race.race_class.name }}</a>
+{{ race.race_class.name }}
 </td>
 {% if race.starters is none %}
 <td>-</td>

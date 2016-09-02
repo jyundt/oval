@@ -28,7 +28,7 @@
 <a href="{{ url_for('race.details', id=racemarshal.race.id) }}">{{ racemarshal.race.date.strftime('%m/%d/%Y') }}</a>
 </td>
 <td>
-<a href="{{url_for('race_class.index', id=racemarshal.race.race_class.id)}}">{{racemarshal.race.race_class.name}}</a>
+{{racemarshal.race.race_class.name}}
 </td>
 </tr>
 {% endfor %}

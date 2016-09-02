@@ -7,12 +7,14 @@ from flask_login import current_user
 from ..decorators import roles_accepted
 
 @race_class.route('/')
+@roles_accepted('official')
 def index():
     race_classes = RaceClass.query.order_by(RaceClass.name).all()
     return render_template('race_class/index.html', race_classes=race_classes)
 
 
 @race_class.route('/<int:id>/')
+@roles_accepted('official')
 def details(id):
     race_class = RaceClass.query.get_or_404(id)
     return render_template('race_class/details.html', race_class=race_class)
