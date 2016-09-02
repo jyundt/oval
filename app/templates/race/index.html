@@ -5,17 +5,17 @@
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.7.0/fullcalendar.min.css">
 {% endblock %}
 
-{% block title %}Races{% endblock %}
+{% block title %}Calendar{% endblock %}
 
 {% block page_content %}
 <h6>
 <ul class="breadcrumb"> 
   <li><a href="{{url_for('main.index')}}">Home</a></li> 
-  <li class="active">Races</li>
+  <li class="active">Calendar</li>
 </ul>
 </h6>
 <div class="page-header">
-    <h1>Races</h1>
+    <h1>Race calendar</h1>
 <form method="post">
 {% if current_user.is_authenticated and current_user.has_role('official') %}
 <a class="btn btn-default" href="{{url_for('race.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a race</a>
@@ -38,8 +38,8 @@
 <tr>
     <th>Race Date</th>
     <th>Category</th>
-    <th>Starters</th>
-    <th>Finishers</th>
+    <th>Points</th>
+    <th>Results</th>
 </tr>
 </thead>
 <tbody>
@@ -47,12 +47,20 @@
 <tr>
 <td><a href="{{url_for('race.details',id=race.id)}}">{{ race.date.strftime('%m/%d/%Y')}}</a></td> 
 <td>{{ race.race_class.name}}</td>
-{% if race.starters is none %}
-<td>-</td>
-{% else %}
-<td>{{race.starters}}</td>
-{%endif%}
-<td>{{race.participants|length}}</td>
+<td>
+  {% if race.points_race %}
+     <center>
+        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+      </center>
+  {% endif %}
+</td>
+<td>
+  {% if race.participants | length > 0 %}
+     <center>
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+      </center>
+  {% endif %}
+</td>
 </tr>
 {% endfor %}
 </tbody>

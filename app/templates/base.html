@@ -29,10 +29,10 @@
             <ul class="nav navbar-nav">
                 <li><a href="{{ url_for('main.standings') }}">Standings</a></li>
                 <li><a href="{{ url_for('main.results') }}">Results</a></li>
+                <li><a href="{{ url_for('race.index') }}">Calendar</a></li>
                 <li><a href="{{ url_for('racer.index') }}">Racers</a></li>
-                <li><a href="{{ url_for('team.index') }}">Teams</a></li> 
-                <li><a href="{{ url_for('race.index') }}">Races</a></li> 
-                <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li> 
+                <li><a href="{{ url_for('team.index') }}">Teams</a></li>
+                <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
