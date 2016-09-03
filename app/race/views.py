@@ -2,6 +2,8 @@ import json
 from flask import render_template, session, redirect, url_for, flash, abort,\
                   request, current_app, make_response
 from sqlalchemy import and_
+from sqlalchemy import extract
+
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
                      Participant, RaceOfficial, RaceMarshal, Prime, Course,\
@@ -15,7 +17,7 @@ from datetime import timedelta, datetime
 from ..decorators import roles_accepted
 from ..email import send_email
 
-@race.route('/', methods=['GET', 'POST'])
+@race.route('/')
 def index():
     if request.query_string:
         if 'start' in request.args:
@@ -36,22 +38,35 @@ def index():
                                                  id=race.id),
                                    "color":race.race_class.color})
             return json.dumps(races_json)
-    if request.method == 'POST':
-        if session['race_view'] == 'calendar':
-            session['race_view'] = 'table'
-            return redirect(url_for('race.index'))
-        else:
-            session['race_view'] = 'calendar'
-            return redirect(url_for('race.index'))
-    races = (
-        Race.query
-        .join(RaceClass)
-        .join(Course)
-        .order_by(Race.date.desc())
-        .order_by(RaceClass.name).all())
+
+    if request.args.get('race_view') in ['calendar', 'table']:
+        session['race_view'] = request.args['race_view']
     if 'race_view' not in session:
         session['race_view'] = 'calendar'
-    return render_template('race/index.html', races=races)
+
+    races_query = (
+        Race.query
+        .join(RaceClass)
+        .join(Course))
+
+    years = sorted(set(
+        int(date.year) for (date,) in Race.query.with_entities(Race.date).all()),
+        reverse=True)
+    if session['race_view'] == 'table':
+        try:
+            req_year = int(request.args.get('year'))
+        except (ValueError, TypeError):
+            req_year = None
+        year = req_year if req_year is not None else (years[0] if years else None)
+        races_query = races_query.filter(extract("year", Race.date) == year)
+    else:
+        year = None
+
+    races_query = races_query.order_by(Race.date.desc(), RaceClass.name)
+    races = races_query.all()
+
+    return render_template('race/index.html', races=races, years=years, selected_year=year)
+
 
 @race.route('/search/', methods=['GET', 'POST'])
 def search():

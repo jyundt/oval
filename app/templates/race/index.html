@@ -15,19 +15,37 @@
 </ul>
 </h6>
 <div class="page-header">
-    <h1>Race calendar</h1>
-<form method="post">
+<h1>Race calendar</h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}
-<a class="btn btn-default" href="{{url_for('race.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a race</a>
+  <a class="btn btn-default" href="{{url_for('race.add')}}"><span class="glyphicon glyphicon-plus"></span>Add a race</a>
 {% endif %}
-<a class="btn btn-default" href="{{url_for('race.search')}}"><span class="glyphicon glyphicon-search"></span> Race search</a>
-{%if session.race_view=='calendar' %}
-<button type="submit" class="btn btn-default" value="submit"><span class="glyphicon glyphicon-th-list"></span> Table View</button>
-{%else%}
-<button type="submit" class="btn btn-default" value="submit"><span class="glyphicon glyphicon-calendar"></span> Calendar View</button>
-{%endif%}
+<a class="btn btn-default" href="{{url_for('race.search')}}"><span class="glyphicon glyphicon-search"></span>Race search</a>
+<div class="dropdown" style="display: inline;">
+  <div class="btn-group" role="group">
+    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+      <span class="glyphicon glyphicon-th-list"></span>
+      Table View
+      <span class="caret"></span>
+    </button>
 
-</form>
+    <ul class="dropdown-menu">
+    {% for year in years %}
+      {% if selected_year == year %}
+      <li class="active">
+      {% else %}
+      <li>
+      {% endif %}
+        <a href="{{url_for('race.index', race_view='table', year=year)}}">{{year}} Season</a>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+{% if session.race_view != 'calendar' %}
+  <a class="btn btn-default" href="{{url_for('race.index', race_view='calendar')}}">
+    <span class="glyphicon glyphicon-calendar"></span>Calendar View
+  </a>
+{% endif %}
 </div>
 {%if session.race_view=='calendar' %}
 <div id='calendar'></div>
@@ -36,17 +54,17 @@
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-    <th>Race Date</th>
-    <th>Category</th>
-    <th>Course</th>
-    <th>Points</th>
-    <th>Results</th>
+  <th>Race Date</th>
+  <th>Category</th>
+  <th>Course</th>
+  <th>Points</th>
+  <th>Results</th>
 </tr>
 </thead>
 <tbody>
 {% for race in races %}
 <tr>
-<td><a href="{{url_for('race.details',id=race.id)}}">{{ race.date.strftime('%m/%d/%Y')}}</a></td> 
+<td><a href="{{url_for('race.details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
 <td>{{race.race_class.name}}</td>
 <td>{{race.course.name}}</td>
 <td>
@@ -68,6 +86,7 @@
 </tbody>
 </table>
 </div>
+
 {%endif%}
 {% endblock %}
 {% block scripts %}
