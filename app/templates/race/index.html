@@ -58,13 +58,21 @@
   <th>Category</th>
   <th>Course</th>
   <th>Points</th>
+  {% if current_user.is_authenticated and current_user.has_role('official') %}
   <th>Results</th>
+  {% endif %}
 </tr>
 </thead>
 <tbody>
 {% for race in races %}
 <tr>
-<td><a href="{{url_for('race.details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a></td>
+<td>
+  {% if (race.participants | length > 0) or current_user.is_authenticated and current_user.has_role('official') %}
+  <a href="{{url_for('race.details',id=race.id)}}">{{race.date.strftime('%m/%d/%Y')}}</a>
+  {% else %}
+  {{race.date.strftime('%m/%d/%Y')}}
+  {% endif %}
+</td>
 <td>{{race.race_class.name}}</td>
 <td>{{race.course.name}}</td>
 <td>
@@ -74,6 +82,7 @@
       </center>
   {% endif %}
 </td>
+{% if current_user.is_authenticated and current_user.has_role('official') %}
 <td>
   {% if race.participants | length > 0 %}
      <center>
@@ -81,6 +90,7 @@
       </center>
   {% endif %}
 </td>
+{% endif %}
 </tr>
 {% endfor %}
 </tbody>
