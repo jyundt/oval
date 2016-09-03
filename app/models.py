@@ -59,6 +59,7 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), unique=True, nullable=False)
     races = db.relationship('Race', cascade='all,delete', backref='course')
+    length_miles = db.Column(db.Float)
 
     def __repr__(self):
         return '<Course %r>' % self.name

@@ -13,4 +13,7 @@
     {{ macros.confirm_delete_modal(course,'course.delete')}}
 {% endif %}
 </div>
+<p style="font-size: 150%;">
+    Lap length: {{'{:.2f} miles'.format(course.length_miles) if course.length_miles else 'unknown'}}
+</p>
 {% endblock %}

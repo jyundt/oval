@@ -14,14 +14,16 @@
 <thead>
 <tr>
     <th>Name</th>
+    <th>Lap length</th>
     <th>Races</th>
 </tr>
 </thead>
 <tbody>
 {% for course in courses %}
 <tr>
-<td><a href="{{url_for('course.details',id=course.id)}}">{{ course.name}}</a></td> 
-<td>{{ course.races|length}}</td>
+<td><a href="{{url_for('course.details',id=course.id)}}">{{ course.name}}</a></td>
+<td>{{'{:.2f} miles'.format(course.length_miles) if course.length_miles else '-'}}</td>
+<td>{{course.races|length}}</td>
 </tr>
 {% endfor %}
 </tbody>
