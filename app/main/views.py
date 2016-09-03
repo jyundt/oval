@@ -292,7 +292,7 @@ def results():
                 course_length_miles / (avg_lap / 3600)
                 if course_length_miles and avg_lap
                 else None)
-            results.append({
+            results.insert(0, {
                 'race_id': race_id,
                 'date': date,
                 'course_name': course_name,
