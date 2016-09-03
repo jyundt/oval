@@ -257,7 +257,7 @@ def results():
             Race.course_id, Race.average_lap, Race.fast_lap,
             Race.winning_time, Race.laps, Race.starters, Race.points_race,
             RaceClass.id, RaceClass.name,
-            Course.name)
+            Course.name, Course.length_miles)
             .join(Participant, Participant.racer_id == Racer.id)
             .join(Team, Team.id == Participant.team_id, isouter=True)
             .join(Race, Race.id == Participant.race_id)
@@ -276,7 +276,7 @@ def results():
         for date, date_group in race_info_by_date:
             (race_id, race_date, course_id, average_lap, fast_lap, winning_time,
                 laps, starters, points_race, race_class_id, race_class_name,
-                course_name) = date_group[0][6:]
+                course_name, course_length_miles) = date_group[0][6:]
             winner = None
             mar_winner = None
             for maybe_winner in date_group:
@@ -288,10 +288,9 @@ def results():
             avg_lap = (average_lap.total_seconds()) if average_lap else (
                 (winning_time.total_seconds() / laps)
                 if (winning_time and laps) else None)
-            # TODO: get lengths for non-normal courses
             avg_speed = (
-                0.5 / (avg_lap / 3600)
-                if course_name == 'Normal' and avg_lap
+                course_length_miles / (avg_lap / 3600)
+                if course_length_miles and avg_lap
                 else None)
             results.append({
                 'race_id': race_id,
