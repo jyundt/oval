@@ -13,37 +13,4 @@
     {{ macros.confirm_delete_modal(course,'course.delete')}}
 {% endif %}
 </div>
-<div class="table-responsive">
-<table class="table table-striped table-bordered">
-<thead>
-<tr>
-<th>Race Date</th>
-<th>Category</th>
-<th>Starters</th>
-<th>Finishers</th>
-</tr>
-</thead>
-<tbody>
-{% for race in course.races|sort(attribute='date',reverse = True) %}
-<tr>
-<td>
-<a href="{{ url_for('race.details', id=race.id) }}">{{ race.date.strftime('%m/%d/%Y') }}</a>
-</td>
-<td>
-<a href="{{ url_for('race_class.details', id=race.id) }}">{{ race.race_class.name }}</a>
-</td>
-{% if race.starters is none %}
-<td>-</td>
-{% else %}
-<td>{{race.starters}}</td>
-{%endif%}
-<td>
-{{race.participants|count}}
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-
 {% endblock %}

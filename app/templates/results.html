@@ -59,7 +59,9 @@
     <thead>
       <tr>
         <th>Date</th>
+        <th>Points</th>
         <th>Course</th>
+        <th>Starters</th>
         <th>Fast lap</th>
         <th>Avg speed (mph)</th>
         <th>Winner</th>
@@ -74,7 +76,15 @@
               {{result['date'].strftime('%m/%d/%Y')}}
             </a>
           </td>
+          <td>
+            {% if result['points_race'] %}
+              <center>
+                <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+              </center>
+            {% endif %}
+          </td>
           <td>{{result['course_name']}}</td>
+          <td>{{result['starters']}}</td>
           <td>
             {% if result['fast_lap'] is not none %}
               {{result['fast_lap']}}

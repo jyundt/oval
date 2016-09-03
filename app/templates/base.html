@@ -29,11 +29,10 @@
             <ul class="nav navbar-nav">
                 <li><a href="{{ url_for('main.standings') }}">Standings</a></li>
                 <li><a href="{{ url_for('main.results') }}">Results</a></li>
-                <li><a href="{{ url_for('race_class.index') }}">Categories</a></li> 
-                <li><a href="{{ url_for('racer.index') }}">Racers</a></li> 
-                <li><a href="{{ url_for('team.index') }}">Teams</a></li> 
-                <li><a href="{{ url_for('race.index') }}">Races</a></li> 
-                <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li> 
+                <li><a href="{{ url_for('race.index') }}">Calendar</a></li>
+                <li><a href="{{ url_for('racer.index') }}">Racers</a></li>
+                <li><a href="{{ url_for('team.index') }}">Teams</a></li>
+                <li><a href="{{ url_for('main.send_feedback') }}">Feedback</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
@@ -43,6 +42,7 @@
                         <li><a href="{{url_for('marshal.index')}}">Marshals</a></li>
                         <li><a href="{{url_for('official.index')}}">Officials</a></li>
                         <li><a href="{{url_for('course.index')}}">Course Types</a></li>
+                        <li><a href="{{ url_for('race_class.index') }}">Categories</a></li>
                         {% if current_user.has_role('superadmin') %}
                             <li><a href="{{url_for('auth.admin')}}">Admins</a></li>
                             <li><a href="{{url_for('auth.notificationemail')}}">Email Notification List</a></li>
