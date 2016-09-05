@@ -1,5 +1,8 @@
 ---
-- include_vars: "{{ansible_nodename}}.yml"
+- include_vars: "{{item}}"
+  with_items:
+    - "{{ansible_nodename}}.yml"
+    - "secrets.yml"
 
 - name: Create application group
   group: name={{oval_group}} gid={{oval_gid}}

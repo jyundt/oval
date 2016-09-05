@@ -19,6 +19,7 @@ class Config:
     STRAVA_API_TOKEN = os.environ.get('STRAVA_API_TOKEN')
     STRAVA_CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
     STRAVA_CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
+    SLACK_OAUTH_API_TOKEN = os.environ.get('SLACK_OAUTH_API_TOKEN')
     AUDIT_LOG= 'audit.log'
 
     @staticmethod

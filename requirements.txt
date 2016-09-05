@@ -1,5 +1,6 @@
 alembic==0.8.6
 arrow==0.8.0
+backports.ssl-match-hostname==3.5.0.1
 blinker==1.4
 dominate==2.1.17
 Flask==0.10.1
@@ -24,10 +25,12 @@ pytz==2016.4
 requests==2.9.1
 setuptools==0.9.8
 six==1.10.0
+slackclient==1.0.1
 SQLAlchemy==1.0.12
 stravalib==0.6.0
 units==0.6
 uWSGI==2.0.12
 visitor==0.1.2
+websocket-client==0.37.0
 Werkzeug==0.11.8
 WTForms==2.1

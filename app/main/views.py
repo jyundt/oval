@@ -10,6 +10,8 @@ from .forms import FeedbackForm
 from ..email import send_feedback_email
 from ..models import Course, RaceClass, Racer, Team, Race, Participant
 
+from slackclient import SlackClient
+
 
 def _gen_default(year, race_class_id, race_calendar):
     """Default error case for standings type parameter
@@ -320,6 +322,11 @@ def send_feedback():
         subject = form.subject.data
         feedback = form.feedback.data
         send_feedback_email(name, replyaddress, subject, feedback)
+        message = "%s <%s> - %s: %s" % (name, replyaddress, subject, feedback)
+        token = current_app.config['SLACK_OAUTH_API_TOKEN']
+        sc = SlackClient(token)
+        sc.api_call("chat.postMessage", channel="#feedback", text=message,
+                    username="Flask")
         flash('Feedback sent!')
         return redirect(url_for('main.index'))
     return render_template('feedback.html', form=form)
