@@ -13,9 +13,10 @@
 <table class="table table-striped table-bordered">
 <thead>
 <tr>
-    <th>Name</th>
-    <th>Lap length</th>
-    <th>Races</th>
+  <th>Name</th>
+  <th>Lap length</th>
+  <th>Races</th>
+  <th>Default</th>
 </tr>
 </thead>
 <tbody>
@@ -24,6 +25,11 @@
 <td><a href="{{url_for('course.details',id=course.id)}}">{{ course.name}}</a></td>
 <td>{{'{:.2f} miles'.format(course.length_miles) if course.length_miles else '-'}}</td>
 <td>{{course.races|length}}</td>
+<td>
+  {% if course.is_default %}
+  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+  {% endif %}
+</td>
 </tr>
 {% endfor %}
 </tbody>
