@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from wtforms import DecimalField, StringField, SubmitField
+from wtforms import BooleanField, DecimalField, StringField, SubmitField
 from wtforms import ValidationError
 from wtforms.validators import Optional, DataRequired
 from ..models import Course
@@ -8,6 +8,7 @@ from ..models import Course
 class CourseForm(Form):
     name = StringField('Name', validators=[DataRequired()])
     length_miles = DecimalField('Lap length (miles)', validators=[Optional()])
+    is_default = BooleanField('Default')
 
 
 class CourseEditForm(CourseForm):

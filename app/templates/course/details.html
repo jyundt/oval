@@ -6,7 +6,12 @@
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Details for Category: {{course.name}}</h1>
+    <h1>
+        Details for Category: {{course.name}}
+        {% if course.is_default %}
+        (default)
+        {% endif %}
+    </h1>
 {% if current_user.is_authenticated and current_user.has_role('official') %}
     <a class="btn btn-default" href="{{ url_for('course.edit',id=course.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit course</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete course</button>

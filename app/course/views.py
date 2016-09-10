@@ -25,7 +25,10 @@ def add():
     if form.validate_on_submit():
         name = form.name.data
         length_miles = form.length_miles.data or None
-        course = Course(name=name, length_miles=length_miles)
+        is_default = form.is_default.data or False
+        if is_default:
+            Course.query.update({Course.is_default: False})
+        course = Course(name=name, length_miles=length_miles, is_default=is_default)
         db.session.add(course)
         db.session.commit()
         flash('Course type ' + course.name + ' created!')
@@ -44,8 +47,12 @@ def edit(id):
     if form.validate_on_submit():
         name = form.name.data
         length_miles = form.length_miles.data or None
+        is_default = form.is_default.data or False
+        if is_default:
+            Course.query.update({Course.is_default: False})
         course.name = name
         course.length_miles = length_miles
+        course.is_default = is_default
         db.session.commit()
         flash('Course type ' + course.name + ' updated!')
         current_app.logger.info(
@@ -54,6 +61,7 @@ def edit(id):
                                 id=course.id))
     form.name.data = course.name
     form.length_miles.data = course.length_miles
+    form.is_default.data = bool(course.is_default)
     return render_template('edit.html',
                            item=course, form=form, type='course')
 
