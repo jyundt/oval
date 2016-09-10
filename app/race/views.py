@@ -192,10 +192,9 @@ def add():
     #Let's also prepopulate the points_race field if we are in June/July/Aug
     if (form.date.data.month >= 6) and (form.date.data.month <= 8):
         form.points_race.data = True
-    #Set the default course to "Normal"
-    form.course_id.data = Course.query.filter(Course.name == 'Normal')\
-                                      .first()\
-                                      .id
+    default_course = Course.query.filter(Course.is_default == True).first()
+    if default_course:
+        form.course_id.data = default_course.id
     return render_template('add.html', form=form, type='race')
 
 @race.route('/edit/<int:id>/', methods=['GET', 'POST'])
