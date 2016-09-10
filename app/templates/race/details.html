@@ -14,7 +14,7 @@
 </h6>
 <div class="page-header">
     <h4><small>{{race.date.strftime('%B %-d, %Y')}}</small></h4>
-    {% if race.course and race.course.name != "Normal" %}
+    {% if race.course and not race.course.is_default %}
       <div class="pull-left">
       <h1>Class {{race.race_class.name}} Race {%if race.laps %} - {{race.laps}} laps{%endif%} [{{race.course.name|title}}]</h1>
       </div>
