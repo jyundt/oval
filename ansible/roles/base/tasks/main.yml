@@ -1,11 +1,6 @@
 ---
 - include_vars: "secrets.yml"
 
-- name: Send update to slack
-  debug: msg="Sending update to Slack at end of playbook..."
-  notify: Notify slack
-  changed_when: true
-
 - name: Upgrade all packages
   yum: name=* state=latest  update_cache=yes
 

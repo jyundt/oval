@@ -39,7 +39,7 @@
   become_user: "{{oval_user}}"
   notify: 
     - Restart uWSGI
-    - Create tables
+    - Upgrade DB schema
 
 - name: Install virtualenv and python deps
   yum: name={{item}} update_cache=yes
