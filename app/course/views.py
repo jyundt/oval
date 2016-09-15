@@ -33,7 +33,9 @@ def add():
         db.session.commit()
         flash('Course type ' + course.name + ' created!')
         current_app.logger.info(
-            '%s[%d]%s', course.name, course.id, ' %.2f' if length_miles else '')
+            '%s[%d]%s%s', course.name, course.id,
+            ' %.2f' % course.length_miles if course.length_miles else '',
+            ' (default)' if course.is_default else '')
         return redirect(url_for('course.index'))
 
     return render_template('add.html', form=form, type='course')
@@ -56,7 +58,9 @@ def edit(id):
         db.session.commit()
         flash('Course type ' + course.name + ' updated!')
         current_app.logger.info(
-            '%s[%d]%s', course.name, course.id, ' %.2f' if length_miles else '')
+            '%s[%d]%s%s', course.name, course.id,
+            ' %.2f' % course.length_miles if course.length_miles else '',
+            ' (default)' if course.is_default else '')
         return redirect(url_for('course.details',
                                 id=course.id))
     form.name.data = course.name
