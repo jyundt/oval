@@ -71,11 +71,13 @@ There are some other things (like `STRAVA_API_TOKEN`) that can be added as well.
 #### Create initial database
 It's probably easiest to get a DB dump from an existing installation, but if you are starting from scratch you can manually create the tables, admin roles and initial super admin.
 
-Start by launching the flask shell:
+Start by creating the necessary DB tables in your blank DB:
+`./manage.py db upgrade`
+
+Then launch the Flask shell and create an admin:
 `./manage.py shell`
 
 ```
->>> db.create_all()
 >>> from app.models import Role
 >>> Role.insert_roles()
 >>> from app.models import Admin
