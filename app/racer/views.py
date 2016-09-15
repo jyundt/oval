@@ -1,20 +1,60 @@
 import json
+import datetime
 
 from flask import render_template, redirect, url_for, flash, current_app,\
                   request
+from sqlalchemy import extract
 from stravalib import Client
 
 from . import racer as racer_
 from .forms import RacerAddForm, RacerEditForm, RacerSearchForm
 from .. import db
 from ..decorators import roles_accepted
-from ..models import Racer, Team, Race, Participant
+from ..models import RaceClass, Racer, Team, Race, Participant
 
 
 @racer_.route('/')
 def index():
-    racers = Racer.query.order_by(Racer.name).all()
-    return render_template('racer/index.html', racers=racers)
+    def extract_int_list(s):
+        for val in (s or '').split(','):
+            try:
+                yield int(val)
+            except ValueError: pass
+
+    seasons = set(
+        int(date.year) for (date,) in Race.query.with_entities(Race.date).all())
+    race_classes = {
+        race_class.id: race_class for race_class in
+        RaceClass.query}
+
+    if request.args.get('filter_seasons') is None and request.args.get('filter_seasons') is None:
+        recent_date = datetime.date.today() - datetime.timedelta(days=365)
+        filter_seasons = set(int(val[0]) for val in
+            Race.query.with_entities(extract('year', Race.date))
+            .filter(Race.date >= recent_date)
+            .group_by(extract('year', Race.date)))
+    else:
+        filter_seasons = set(
+            season for season in extract_int_list(request.args.get('filter_seasons'))
+            if season in seasons)
+    filter_race_class_ids = set(
+        race_class_id for race_class_id in extract_int_list(request.args.get('filter_race_class_ids'))
+        if race_class_id in race_classes.keys())
+
+    query = Racer.query.join(Participant).join(Race)
+    if filter_seasons:
+        query = query.filter(extract('year', Race.date).in_(filter_seasons))
+    if filter_race_class_ids:
+        query = query.filter(Race.class_id.in_(filter_race_class_ids))
+    racers = query.order_by(Racer.name).all()
+    return render_template(
+        'racer/index.html', racers=racers,
+        seasons=sorted(seasons, reverse=True),
+        race_classes=race_classes,
+        filter_seasons=sorted(filter_seasons),
+        filter_race_class_ids=[
+            race_class.id for race_class in sorted(race_classes.values(), key=lambda rc: rc.name)
+            if race_class.id in filter_race_class_ids])
 
 
 @racer_.route('/search/', methods=['GET', 'POST'])
