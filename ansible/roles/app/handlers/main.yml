@@ -2,7 +2,9 @@
 - name: Restart uWSGI
   service: name=uwsgi state=restarted
 
-- name: Create tables
-  shell: "source /home/{{oval_user}}/.bashrc ; . {{venv_dir}}/bin/activate && echo 'db.create_all()' | {{app_dir}}/manage.py shell"
+- name: Upgrade DB schema
+  shell: "source /home/{{oval_user}}/.bashrc ; . {{venv_dir}}/bin/activate &&  {{app_dir}}/manage.py db upgrade"
+  args:
+    chdir: "{{app_dir}}"
   become: true
   become_user: "{{oval_user}}"
