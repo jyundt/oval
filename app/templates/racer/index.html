@@ -5,17 +5,105 @@
 {% block page_content %}
 <h6>
 <ul class="breadcrumb">
-  <li><a href="{{url_for('main.index')}}">Home</a></l>
+  <li><a href="{{url_for('main.index')}}">Home</a></li>
   <li class="active">Racers</li>
 </ul>
 </h6>
 <div class="page-header">
-    <h1>Racers</h1>
-{% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
-<a class="btn btn-default" href="{{url_for('racer.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
-{% endif %}
-<a class="btn btn-default" href="{{url_for('racer.search')}}"><span class="glyphicon glyphicon-search"></span> Racer search</a>
+  <h1>Racers</h1>
+  {% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
+  <a class="btn btn-default" href="{{url_for('racer.add')}}"><span class="glyphicon glyphicon-plus"></span> Add a racer</a>
+  {% endif %}
+  <a class="btn btn-default" href="{{url_for('racer.search')}}"><span class="glyphicon glyphicon-search"></span> Racer search</a>
 </div>
+
+<div class="form-group">
+  <div class="btn-group" role="group">
+    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+    Active during
+    <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+    {% for season in seasons %}
+      {% if season in filter_seasons %}
+      <li class="active">
+        <a href="{{url_for(
+          'racer.index',
+          filter_seasons=filter_seasons|reject('equalto', season)|join(','),
+          filter_race_class_ids=filter_race_class_ids|join(','))}}">
+          {{season}}
+        </a>
+      {% else %}
+      <li>
+        <a href="{{url_for(
+          'racer.index',
+          filter_seasons=(filter_seasons+[season])|sort|join(','),
+          filter_race_class_ids=filter_race_class_ids|join(','))}}">
+          {{season}}
+        </a>
+      {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="btn-group" role="group">
+    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+    Class
+    <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+    {% for race_class in race_classes.values()|sort(attribute="name") %}
+      {% if race_class.id in filter_race_class_ids %}
+      <li class="active">
+        <a href="{{url_for(
+          'racer.index',
+          filter_seasons=filter_seasons|join(','),
+          filter_race_class_ids=filter_race_class_ids|reject('equalto', race_class.id)|join(','))}}">
+          {{race_class.name}}
+        </a>
+      {% else %}
+      <li>
+        <a href="{{url_for(
+          'racer.index',
+          filter_seasons=filter_seasons|join(','),
+          filter_race_class_ids=(filter_race_class_ids+[race_class.id])|sort|join(','))}}">
+          {{race_class.name}}
+        </a>
+      {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% if filter_seasons or filter_race_class_ids %}
+<label for="filters">Filters:</label>
+<div class="form-group" id="filters">
+  <ul class="nav nav-pills">
+    {% for season in filter_seasons %}
+    <li role="presentation" class="active">
+      <a href="{{url_for(
+        'racer.index',
+        filter_seasons=filter_seasons|reject('equalto', season)|join(','),
+        filter_race_class_ids=filter_race_class_ids|join(','))}}">
+        <span style="font-weight:bold">{{season}}</span>&nbsp;
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      </a></li>
+    {% endfor %}
+    {% for race_class_id in filter_race_class_ids %}
+    <li role="presentation" class="active">
+      <a href="{{url_for(
+        'racer.index',
+        filter_seasons=filter_seasons|join(','),
+        filter_race_class_ids=filter_race_class_ids|reject('equalto', race_class_id)|join(','))}}">
+        <span style="font-weight:bold">{{race_classes[race_class_id].name}}</span>&nbsp;
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
 
 <div class="table-responsive">
 <table class="table table-striped table-bordered">
@@ -28,7 +116,7 @@
 <tbody>
 {% for racer in racers %}
 <tr>
-<td><a href="{{url_for('racer.details',id=racer.id)}}">{{ racer.name}}</a>
+<td><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a>
 {%if racer.strava_id%}
 <style>
   .strava-badge- { display: inline-block; height: 24px;}
@@ -49,4 +137,5 @@
 </tbody>
 </table>
 </div>
+
 {% endblock %}

@@ -1,4 +1,6 @@
 ---
+- include_vars: "secrets.yml"
+
 - name: Upgrade all packages
   yum: name=* state=latest  update_cache=yes
 

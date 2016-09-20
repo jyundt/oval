@@ -1,5 +1,8 @@
 ---
-- include_vars: "{{ansible_nodename}}.yml"
+- include_vars: "{{item}}"
+  with_items:
+    - "{{ansible_nodename}}.yml"
+    - "secrets.yml"
 
 - name: Create application group
   group: name={{oval_group}} gid={{oval_gid}}
@@ -36,7 +39,7 @@
   become_user: "{{oval_user}}"
   notify: 
     - Restart uWSGI
-    - Create tables
+    - Upgrade DB schema
 
 - name: Install virtualenv and python deps
   yum: name={{item}} update_cache=yes
