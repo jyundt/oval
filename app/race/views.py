@@ -171,12 +171,13 @@ def add():
         laps = form.laps.data
         starters = form.starters.data
         points_race = form.points_race.data
+        notes = form.notes.data
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
                     usac_permit=usac_permit, laps=laps, course_id=course_id,
                     winning_time=winning_time, points_race=points_race,
-                    starters=starters)
+                    starters=starters, notes=notes)
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
