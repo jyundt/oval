@@ -41,7 +41,7 @@ def index():
         race_class_id for race_class_id in extract_int_list(request.args.get('filter_race_class_ids'))
         if race_class_id in race_classes.keys())
 
-    query = Racer.query.join(Participant).join(Race)
+    query = Racer.query.join(Participant, isouter=True).join(Race, isouter=True)
     if filter_seasons:
         query = query.filter(extract('year', Race.date).in_(filter_seasons))
     if filter_race_class_ids:
