@@ -39,16 +39,27 @@
   </div>
 </div>
 <fieldset id="fs-class-checkboxes">
-  <div class="form-group">
-    <label for="class-checkboxes">Classes</label><br>
-    <div id="class-checkboxes" class="btn-group" data-toggle="buttons">
+  <label for="div-class-checkboxes">Classes</label><br>
+  <div id="div-class-checkboxes" class="form-group" style="float: left; margin-right: 10px;">
+    <div id="class-checkboxes" class="btn-group inline" data-toggle="buttons">
       {% for race_class in race_classes.values()|sort(attribute="name") %}
       <label class="btn btn-primary">
         <input id="class-checkbox-{{race_class.id}}" type="checkbox"
-               autocomplete="off" value="{{race_class.id}}">{{race_class.name}}
+               autocomplete="off" value="{{race_class.id}}">
+        {{race_class.name}}
       </label>
       {% endfor %}
     </div>
+  </div>
+  <div class="form-group">
+    <fieldset id="fs-class-checkbox-all">
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary">
+          <input id="class-checkbox-all" type="checkbox" autocomplete="off" value="all">
+          All
+        </label>
+      </div>
+    </fieldset>
   </div>
 </fieldset>
 
@@ -76,10 +87,23 @@ function updateDocument() {
   $('#season-slider').slider(isNoRaces ? 'disable' : 'enable');
   $('#fs-class-checkboxes').prop('disabled', isNoRaces);
 
-  var seasonRange = $('#season-slider').slider('getValue').join();
-  var classFilters = $('#class-checkboxes input')
+  var selectedClasses = $('#class-checkboxes input')
     .filter(function() { return this.checked; })
-    .map(function() { return this.value; }).get().join();
+    .map(function() { return this.value; }).get();
+
+  var allCkb = $('#class-checkbox-all')
+  if (selectedClasses.length != 0) {
+    allCkb.prop('checked', false);
+    allCkb.parent('label').removeClass('active');
+  } else {
+    allCkb.prop('checked', true);
+    allCkb.parent('label').addClass('active');
+  }
+
+  console.log(selectedClasses);
+
+  var seasonRange = $('#season-slider').slider('getValue').join();
+  var classFilters = selectedClasses.join();
 
   args = isNoRaces ? {} :
     {'filter_seasons': seasonRange,
@@ -125,6 +149,16 @@ $(document).ready(function() {
   $('#class-checkboxes input').each(function() {
     $(this).on('change', updateDocument);
   });
+  $('#class-checkbox-all').on('change', function() {
+    if (this.checked) {
+      $('#class-checkboxes input').each(function() {
+        $(this).prop('checked', false);
+        $(this).parent('label').removeClass('active');
+      });
+    };
+    updateDocument();
+  });
+
   updateDocument();
 });
 </script>
