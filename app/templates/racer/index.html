@@ -61,6 +61,7 @@
 </tr>
 </thead>
 <tbody>
+</tbody>
 </table>
 </div>
 
@@ -112,7 +113,7 @@ function updateDocument() {
         row += '</tr>'
         rows += row
       });
-      $("#racers-table tr").remove();
+      $("#racers-table tbody").remove();
       $('#racers-table').append(rows);
     }
   );
