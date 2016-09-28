@@ -140,7 +140,7 @@ function updateDocument() {
     $('#racers-table').append(rows);
   }
 
-  $.get("/racer/json/filter", args, rebuildTable, 'json');
+  $.get("/racer/filter", args, rebuildTable, 'json');
 }
 
 $(document).ready(function() {

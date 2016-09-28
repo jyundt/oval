@@ -35,8 +35,8 @@ def index():
         season_range_default=season_range_default)
 
 
-@racer_.route('/json/filter')
-def racer_filter():
+@racer_.route('/filter')
+def filter_():
     def extract_int_list(s):
         for val in (s or '').split(','):
             try:
