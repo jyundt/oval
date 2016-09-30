@@ -1,9 +1,9 @@
-import json
 import datetime
+import json
 
 from flask import render_template, redirect, url_for, flash, current_app,\
                   request
-from sqlalchemy import extract
+from sqlalchemy import extract, or_
 from stravalib import Client
 
 from . import racer as racer_
@@ -15,46 +15,64 @@ from ..models import RaceClass, Racer, Team, Race, Participant
 
 @racer_.route('/')
 def index():
-    def extract_int_list(s):
-        for val in (s or '').split(','):
-            try:
-                yield int(val)
-            except ValueError: pass
-
     seasons = set(
         int(date.year) for (date,) in Race.query.with_entities(Race.date).all())
     race_classes = {
         race_class.id: race_class for race_class in
         RaceClass.query}
 
-    if request.args.get('filter_seasons') is None and request.args.get('filter_seasons') is None:
-        recent_date = datetime.date.today() - datetime.timedelta(days=365)
-        filter_seasons = set(int(val[0]) for val in
-            Race.query.with_entities(extract('year', Race.date))
-            .filter(Race.date >= recent_date)
-            .group_by(extract('year', Race.date)))
-    else:
-        filter_seasons = set(
-            season for season in extract_int_list(request.args.get('filter_seasons'))
-            if season in seasons)
+    recent_date = datetime.date.today() - datetime.timedelta(days=365)
+    recent_seasons = set(int(val[0]) for val in
+                         Race.query.with_entities(extract('year', Race.date))
+                         .filter(Race.date >= recent_date)
+                         .group_by(extract('year', Race.date)))
+    season_range_default = [min(recent_seasons), max(recent_seasons)]
+
+    return render_template(
+        'racer/index.html',
+        seasons=sorted(seasons, reverse=True),
+        race_classes=race_classes,
+        season_range_default=season_range_default)
+
+
+@racer_.route('/filter')
+def filter_():
+    def extract_int_list(s):
+        for val in (s or '').split(','):
+            try:
+                yield int(val)
+            except ValueError: pass
+
+    filter_seasons = sorted(extract_int_list(request.args.get('filter_seasons')))[:2]
+    if not filter_seasons or len(filter_seasons) != 2:
+        filter_seasons = None
+
+    race_classes = {
+        race_class.id: race_class for race_class in
+        RaceClass.query}
+
     filter_race_class_ids = set(
         race_class_id for race_class_id in extract_int_list(request.args.get('filter_race_class_ids'))
         if race_class_id in race_classes.keys())
 
     query = Racer.query.join(Participant, isouter=True).join(Race, isouter=True)
     if filter_seasons:
-        query = query.filter(extract('year', Race.date).in_(filter_seasons))
+        query = (query.filter(extract('year', Race.date) >= filter_seasons[0])
+                      .filter(extract('year', Race.date) <= filter_seasons[1]))
+    else:
+        query = (query.filter(Race.date.is_(None)))
     if filter_race_class_ids:
         query = query.filter(Race.class_id.in_(filter_race_class_ids))
     racers = query.order_by(Racer.name).all()
-    return render_template(
-        'racer/index.html', racers=racers,
-        seasons=sorted(seasons, reverse=True),
-        race_classes=race_classes,
-        filter_seasons=sorted(filter_seasons),
-        filter_race_class_ids=[
-            race_class.id for race_class in sorted(race_classes.values(), key=lambda rc: rc.name)
-            if race_class.id in filter_race_class_ids])
+
+    racer_info = [{
+        'id': racer.id,
+        'name': racer.name,
+        'strava_id': racer.strava_id,
+        'current_team_id': racer.current_team_id,
+        'current_team_name': racer.current_team.name if racer.current_team else ''}
+                  for racer in racers]
+    return json.dumps(racer_info)
 
 
 @racer_.route('/search/', methods=['GET', 'POST'])
