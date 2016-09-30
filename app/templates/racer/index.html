@@ -87,17 +87,23 @@ function updateDocument() {
   $('#season-slider').slider(isNoRaces ? 'disable' : 'enable');
   $('#fs-class-checkboxes').prop('disabled', isNoRaces);
 
-  var selectedClasses = $('#class-checkboxes input')
+  var classCheckboxes = $('#class-checkboxes input');
+  var selectedClasses = classCheckboxes
     .filter(function() { return this.checked; })
     .map(function() { return this.value; }).get();
 
-  var allCkb = $('#class-checkbox-all')
-  if (selectedClasses.length != 0) {
+  var allCkb = $('#class-checkbox-all');
+  console.log(selectedClasses.length);
+  console.log(classCheckboxes.length);
+  console.log(selectedClasses.length === classCheckboxes.length);
+  if (selectedClasses.length != 0 && selectedClasses.length != classCheckboxes.length) {
     allCkb.prop('checked', false);
     allCkb.parent('label').removeClass('active');
+    $('#fs-class-checkbox-all').prop('disabled', false);
   } else {
     allCkb.prop('checked', true);
     allCkb.parent('label').addClass('active');
+    $('#fs-class-checkbox-all').prop('disabled', true);
   }
 
   console.log(selectedClasses);
