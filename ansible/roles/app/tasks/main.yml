@@ -10,8 +10,11 @@
 - name: Create application account
   user: name={{oval_user}} uid={{oval_uid}} group={{oval_group}}
 
-- name: Copy ssh key for application account
-  authorized_key: user={{oval_user}} key="{{ lookup('file', lookup('env','HOME') + "/.ssh/id_rsa.pub") }}"
+- name: Install ssh pub keys for application account
+  authorized_key:
+    user: "{{oval_user}}"
+    key: '{{lookup("file", item)}}'
+  with_items: "{{ssh_keys}}"
 
 - name: Create ENV var file for application account
   template: src=templates/oval_vars.j2 dest={{oval_vars}} mode=0600 owner={{oval_user}} group={{oval_group}}
