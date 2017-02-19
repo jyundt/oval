@@ -1,10 +1,10 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms import ValidationError
 from wtforms.validators import Required
 from ..models import Racer, Team
 
-class RacerAddToTeamForm(Form):
+class RacerAddToTeamForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     submit = SubmitField('Add')
 
@@ -12,7 +12,7 @@ class RacerAddToTeamForm(Form):
         if Racer.query.filter_by(name=field.data).first() is None:
             raise ValidationError('Racer does not exist!')
 
-class TeamForm(Form):
+class TeamForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
 
 class TeamEditForm(TeamForm):

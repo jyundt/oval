@@ -1,10 +1,10 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms import ValidationError
 from wtforms.validators import Required
 from ..models import Marshal
 
-class MarshalForm(Form):
+class MarshalForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
 
 class MarshalEditForm(MarshalForm):

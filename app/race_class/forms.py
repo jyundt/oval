@@ -1,10 +1,10 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms import ValidationError
 from wtforms.validators import Required, Optional, Regexp
 from ..models import RaceClass
 
-class RaceClassForm(Form):
+class RaceClassForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     color = StringField('Race Category Color',
                         validators=[Optional(),

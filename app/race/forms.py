@@ -1,4 +1,4 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     SelectField, DateTimeField, BooleanField, TextAreaField
 from wtforms import ValidationError
@@ -6,7 +6,7 @@ from wtforms.validators import Required, Optional, NumberRange
 from ..models import Race, Racer, Team
 from sqlalchemy import and_
 
-class RaceForm(Form):
+class RaceForm(FlaskForm):
     date = DateField('Date', validators=[Required()],
                      description='MM/DD/YYYY',
                      format='%m/%d/%Y')
@@ -70,13 +70,13 @@ class RaceEditForm(RaceForm):
             return False
         return True
 
-class RaceSearchForm(Form):
+class RaceSearchForm(FlaskForm):
     date = DateField('Date', validators=[Required()],
                      description='MM/DD/YYYY',
                      format='%m/%d/%Y')
     submit = SubmitField('Search')
 
-class ParticipantForm(Form):
+class ParticipantForm(FlaskForm):
     place = IntegerField('Place', validators=[Optional(), NumberRange(min=1)])
     name = StringField('Racer Name', validators=[Required()])
     team_name = StringField('Team Name', validators=[Optional()])
@@ -129,7 +129,7 @@ class ParticipantAddForm(ParticipantForm):
 class ParticipantEditForm(ParticipantForm):
     submit = SubmitField('Save')
 
-class PrimeForm(Form):
+class PrimeForm(FlaskForm):
     name = StringField('Prime', validators=[Required()])
 
 class PrimeAddForm(PrimeForm):
@@ -139,13 +139,13 @@ class PrimeAddForm(PrimeForm):
 class PrimeEditForm(PrimeForm):
     submit = SubmitField('Save')
 
-class RaceMarshalForm(Form):
+class RaceMarshalForm(FlaskForm):
     marshal_id = SelectField(u'Marshal', coerce=int, validators=[Required()])
 
 class RaceMarshalAddForm(RaceMarshalForm):
     submit = SubmitField('Add')
 
-class RaceOfficialForm(Form):
+class RaceOfficialForm(FlaskForm):
     official_id = SelectField(u'Official', coerce=int, validators=[Required()])
 
 class RaceOfficialAddForm(RaceOfficialForm):
