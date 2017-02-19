@@ -41,7 +41,7 @@
   notify: Restart firewalld
 
 - name: Install EPEL
-  yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+  yum: name=https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
 
 - name: Install sysstat
   yum: name=sysstat update_cache=yes
