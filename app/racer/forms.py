@@ -1,11 +1,11 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     BooleanField
 from wtforms import ValidationError
 from wtforms.validators import Required, Optional
 from ..models import Racer, Team
 
-class RacerForm(Form):
+class RacerForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     usac_license = IntegerField('USAC License', validators=[Optional()])
     birthdate = DateField('Birthdate', validators=[Optional()],
@@ -38,7 +38,7 @@ class RacerAddForm(RacerForm):
         if Racer.query.filter_by(usac_license=field.data).first():
             raise ValidationError('USAC license already in use.')
 
-class RacerSearchForm(Form):
+class RacerSearchForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     submit = SubmitField('Search')
 

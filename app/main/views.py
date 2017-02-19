@@ -163,7 +163,8 @@ def index():
 @main.route('/standings/')
 def standings():
     years = sorted(set(
-        int(date.year) for (date,) in Race.query.with_entities(Race.date).all()),
+        int(date.year) for (date,) in Race.query.with_entities(Race.date)
+                                                .filter_by(points_race=True)),
         reverse=True)
     try:
         req_year = int(request.args.get('year'))

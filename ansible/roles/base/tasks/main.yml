@@ -16,8 +16,11 @@
   - libsemanage-python
   - libselinux-python
 
-- name: Install our ssh pub key for root
-  authorized_key: user=root key="{{ lookup('file', lookup('env','HOME') + "/.ssh/id_rsa.pub") }}"
+- name: Install ssh pub keys for root
+  authorized_key: 
+    user: root
+    key: '{{lookup("file", item)}}'
+  with_items: "{{ssh_keys}}"
 
 - name: Disable password based root access
   lineinfile: dest=/etc/ssh/sshd_config line="PermitRootLogin without-password" state=present

@@ -1,10 +1,10 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms import ValidationError
 from wtforms.validators import Required
 from ..models import Official
 
-class OfficialForm(Form):
+class OfficialForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
 
 class OfficialEditForm(OfficialForm):

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block head %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap-slider.min.css')}}">
+{% endblock %}
+
 {% block title %}Racers{% endblock %}
 
 {% block page_content %}
@@ -18,124 +23,149 @@
 </div>
 
 <div class="form-group">
-  <div class="btn-group" role="group">
-    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-    Active during
-    <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-    {% for season in seasons %}
-      {% if season in filter_seasons %}
-      <li class="active">
-        <a href="{{url_for(
-          'racer.index',
-          filter_seasons=filter_seasons|reject('equalto', season)|join(','),
-          filter_race_class_ids=filter_race_class_ids|join(','))}}">
-          {{season}}
-        </a>
-      {% else %}
-      <li>
-        <a href="{{url_for(
-          'racer.index',
-          filter_seasons=(filter_seasons+[season])|sort|join(','),
-          filter_race_class_ids=filter_race_class_ids|join(','))}}">
-          {{season}}
-        </a>
-      {% endif %}
-      </li>
-    {% endfor %}
-    </ul>
-  </div>
-  <div class="btn-group" role="group">
-    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-    Class
-    <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-    {% for race_class in race_classes.values()|sort(attribute="name") %}
-      {% if race_class.id in filter_race_class_ids %}
-      <li class="active">
-        <a href="{{url_for(
-          'racer.index',
-          filter_seasons=filter_seasons|join(','),
-          filter_race_class_ids=filter_race_class_ids|reject('equalto', race_class.id)|join(','))}}">
-          {{race_class.name}}
-        </a>
-      {% else %}
-      <li>
-        <a href="{{url_for(
-          'racer.index',
-          filter_seasons=filter_seasons|join(','),
-          filter_race_class_ids=(filter_race_class_ids+[race_class.id])|sort|join(','))}}">
-          {{race_class.name}}
-        </a>
-      {% endif %}
-      </li>
-    {% endfor %}
-    </ul>
+  <label for="season-slider">Season range</label>
+  <div class="input-group">
+    <div style="margin-left: 16px; margin-right: 16px; float: left">
+      <input id="season-slider" type="text"
+             data-provide="slider"
+             data-slider-ticks="[{{seasons|sort|join(',')}}]"
+             data-slider-ticks-snap-bounds="30"
+             data-slider-value="[{{season_range_default[0]}}, {{season_range_default[1]}}]"
+             data-slider-ticks-labels="[{{seasons|sort|join(',')}}]" />
+    </div>
+    {% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
+    <label><input id="ckb-no-races" type="checkbox" value="" style="margin-left: 20px">No races</label>
+    {% endif %}
   </div>
 </div>
+<fieldset id="fs-class-checkboxes">
+  <label for="div-class-checkboxes">Classes</label><br>
+  <div id="div-class-checkboxes" class="form-group" style="float: left; margin-right: 10px;">
+    <div id="class-checkboxes" class="btn-group inline" data-toggle="buttons">
+      {% for race_class in race_classes.values()|sort(attribute="name") %}
+      <label class="btn btn-primary">
+        <input id="class-checkbox-{{race_class.id}}" type="checkbox"
+               autocomplete="off" value="{{race_class.id}}">
+        {{race_class.name}}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="form-group">
+    <fieldset id="fs-class-checkbox-all">
+      <div class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary">
+          <input id="class-checkbox-all" type="checkbox" autocomplete="off" value="all">
+          All
+        </label>
+      </div>
+    </fieldset>
+  </div>
+</fieldset>
 
-{% if filter_seasons or filter_race_class_ids %}
-<label for="filters">Filters:</label>
-<div class="form-group" id="filters">
-  <ul class="nav nav-pills">
-    {% for season in filter_seasons %}
-    <li role="presentation" class="active">
-      <a href="{{url_for(
-        'racer.index',
-        filter_seasons=filter_seasons|reject('equalto', season)|join(','),
-        filter_race_class_ids=filter_race_class_ids|join(','))}}">
-        <span style="font-weight:bold">{{season}}</span>&nbsp;
-        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-      </a></li>
-    {% endfor %}
-    {% for race_class_id in filter_race_class_ids %}
-    <li role="presentation" class="active">
-      <a href="{{url_for(
-        'racer.index',
-        filter_seasons=filter_seasons|join(','),
-        filter_race_class_ids=filter_race_class_ids|reject('equalto', race_class_id)|join(','))}}">
-        <span style="font-weight:bold">{{race_classes[race_class_id].name}}</span>&nbsp;
-        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
-
-<div class="table-responsive">
-<table class="table table-striped table-bordered">
+<div id="racers-table-div" class="table-responsive">
+<table id="racers-table" class="table table-striped table-bordered">
 <thead>
 <tr>
-    <th>Name</th>
-    <th>Team</th>
+    <th data-field="name">Name</th>
+    <th data-field="current_team_name">Team</th>
 </tr>
 </thead>
 <tbody>
-{% for racer in racers %}
-<tr>
-<td><a href="{{url_for('racer.details',id=racer.id)}}">{{racer.name}}</a>
-{%if racer.strava_id%}
-<style>
-  .strava-badge- { display: inline-block; height: 24px;}
-  .strava-badge- img { visibility: hidden; height: 24px; }
-  .strava-badge-:hover { background-position: 0 -37px; }
-  .strava-badge-follow { height: 24px; width: 24px; background: url(//badges.strava.com/echelon-sprite-24.png) no-repeat 0 0; }
-</style>
-<a href="http://strava.com/athletes/{{racer.strava_id}}/badge" class="strava-badge- strava-badge-follow" target="_blank"><img src="//badges.strava.com/echelon-sprite-24.png" alt="Strava" /></a>
-{%endif%}
-</td> 
-{%if racer.current_team %}
-<td><a href="{{url_for('team.details',id=racer.current_team.id)}}">{{racer.current_team.name}}</a></td>
-{%else%}
-<td></td>
-{%endif%}
-</tr>
-{% endfor %}
 </tbody>
 </table>
 </div>
 
 {% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('static', filename='bootstrap-slider.min.js')}}"></script>
+<script>
+function updateDocument() {
+  var isNoRaces = $('#ckb-no-races').prop('checked');
+  $('#season-slider').slider(isNoRaces ? 'disable' : 'enable');
+  $('#fs-class-checkboxes').prop('disabled', isNoRaces);
+
+  var classCheckboxes = $('#class-checkboxes input');
+  var selectedClasses = classCheckboxes
+    .filter(function() { return this.checked; })
+    .map(function() { return this.value; }).get();
+
+  var allCkb = $('#class-checkbox-all');
+  console.log(selectedClasses.length);
+  console.log(classCheckboxes.length);
+  console.log(selectedClasses.length === classCheckboxes.length);
+  if (selectedClasses.length != 0 && selectedClasses.length != classCheckboxes.length) {
+    allCkb.prop('checked', false);
+    allCkb.parent('label').removeClass('active');
+    $('#fs-class-checkbox-all').prop('disabled', false);
+  } else {
+    allCkb.prop('checked', true);
+    allCkb.parent('label').addClass('active');
+    $('#fs-class-checkbox-all').prop('disabled', true);
+  }
+
+  console.log(selectedClasses);
+
+  var seasonRange = $('#season-slider').slider('getValue').join();
+  var classFilters = selectedClasses.join();
+
+  args = isNoRaces ? {} :
+    {'filter_seasons': seasonRange,
+     'filter_race_class_ids': classFilters};
+
+  function rebuildTable(data) {
+    var rows = ''
+    data.forEach(function(racer) {
+      var row = '<tr>'
+
+      row += '<td>'
+      row += '<a href="/racer/' + racer.id + '">' + racer.name + '</a>'
+      if (racer.strava_id) {
+        row += '<style>'
+        row += '.strava-badge- { display: inline-block; height: 24px;} '
+        row += '.strava-badge- img { visibility: hidden; height: 24px; }'
+        row += '.strava-badge-:hover { background-position: 0 -37px; }'
+        row += '.strava-badge-follow { height: 24px; width: 24px; background: url(http://badges.strava.com/echelon-sprite-24.png) no-repeat 0 0; }'
+        row += '</style>'
+        row += '<a href="http://strava.com/athletes/' + racer.strava_id + '/badge" class="strava-badge- strava-badge-follow" target="_blank"><img src="http://badges.strava.com/echelon-sprite-24.png" alt="Strava" /></a>'
+      }
+      row += '</td>'
+
+      row += '<td>'
+      if (racer.current_team_id) {
+        row += '<a href="/team/' + racer.current_team_id + '">' + racer.current_team_name + '</a>'
+      }
+      row += '</td>'
+
+      row += '</tr>'
+      rows += row
+    });
+    $("#racers-table tbody").remove();
+    $('#racers-table').append(rows);
+  }
+
+  $.get("/racer/filter", args, rebuildTable, 'json');
+}
+
+$(document).ready(function() {
+  $('#season-slider').on('slideStop', updateDocument);
+  $('#ckb-no-races').on('change', updateDocument);
+  $('#class-checkboxes input').each(function() {
+    $(this).on('change', updateDocument);
+  });
+  $('#class-checkbox-all').on('change', function() {
+    if (this.checked) {
+      $('#class-checkboxes input').each(function() {
+        $(this).prop('checked', false);
+        $(this).parent('label').removeClass('active');
+      });
+    };
+    updateDocument();
+  });
+
+  updateDocument();
+});
+</script>
+{%endblock%}

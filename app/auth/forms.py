@@ -1,4 +1,4 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField,\
                     SelectMultipleField
 from wtforms.validators import Required, Length, Email, EqualTo, Optional
@@ -10,14 +10,14 @@ class MultiCheckboxField(SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = StringField('Username', validators=[Required(), Length(1, 200)])
     password = PasswordField('Password', validators=[Required()])
     remember_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')
 
 
-class AdminForm(Form):
+class AdminForm(FlaskForm):
     email = StringField('Email', validators=[Required(), Email()])
     username = StringField('Username', validators=[Required(), Length(1, 200)])
     roles = SelectMultipleField('Roles', coerce=int, validators=[Optional()])
@@ -62,7 +62,7 @@ class AdminEditForm(AdminForm):
            Admin.query.filter(Admin.email.ilike(field.data)).first():
             raise ValidationError('Email already in use!')
 
-class ChangePasswordForm(Form):
+class ChangePasswordForm(FlaskForm):
     old_password = PasswordField('Old password', validators=[Required()])
     password = PasswordField('New password',
                              validators=[Required(), EqualTo('password2',\
@@ -72,11 +72,11 @@ class ChangePasswordForm(Form):
                               validators=[Required()])
     submit = SubmitField('Update Password')
 
-class ResetPasswordRequestForm(Form):
+class ResetPasswordRequestForm(FlaskForm):
     email = StringField('Email', validators=[Required(), Email()])
     submit = SubmitField('Reset Password')
 
-class ResetPasswordForm(Form):
+class ResetPasswordForm(FlaskForm):
     email = StringField('Confirm Email', validators=[Required(), Length(1, 64),
                                                      Email()])
     password = PasswordField('New Password', validators=[
@@ -89,7 +89,7 @@ class ResetPasswordForm(Form):
             raise ValidationError('Unknown email address.')
 
 
-class ChangeEmailForm(Form):
+class ChangeEmailForm(FlaskForm):
     email = StringField('New Email', validators=[Required(), Email()])
     password = PasswordField('Current Password', validators=[Required()])
     submit = SubmitField('Update Email Address')
@@ -98,7 +98,7 @@ class ChangeEmailForm(Form):
         if Admin.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
 
-class NotificationEmailForm(Form):
+class NotificationEmailForm(FlaskForm):
     email = StringField('Email', validators=[Required(), Email()])
     description = StringField('Description', validators=[Optional()])
 
