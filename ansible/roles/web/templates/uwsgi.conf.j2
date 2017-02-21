@@ -1,3 +1,0 @@
-LoadModule proxy_uwsgi_module /usr/lib64/httpd/modules/mod_proxy_uwsgi.so
-ProxyPass /server-status !
-ProxyPass / uwsgi://{{app_server}}:30000/
