@@ -1,5 +1,0 @@
----
-slack_channel: "#ops"
-ssh_keys:
-  - jyundt-id_rsa.pub
-  - jheffner-id_rsa.pub
