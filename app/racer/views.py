@@ -1,16 +1,17 @@
 import datetime
+from itertools import groupby
 import json
 
 from flask import render_template, redirect, url_for, flash, current_app,\
                   request
-from sqlalchemy import extract, or_
+from sqlalchemy import extract
 from stravalib import Client
 
 from . import racer as racer_
-from .forms import RacerAddForm, RacerEditForm, RacerSearchForm
+from .forms import *
 from .. import db
 from ..decorators import roles_accepted
-from ..models import RaceClass, Racer, Team, Race, Participant
+from ..models import AcaMembership, RaceClass, Racer, Team, Race, Participant
 
 
 @racer_.route('/')
@@ -74,7 +75,6 @@ def filter_():
                   for racer in racers]
     return json.dumps(racer_info)
 
-
 @racer_.route('/search/', methods=['GET', 'POST'])
 def search():
     form = RacerSearchForm()
@@ -109,6 +109,16 @@ def details(id):
     if current_team in teams:
         teams.remove(current_team)
 
+    current_year = datetime.date.today().year
+    current_membership = (
+        AcaMembership.query.with_entities(
+            AcaMembership.paid,
+            RaceClass.name.label('season_pass'))
+        .join(RaceClass, RaceClass.id == AcaMembership.season_pass, isouter=True)
+        .filter(AcaMembership.year == current_year)
+        .filter(AcaMembership.racer_id == racer.id)
+    ).first()
+
     strava_client = Client()
     strava_client_id = current_app.config['STRAVA_CLIENT_ID']
     strava_url = (
@@ -133,8 +143,59 @@ def details(id):
             db.session.commit()
 
     return render_template('racer/details.html', racer=racer,
+                           current_membership=current_membership,
                            current_team=current_team, teams=teams,
                            strava_url=strava_url)
+
+
+def get_membership_choices():
+    race_classes = RaceClass.query
+    return (
+        [('none', 'Not a member'), ('member', 'ACA member')] +
+        [(str(race_class.id), 'Season Pass: %s' % race_class.name) for race_class in race_classes])
+
+
+def handle_racer_form(form, current_year, racer=None, current_membership=None):
+    name = form.name.data
+    usac_license = form.usac_license.data
+    birthdate = form.birthdate.data
+    current_team_id = (
+        Team.query.filter_by(name=form.current_team.data).first().id
+        if form.current_team.data else None)
+    is_member = form.aca_membership.data == 'member' or form.aca_membership.data.isdigit()
+    season_pass = int(form.aca_membership.data) if form.aca_membership.data.isdigit() else None
+    paid = form.paid.data
+
+    if racer:
+        racer.name = name
+        racer.usac_license = usac_license
+        racer.birthdate = birthdate
+        racer.current_team_id = current_team_id
+    else:
+        racer = Racer(name=name, usac_license=usac_license, birthdate=birthdate,
+                      current_team_id=current_team_id)
+        db.session.add(racer)
+        db.session.flush()
+        db.session.refresh(racer)
+
+    if is_member:
+        if current_membership:
+            current_membership.is_member = is_member
+            current_membership.season_pass = season_pass
+            current_membership.paid = paid
+        else:
+            aca_membership = AcaMembership(
+                year=current_year, racer_id=racer.id,
+                season_pass=season_pass, paid=paid)
+            db.session.add(aca_membership)
+    else:
+        if current_membership:
+            db.session.delete(current_membership)
+
+    db.session.commit()
+    flash('Racer ' + racer.name + ' updated!')
+    current_app.logger.info('%s[%d]', racer.name, racer.id)
+    return redirect(url_for('racer.details', id=racer.id))
 
 
 @racer_.route('/add/', methods=['GET', 'POST'])
@@ -147,22 +208,11 @@ def add():
         'autocomplete': 'off',
         'data-source': json.dumps(
            [team.name for team in Team.query.all()])}
+    form.aca_membership.choices = get_membership_choices()
 
     if form.validate_on_submit():
-        name = form.name.data
-        usac_license = form.usac_license.data
-        birthdate = form.birthdate.data
-        aca_member = form.aca_member.data
-        current_team_id = (
-            Team.query.filter_by(name=form.current_team.data).first().id
-            if form.current_team.data else None)
-        racer = Racer(name=name, usac_license=usac_license, birthdate=birthdate,
-                      current_team_id=current_team_id, aca_member=aca_member)
-        db.session.add(racer)
-        db.session.commit()
-        flash('Racer ' + racer.name + ' created!')
-        current_app.logger.info('%s[%d]', racer.name, racer.id)
-        return redirect(url_for('racer.index'))
+        current_year = datetime.date.today().year
+        return handle_racer_form(form, current_year)
 
     return render_template('add.html', form=form, type='racer')
 
@@ -178,31 +228,33 @@ def edit(id):
         'autocomplete': 'off',
         'data-source': json.dumps(
             [team.name for team in Team.query.all()])}
+    form.aca_membership.choices = get_membership_choices()
+
+    try:
+        current_year = int(request.args.get('current_year'))
+    except (ValueError, TypeError):
+        current_year = datetime.date.today().year
+    current_membership = (
+        AcaMembership.query
+        .filter(AcaMembership.year == current_year)
+        .filter(AcaMembership.racer_id == racer.id)
+    ).first()
 
     if form.validate_on_submit():
-        name = form.name.data
-        racer.name = name
-        usac_license = form.usac_license.data
-        racer.usac_license = usac_license
-        birthdate = form.birthdate.data
-        racer.birthdate = birthdate
-        aca_member = form.aca_member.data
-        racer.aca_member = aca_member
-        current_team_id = (
-            Team.query.filter_by(name=form.current_team.data).first().id
-            if form.current_team.data else None)
-        racer.current_team_id = current_team_id
-        db.session.commit()
-        flash('Racer ' + racer.name + ' updated!')
-        current_app.logger.info('%s[%d]', racer.name, racer.id)
-        return redirect(url_for('racer.details', id=racer.id))
+        return handle_racer_form(form, current_year, racer, current_membership)
 
     form.name.data = racer.name
     form.usac_license.data = racer.usac_license
     form.birthdate.data = racer.birthdate
-    form.aca_member.data = racer.aca_member
     if racer.current_team_id:
         form.current_team.data = Team.query.get(racer.current_team_id).name
+    if current_membership:
+        form.aca_membership.data = (
+            str(current_membership.season_pass)
+            if current_membership.season_pass is not None
+            else 'member')
+        form.paid.data = current_membership.paid
+
     return render_template('edit.html',
                            item=racer, form=form, type='racer')
 
@@ -216,6 +268,32 @@ def delete(id):
     db.session.commit()
     flash('Racer ' + racer.name + ' deleted!')
     return redirect(url_for('racer.index'))
+
+
+@racer_.route('/membership')
+@roles_accepted('official')
+def membership_list():
+    years = sorted(
+        (member.year for member in AcaMembership.query.distinct(AcaMembership.year)),
+        reverse=True)
+    try:
+        req_year = int(request.args.get('year'))
+    except (ValueError, TypeError):
+        req_year = None
+    current_year = datetime.date.today().year
+    year = req_year or (years[0] if years else current_year)
+
+    members = (
+        AcaMembership.query.with_entities(
+            AcaMembership.racer_id, Racer.name,
+            RaceClass.name.label('season_pass_class'),
+            AcaMembership.paid)
+        .join(Racer, AcaMembership.racer_id == Racer.id)
+        .join(RaceClass, AcaMembership.season_pass == RaceClass.id, isouter=True)
+        .filter(AcaMembership.year == year)
+        .order_by(Racer.name)).all()
+
+    return render_template('racer/membership.html', selected_year=year, years=years, members=members)
 
 
 @racer_.route('/authorize/strava/')

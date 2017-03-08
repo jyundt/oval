@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}ACA Membership{% endblock %}
+
+{% block page_content %}
+<ul class="breadcrumb">
+  <li><a href="{{url_for('main.index')}}">Home</a></li>
+  <li><a href="{{url_for('racer.index')}}">Racers</a></li>
+  <li class="active">ACA Membership</li>
+</ul>
+<div class="page-header dropdown">
+  <h1>
+    {{selected_year}} ACA Membership
+    <div class="btn-group" role="group">
+      <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+      Select season
+      <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+      {% for year in years %}
+        {% if selected_year == year %}
+        <li class="active">
+        {% else %}
+        <li>
+        {% endif %}
+          <a href="{{url_for('.membership_list', year=year)}}">{{year}} Season</a>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </h1>
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+  <th class="col-sm-4">Name</th>
+  <th class="col-sm-1">Season Pass</th>
+  <th class="col-sm-1">Paid</th>
+</tr>
+</thead>
+<tbody>
+{% for member in members %}
+<tr>
+<td><a href="{{url_for('racer.details',id=member.racer_id)}}">{{member.name}}</a></td>
+<td>
+  <center>
+    {{member.season_pass_class or ''}}
+  </center>
+</td>
+<td>
+  {% if member.paid %}
+    <center>
+      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    </center>
+  {% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}
