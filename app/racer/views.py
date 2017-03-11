@@ -1,5 +1,4 @@
 import datetime
-from itertools import groupby
 import json
 
 from flask import render_template, redirect, url_for, flash, current_app,\
@@ -94,6 +93,117 @@ def search():
             return render_template('racer/search.html', racers=racers,
                                    form=form)
     return render_template('racer/search.html', racers=None, form=form)
+
+
+@racer_.route('/head2head/', methods=['GET', 'POST'])
+def head2head():
+    # Request parameters:
+    # name1, name2: names to use explicitly to populate the form values
+    # racer1, racer2: specific racer ids, overrides names if valid
+
+    racers = {racer.id: racer for racer in Racer.query.all()}
+
+    form = RacerHead2HeadForm()
+    name_fields = [form.name1, form.name2]
+    for field in [form.name1, form.name2]:
+        field.render_kw = {
+            'data-provide': 'typeahead',
+            'data-items': '4',
+            'autocomplete': 'off',
+            'data-source': json.dumps(
+                [racer.name for racer in racers.values()])}
+
+    # Process name parameters first, populating form
+    for i in xrange(2):
+        reqname = request.args.get('name%d' % (i+1))
+        if reqname:
+            name_fields[i].data = reqname
+
+    # Process racer id parameters (overwriting form name values if valid)
+    racer_ids = [None, None]
+    for i in xrange(2):
+        racer_id = request.args.get('racer%d' % (i+1))
+        if racer_id:
+            racer_id = int(racer_id) if racer_id.isdigit() else None
+        if racer_id in racers:
+            racer_ids[i] = racer_id
+            name_fields[i].data = racers[racer_id].name
+
+    # Empty form; nothing to do
+    if not any(field.data for field in name_fields):
+        return render_template('racer/head2head_search.html', form=form)
+
+    def get_matching_racers_by_name(name):
+        return [racer for racer in racers.values() if name.lower() in racer.name.lower()][:10]
+
+    # For racers without an id, search by name.
+    matching_racers = [
+        (i, [racers[racer_ids[i]]] if racer_ids[i] else get_matching_racers_by_name(name_fields[i].data))
+        for i in xrange(2)]
+
+    # If we have multiple possible matches for either field, present list of
+    # #search matches for selection,
+    if any(len(matches[1]) != 1 for matches in matching_racers):
+        return render_template(
+            'racer/head2head_search.html',
+            matching_racers=matching_racers, form=form,
+            racer1=racer_ids[0], racer2=racer_ids[1])
+
+    # We have an unambiguous set of matches.  Do the head-to-head comparison.
+    racers = [matches[0] for _, matches in matching_racers]
+
+    # Redirect to GET for final comaprison
+    if request.method == 'POST':
+        return redirect(url_for('racer.head2head', racer1=racers[0].id, racer2=racers[1].id))
+
+    racer_subqueries = [
+        (Participant.query
+            .with_entities(Participant.race_id, Participant.place)
+            .join(Racer, Participant.racer_id == Racer.id)
+            .filter(Racer.id == racer.id).subquery('racer%d' % (i+1)))
+        for i, racer in enumerate(racers)]
+
+    results_query = (db.session.query(racer_subqueries[0])
+        .with_entities(
+            racer_subqueries[0].c.place.label('racer1_place'),
+            racer_subqueries[1].c.place.label('racer2_place'),
+            Race.date,
+            Race.id.label('race_id'))
+        .join(
+            racer_subqueries[1],
+            racer_subqueries[0].c.race_id == racer_subqueries[1].c.race_id)
+        .join(Race, Race.id == racer_subqueries[0].c.race_id)
+        .order_by(Race.date))
+
+    class Result(object):
+        def __init__(self, sa_result):
+            self.racer1_place = sa_result.racer1_place
+            self.racer2_place = sa_result.racer2_place
+            self.race_id = sa_result.race_id
+            self.race_date = sa_result.date
+
+        @staticmethod
+        def result_comp(place1, place2):
+            if place1 == place2:
+                return False
+            if not place2:
+                return True
+            return place1 < place2
+
+        @property
+        def racer1_better(self):
+            return self.result_comp(self.racer1_place, self.racer2_place)
+
+        @property
+        def racer2_better(self):
+            return self.result_comp(self.racer2_place, self.racer1_place)
+
+    results = [Result(result) for result in results_query]
+
+    return render_template(
+        'racer/head2head.html', racer1=racers[0], racer2=racers[1], results=results,
+        racer1_better_count=sum(1 for result in results if result.racer1_better),
+        racer2_better_count=sum(1 for result in results if result.racer2_better))
 
 
 @racer_.route('/<int:id>/')
