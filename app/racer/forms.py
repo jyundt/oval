@@ -46,3 +46,9 @@ class RacerAddForm(RacerForm):
 class RacerSearchForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     submit = SubmitField('Search')
+
+
+class RacerHead2HeadForm(FlaskForm):
+    name1 = StringField('Name 1', validators=[Required()])
+    name2 = StringField('Name 2', validators=[Required()])
+    submit = SubmitField('Compare')
