@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block page_content %}
-    <meta property="og:url"           content="{{url_for('race.index')}}" />
+    <meta property="og:url"           content="{{url_for('race.index', id=race.id)}}" />
     <meta property="og:type"          content="The Oval" />
     <meta property="og:title"         content="ACA Oval {{race.race_class.name}} Race for {{race.date.strftime('%B %-d, %Y')}}" />
     <meta property="og:description"   content="The Oval {{race.date.strftime('%B %-d, %Y')}}" />
