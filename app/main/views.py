@@ -126,7 +126,7 @@ def _gen_ind_standings(race_info, race_calendar):
         placings = filter(None, placings)
         if not placings:
             return ()
-        counts_by_place = {place: sum(g) for place, g in groupby(sorted(placings))}
+        counts_by_place = {place: sum(1 for _ in g) for place, g in groupby(sorted(placings))}
         assert min(counts_by_place.keys()) >= 1
         max_place = max(counts_by_place.keys())
         return tuple(counts_by_place.get(place) or 0 for place in xrange(1, max_place+1))
