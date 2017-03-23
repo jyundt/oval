@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import groupby
 from operator import itemgetter
+from ranking import Ranking
 
 from flask import render_template, redirect, request, url_for, current_app, flash
 from sqlalchemy import extract, or_
@@ -37,11 +38,12 @@ def _gen_race_calendar(year, race_class_id):
     return dates
 
 
-def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
+def _make_result(name, id_, rank, total_pts, pts, race_calendar, team_name, team_id):
     """Create result dictionary to make html templates more readable
     """
     result = {"name": name,
               "id": id_,
+              "rank": rank,
               "total_pts": total_pts,
               "race_pts": OrderedDict([(date, "-") for date,_ in race_calendar]),
               "team_name": team_name,
@@ -52,6 +54,10 @@ def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
             result["race_pts"][date] = point
 
     return result
+
+
+def _sort_and_rank(items, key):
+    return Ranking(sorted(items, key=key, reverse=True), key=key, start=1)
 
 
 def _gen_team_standings(race_info, race_calendar):
@@ -79,13 +85,13 @@ def _gen_team_standings(race_info, race_calendar):
 
     # Filter to only teams that have points, and
     # rank by total team points.
-    ranked_teams = sorted(
+    ranked_teams = _sort_and_rank(
         filter(itemgetter(2), team_agg_info),
-        key=itemgetter(2), reverse=True)
+        key=itemgetter(2))
 
     results = []
-    for team_id, team_name, total_pts in ranked_teams:
-        result = _make_result(name=team_name, id_=team_id, total_pts=total_pts,
+    for rank, (team_id, team_name, total_pts) in ranked_teams:
+        result = _make_result(name=team_name, id_=team_id, rank=rank, total_pts=total_pts,
                               pts=team_points_by_date[team_id], race_calendar=race_calendar,
                               team_name=None, team_id=None)
         results.append(result)
@@ -141,14 +147,14 @@ def _gen_ind_standings(race_info, race_calendar):
 
     # Filter to only racers that have any points,
     # rank by total points then by placings.
-    ranked_racers = map(itemgetter(0, 1, 2), sorted(
+    ranked_racers = _sort_and_rank(
         filter(itemgetter(2), racer_agg_info),
-        key=itemgetter(2, 3), reverse=True))
+        key=itemgetter(2, 3))
 
     results = []
-    for racer_id, racer_name, racer_points in ranked_racers:
+    for rank, (racer_id, racer_name, racer_points, _) in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
-        result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
+        result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
         results.append(result)
@@ -181,14 +187,14 @@ def _gen_mar_standings(race_info, race_calendar):
 
     # Filter to only racers that have any mar points,
     # rank by total points.
-    ranked_racers = sorted(
+    ranked_racers = _sort_and_rank(
         filter(itemgetter(2), racer_agg_info),
-        key=itemgetter(2), reverse=True)
+        key=itemgetter(2))
 
     results = []
-    for racer_id, racer_name, racer_points in ranked_racers:
+    for rank, (racer_id, racer_name, racer_points) in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
-        result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
+        result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_mar_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
         results.append(result)
