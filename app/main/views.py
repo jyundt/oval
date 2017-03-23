@@ -158,24 +158,35 @@ def _gen_ind_standings(race_info, race_calendar):
 def _gen_mar_standings(race_info, race_calendar):
     """Return top MAR standings with individual race and total points
     """
-    # racer_id, racer_name, race_date,  mar_points, team_id, team_name
-    racer_race_info = sorted(
-        map(itemgetter(0, 1, 2, 5, 6, 7), race_info),
-        key=itemgetter(0, 2))
+    # Sort race info first by racer (for grouping below) then by date
+    # for table construction.
+    racer_race_info = sorted(race_info, key=lambda ri: (ri.racer_id, ri.race_date))
+
+    # A list of per-race mar points for each racer
     racer_race_mar_points = {
-        racer_id: list((mar_points, date) for _, _, date, mar_points, _, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))}
-    racers = sorted(filter(itemgetter(2), [
-        (racer_id, racer_name, sum(mar_points or 0 for _, _, _, mar_points, _, _ in g))
-        for (racer_id, racer_name), g in groupby(racer_race_info, key=itemgetter(0, 1))]),
-        key=itemgetter(2), reverse=True)
+        racer_id: list((ri.mar_points, ri.race_date) for ri in g)
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)}
+
+    # Team info for each racer
     racer_teams = {
-        racer_id: list((team_name, team_id) for _, _, _, _, team_id, team_name in g)
+        racer_id: list((ri.team_name, ri.team_id) for ri in g)
         for racer_id, g in groupby(racer_race_info, key=itemgetter(0))
     }
 
+    # Aggregate mar points by racer
+    racer_agg_info = [
+        (racer_id, racer_name, sum(ri.mar_points or 0 for ri in g))
+        for (racer_id, racer_name), g in
+        groupby(racer_race_info, key=lambda ri: (ri.racer_id, ri.racer_name))]
+
+    # Filter to only racers that have any mar points,
+    # rank by total points.
+    ranked_racers = sorted(
+        filter(itemgetter(2), racer_agg_info),
+        key=itemgetter(2), reverse=True)
+
     results = []
-    for racer_id, racer_name, racer_points in racers:
+    for racer_id, racer_name, racer_points in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
                               pts=racer_race_mar_points[racer_id], race_calendar=race_calendar,
