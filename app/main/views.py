@@ -91,7 +91,25 @@ def _gen_ind_standings(race_info, race_calendar):
     Note, individual placing tiebreak is by number of wins, followed by number of
     seconds places, etc.
     """
+    # Sort race info first by racer (for grouping below) then by date
+    # for table construction.
+    racer_race_info = sorted(race_info, key=lambda ri: (ri.racer_id, ri.race_date))
+
+    # A list of per-race points for each racer
+    racer_race_points = {
+        racer_id: list((ri.points, ri.race_date) for ri in g)
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)}
+
+    # Team info for each racer
+    racer_teams = {
+        racer_id: [(ri.team_name, ri.team_id) for ri in g]
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)
+    }
+
     def placing_counts(placings):
+        # Helper to count placings
+        # Returns a tuple with the count of number of first places, then number
+        # of seconds, etc., up to the highest recorded placing.
         placings = filter(None, placings)
         if not placings:
             return ()
@@ -100,30 +118,28 @@ def _gen_ind_standings(race_info, race_calendar):
         max_place = max(counts_by_place.keys())
         return tuple(counts_by_place.get(place) or 0 for place in xrange(1, max_place+1))
 
-    # racer_id, racer_name, race_date, points, team_id, team_name, place
-    racer_race_info = sorted(
-        map(itemgetter(0, 1, 2, 3, 6, 7, 8), race_info),
-        key=itemgetter(0, 2))
-    racer_race_points = {
-        racer_id: list((points, date) for _, _, date, points, _, _, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))}
+    # Group race results by racer
     race_info_gby_racer = [
         ((racer_id, racer_name), list(g))
-        for ((racer_id, racer_name), g) in groupby(racer_race_info, key=itemgetter(0, 1))]
-    racers = sorted(filter(itemgetter(2), [(
+        for ((racer_id, racer_name), g) in
+        groupby(racer_race_info, key=lambda ri: (ri.racer_id, ri.racer_name))]
+
+    # Aggregate points and placings by racer
+    racer_agg_info = [(
             racer_id,
             racer_name,
-            sum(points or 0 for _, _, _, points, _, _, _ in g),
-            placing_counts(place for _, _, _, _, _, _, place in g))
-        for (racer_id, racer_name), g in race_info_gby_racer]),
-        key=itemgetter(2, 3), reverse=True)
-    racer_teams = {
-        racer_id: list((team_name, team_id) for _, _, _, _, team_id, team_name, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))
-    }
+            sum(r.points or 0 for r in g),
+            placing_counts(r.place for r in g))
+        for (racer_id, racer_name), g in race_info_gby_racer]
+
+    # Filter to only racers that have any points,
+    # rank by total points then by placings.
+    ranked_racers = map(itemgetter(0, 1, 2), sorted(
+        filter(itemgetter(2), racer_agg_info),
+        key=itemgetter(2, 3), reverse=True))
 
     results = []
-    for racer_id, racer_name, racer_points, _ in racers:
+    for racer_id, racer_name, racer_points in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
                               pts=racer_race_points[racer_id], race_calendar=race_calendar,
@@ -211,9 +227,10 @@ def standings():
     if year is not None and race_class_id is not None:
         race_info = (
             Racer.query.with_entities(
-                Racer.id, Racer.name, Race.date,
-                Participant.points, Participant.team_points, Participant.mar_points,
-                Team.id, Team.name, Participant.place)
+                Racer.id.label('racer_id'), Racer.name.label('racer_name'),
+                Race.date.label('race_date'), Participant.points,
+                Participant.team_points, Participant.mar_points,
+                Team.id.label('team_id'), Team.name.label('team_name'), Participant.place)
                 .join(Participant)
                 .join(Team, isouter=True)
                 .join(Race)
