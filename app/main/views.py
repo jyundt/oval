@@ -122,14 +122,13 @@ def _gen_ind_standings(race_info, race_calendar):
     def placing_counts(placings):
         # Helper to count placings
         # Returns a tuple with the count of number of first places, then number
-        # of seconds, etc., up to the highest recorded placing.
+        # of seconds, etc., up to the 8th place.
         placings = filter(None, placings)
         if not placings:
             return ()
         counts_by_place = {place: sum(1 for _ in g) for place, g in groupby(sorted(placings))}
         assert min(counts_by_place.keys()) >= 1
-        max_place = max(counts_by_place.keys())
-        return tuple(counts_by_place.get(place) or 0 for place in xrange(1, max_place+1))
+        return tuple(counts_by_place.get(place) or 0 for place in xrange(1, 9))
 
     # Group race results by racer
     race_info_gby_racer = [
