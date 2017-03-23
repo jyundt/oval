@@ -57,27 +57,34 @@ def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
 def _gen_team_standings(race_info, race_calendar):
     """Return team standings with individual race and total points
     """
-    # team_id, team_name, team_points, date
-    team_race_info = sorted(
-        filter(itemgetter(0), map(itemgetter(6, 7, 4, 2), race_info)),
-        key=itemgetter(0, 3))
-
-    # team_id, team_name, total_team_points
-    teams = sorted(filter(itemgetter(2), [
-        (team_id, team_name, sum(team_points or 0 for team_id, team_name, team_points, _ in g))
-        for (team_id, team_name), g in groupby(team_race_info, key=itemgetter(0, 1))]),
-        key=itemgetter(2), reverse=True)
+    # Sort race info first by team (for grouping below) then by date
+    # for table construction.
+    team_race_info = sorted(race_info, key=lambda ri: (ri.team_id, ri.race_date))
 
     def sum_team_points_by_date(team_results):
         return [
-            (sum(team_points or 0 for _, _, team_points, _ in dg), date)
-            for (team_id, date), dg in groupby(team_results, key=itemgetter(0, 3))]
+            (sum(ri.team_points or 0 for ri in dg), date)
+            for (team_id, date), dg in
+            groupby(team_results, key=lambda ri: (ri.team_id, ri.race_date))]
     team_points_by_date = {
         team_id: sum_team_points_by_date(g) for team_id, g
-        in groupby(team_race_info, key=itemgetter(0))}
+        in groupby(team_race_info, key=lambda ri: ri.team_id)}
+
+    # Aggregate results by team
+    team_agg_info = [
+        (team_id, team_name, sum(ri.team_points or 0 for ri in g))
+        for ((team_id, team_name), g) in
+        groupby(team_race_info, key=lambda ri: (ri.team_id, ri.team_name))
+    ]
+
+    # Filter to only teams that have points, and
+    # rank by total team points.
+    ranked_teams = sorted(
+        filter(itemgetter(2), team_agg_info),
+        key=itemgetter(2), reverse=True)
 
     results = []
-    for team_id, team_name, total_pts in teams:
+    for team_id, team_name, total_pts in ranked_teams:
         result = _make_result(name=team_name, id_=team_id, total_pts=total_pts,
                               pts=team_points_by_date[team_id], race_calendar=race_calendar,
                               team_name=None, team_id=None)
