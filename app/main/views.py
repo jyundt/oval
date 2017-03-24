@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import groupby
 from operator import itemgetter
+from ranking import Ranking
 
 from flask import render_template, redirect, request, url_for, current_app, flash
 from sqlalchemy import extract, or_
@@ -37,11 +38,12 @@ def _gen_race_calendar(year, race_class_id):
     return dates
 
 
-def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
+def _make_result(name, id_, rank, total_pts, pts, race_calendar, team_name, team_id):
     """Create result dictionary to make html templates more readable
     """
     result = {"name": name,
               "id": id_,
+              "rank": rank,
               "total_pts": total_pts,
               "race_pts": OrderedDict([(date, "-") for date,_ in race_calendar]),
               "team_name": team_name,
@@ -54,31 +56,42 @@ def _make_result(name, id_, total_pts, pts, race_calendar, team_name, team_id):
     return result
 
 
+def _sort_and_rank(items, key):
+    return Ranking(sorted(items, key=key, reverse=True), key=key, start=1)
+
+
 def _gen_team_standings(race_info, race_calendar):
     """Return team standings with individual race and total points
     """
-    # team_id, team_name, team_points, date
-    team_race_info = sorted(
-        filter(itemgetter(0), map(itemgetter(6, 7, 4, 2), race_info)),
-        key=itemgetter(0, 3))
-
-    # team_id, team_name, total_team_points
-    teams = sorted(filter(itemgetter(2), [
-        (team_id, team_name, sum(team_points or 0 for team_id, team_name, team_points, _ in g))
-        for (team_id, team_name), g in groupby(team_race_info, key=itemgetter(0, 1))]),
-        key=itemgetter(2), reverse=True)
+    # Sort race info first by team (for grouping below) then by date
+    # for table construction.
+    team_race_info = sorted(race_info, key=lambda ri: (ri.team_id, ri.race_date))
 
     def sum_team_points_by_date(team_results):
         return [
-            (sum(team_points or 0 for _, _, team_points, _ in dg), date)
-            for (team_id, date), dg in groupby(team_results, key=itemgetter(0, 3))]
+            (sum(ri.team_points or 0 for ri in dg), date)
+            for (team_id, date), dg in
+            groupby(team_results, key=lambda ri: (ri.team_id, ri.race_date))]
     team_points_by_date = {
         team_id: sum_team_points_by_date(g) for team_id, g
-        in groupby(team_race_info, key=itemgetter(0))}
+        in groupby(team_race_info, key=lambda ri: ri.team_id)}
+
+    # Aggregate results by team
+    team_agg_info = [
+        (team_id, team_name, sum(ri.team_points or 0 for ri in g))
+        for ((team_id, team_name), g) in
+        groupby(team_race_info, key=lambda ri: (ri.team_id, ri.team_name))
+    ]
+
+    # Filter to only teams that have points, and
+    # rank by total team points.
+    ranked_teams = _sort_and_rank(
+        filter(itemgetter(2), team_agg_info),
+        key=itemgetter(2))
 
     results = []
-    for team_id, team_name, total_pts in teams:
-        result = _make_result(name=team_name, id_=team_id, total_pts=total_pts,
+    for rank, (team_id, team_name, total_pts) in ranked_teams:
+        result = _make_result(name=team_name, id_=team_id, rank=rank, total_pts=total_pts,
                               pts=team_points_by_date[team_id], race_calendar=race_calendar,
                               team_name=None, team_id=None)
         results.append(result)
@@ -91,41 +104,56 @@ def _gen_ind_standings(race_info, race_calendar):
     Note, individual placing tiebreak is by number of wins, followed by number of
     seconds places, etc.
     """
+    # Sort race info first by racer (for grouping below) then by date
+    # for table construction.
+    racer_race_info = sorted(race_info, key=lambda ri: (ri.racer_id, ri.race_date))
+
+    # A list of per-race points for each racer
+    racer_race_points = {
+        racer_id: list((ri.points, ri.race_date) for ri in g)
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)}
+
+    # Team info for each racer
+    racer_teams = {
+        racer_id: [(ri.team_name, ri.team_id) for ri in g]
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)
+    }
+
     def placing_counts(placings):
+        # Helper to count placings
+        # Returns a tuple with the count of number of first places, then number
+        # of seconds, etc., up to the 8th place.
         placings = filter(None, placings)
         if not placings:
             return ()
-        counts_by_place = {place: sum(g) for place, g in groupby(sorted(placings))}
+        counts_by_place = {place: sum(1 for _ in g) for place, g in groupby(sorted(placings))}
         assert min(counts_by_place.keys()) >= 1
-        max_place = max(counts_by_place.keys())
-        return tuple(counts_by_place.get(place) or 0 for place in xrange(1, max_place+1))
+        return tuple(counts_by_place.get(place) or 0 for place in xrange(1, 9))
 
-    # racer_id, racer_name, race_date, points, team_id, team_name, place
-    racer_race_info = sorted(
-        map(itemgetter(0, 1, 2, 3, 6, 7, 8), race_info),
-        key=itemgetter(0, 2))
-    racer_race_points = {
-        racer_id: list((points, date) for _, _, date, points, _, _, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))}
+    # Group race results by racer
     race_info_gby_racer = [
         ((racer_id, racer_name), list(g))
-        for ((racer_id, racer_name), g) in groupby(racer_race_info, key=itemgetter(0, 1))]
-    racers = sorted(filter(itemgetter(2), [(
+        for ((racer_id, racer_name), g) in
+        groupby(racer_race_info, key=lambda ri: (ri.racer_id, ri.racer_name))]
+
+    # Aggregate points and placings by racer
+    racer_agg_info = [(
             racer_id,
             racer_name,
-            sum(points or 0 for _, _, _, points, _, _, _ in g),
-            placing_counts(place for _, _, _, _, _, _, place in g))
-        for (racer_id, racer_name), g in race_info_gby_racer]),
-        key=itemgetter(2, 3), reverse=True)
-    racer_teams = {
-        racer_id: list((team_name, team_id) for _, _, _, _, team_id, team_name, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))
-    }
+            sum(r.points or 0 for r in g),
+            placing_counts(r.place for r in g))
+        for (racer_id, racer_name), g in race_info_gby_racer]
+
+    # Filter to only racers that have any points,
+    # rank by total points then by placings.
+    ranked_racers = _sort_and_rank(
+        filter(itemgetter(2), racer_agg_info),
+        key=itemgetter(2, 3))
 
     results = []
-    for racer_id, racer_name, racer_points, _ in racers:
+    for rank, (racer_id, racer_name, racer_points, _) in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
-        result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
+        result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
         results.append(result)
@@ -135,26 +163,37 @@ def _gen_ind_standings(race_info, race_calendar):
 def _gen_mar_standings(race_info, race_calendar):
     """Return top MAR standings with individual race and total points
     """
-    # racer_id, racer_name, race_date,  mar_points, team_id, team_name
-    racer_race_info = sorted(
-        map(itemgetter(0, 1, 2, 5, 6, 7), race_info),
-        key=itemgetter(0, 2))
+    # Sort race info first by racer (for grouping below) then by date
+    # for table construction.
+    racer_race_info = sorted(race_info, key=lambda ri: (ri.racer_id, ri.race_date))
+
+    # A list of per-race mar points for each racer
     racer_race_mar_points = {
-        racer_id: list((mar_points, date) for _, _, date, mar_points, _, _ in g)
-        for racer_id, g in groupby(racer_race_info, key=itemgetter(0))}
-    racers = sorted(filter(itemgetter(2), [
-        (racer_id, racer_name, sum(mar_points or 0 for _, _, _, mar_points, _, _ in g))
-        for (racer_id, racer_name), g in groupby(racer_race_info, key=itemgetter(0, 1))]),
-        key=itemgetter(2), reverse=True)
+        racer_id: list((ri.mar_points, ri.race_date) for ri in g)
+        for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)}
+
+    # Team info for each racer
     racer_teams = {
-        racer_id: list((team_name, team_id) for _, _, _, _, team_id, team_name in g)
+        racer_id: list((ri.team_name, ri.team_id) for ri in g)
         for racer_id, g in groupby(racer_race_info, key=itemgetter(0))
     }
 
+    # Aggregate mar points by racer
+    racer_agg_info = [
+        (racer_id, racer_name, sum(ri.mar_points or 0 for ri in g))
+        for (racer_id, racer_name), g in
+        groupby(racer_race_info, key=lambda ri: (ri.racer_id, ri.racer_name))]
+
+    # Filter to only racers that have any mar points,
+    # rank by total points.
+    ranked_racers = _sort_and_rank(
+        filter(itemgetter(2), racer_agg_info),
+        key=itemgetter(2))
+
     results = []
-    for racer_id, racer_name, racer_points in racers:
+    for rank, (racer_id, racer_name, racer_points) in ranked_racers:
         team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
-        result = _make_result(name=racer_name, id_=racer_id, total_pts=racer_points,
+        result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_mar_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
         results.append(result)
@@ -211,9 +250,10 @@ def standings():
     if year is not None and race_class_id is not None:
         race_info = (
             Racer.query.with_entities(
-                Racer.id, Racer.name, Race.date,
-                Participant.points, Participant.team_points, Participant.mar_points,
-                Team.id, Team.name, Participant.place)
+                Racer.id.label('racer_id'), Racer.name.label('racer_name'),
+                Race.date.label('race_date'), Participant.points,
+                Participant.team_points, Participant.mar_points,
+                Team.id.label('team_id'), Team.name.label('team_name'), Participant.place)
                 .join(Participant)
                 .join(Team, isouter=True)
                 .join(Race)

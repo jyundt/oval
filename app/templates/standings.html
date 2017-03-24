@@ -73,7 +73,7 @@
       <tbody>
         {% for result in standings %}
           <tr>
-            <td>{{loop.index}}</td>
+            <td>{{result.rank}}</td>
             {% if standings_type == 'Team' %}
               <td><a href="{{url_for('team.details', id=result['id'])}}">{{result['name']}}</a></td>
             {% else %}
