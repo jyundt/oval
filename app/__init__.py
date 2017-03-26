@@ -56,4 +56,7 @@ def create_app(config_name):
     from .course import course as course_blueprint 
     app.register_blueprint(course_blueprint, url_prefix='/course')
 
+    from .stats import stats as stats_blueprint
+    app.register_blueprint(stats_blueprint, url_prefix='/stats')
+
     return app
