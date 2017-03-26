@@ -64,8 +64,10 @@ def _gen_team_standings(race_info, race_calendar):
     """Return team standings with individual race and total points
     """
     # Sort race info first by team (for grouping below) then by date
-    # for table construction.
-    team_race_info = sorted(race_info, key=lambda ri: (ri.team_id, ri.race_date))
+    # for table construction.  Filter results not associated with a team.
+    team_race_info = sorted(
+        [ri for ri in race_info if ri.team_id],
+        key=lambda ri: (ri.team_id, ri.race_date))
 
     def sum_team_points_by_date(team_results):
         return [
