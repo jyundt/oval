@@ -315,6 +315,7 @@ def results():
         RaceClass.query.with_entities(
             RaceClass.id, RaceClass.name)
         .join(Race)
+        .join(Participant)
         .filter(extract("year", Race.date) == year)
         .group_by(RaceClass.id)
         .order_by(RaceClass.name)]
@@ -387,7 +388,7 @@ def results():
             selected_year=year, selected_race_class_id=race_class_id,
             years=years, race_classes=race_classes, results=results)
 
-    return render_template('results.html', results=None)
+    return render_template('results.html', selected_year=year, years=years)
 
 
 @main.route('/feedback/', methods=['GET', 'POST'])
