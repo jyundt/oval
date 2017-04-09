@@ -47,9 +47,8 @@
 </ul>
 {% endif %}
 
-{% if results is none %}
-{% elif race_calendar | length == 0 %}
-<h2>No Results!</h2>
+{% if not results or results | map('last') | map('length') | sum == 0 or race_calendar | length == 0 %}
+<p style="font-size: x-large"> No standings yet.  Check back when points start!</p>
 {%else%}
 {% for standings_type, standings in results %}
 <h2>{{standings_type}}</h2>

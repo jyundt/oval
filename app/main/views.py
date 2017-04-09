@@ -252,6 +252,7 @@ def standings():
         RaceClass.query.with_entities(
             RaceClass.id, RaceClass.name)
         .join(Race)
+        .join(Participant)
         .filter(extract("year", Race.date) == year)
         .filter(Race.points_race == True)
         .group_by(RaceClass.id)
@@ -294,7 +295,7 @@ def standings():
             years=years, race_classes=race_classes,
             results=results, race_calendar=race_calendar)
 
-    return render_template('standings.html', results=None)
+    return render_template('standings.html', selected_year=year, years=years)
 
 
 @main.route('/results/')
