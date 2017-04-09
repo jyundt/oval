@@ -1,11 +1,15 @@
 from collections import OrderedDict
 from itertools import groupby
-from operator import itemgetter
+from operator import itemgetter, and_
+
+import datetime
 from ranking import Ranking
 
 from flask import render_template, redirect, request, url_for, current_app, flash
 from sqlalchemy import extract, or_
+from sqlalchemy import func
 
+from app import db
 from . import main
 from .forms import FeedbackForm
 from ..email import send_feedback_email
@@ -206,15 +210,27 @@ def _gen_mar_standings(race_info, race_calendar):
 def index():
     """Fills and renders the front page index.html template
     
-    Let's hard code the categories that we'd like to see on the front page
+    Only display recent results when they're within the past ~three months.
     """
-    categories = ['A', 'B', 'C', 'Masters 40+/Women']
-    races = []
-    for category in categories:
-        races.append(Race.query.join(RaceClass)\
-                               .filter_by(name=category)\
-                               .order_by(Race.date.desc())\
-                               .first())
+    recent_time = datetime.datetime.now() - datetime.timedelta(days=90)
+    recent_results = (
+        Race.query
+        .join(Participant, Race.id == Participant.race_id)
+        .filter(Race.date > recent_time)
+        .group_by(Race.id)
+        .having(func.count(Participant.id) > 0))
+    r1 = recent_results.subquery('r1')
+    r2 = recent_results.subquery('r2')
+    latest_races = (
+        db.session.query(r1)
+        .with_entities(
+            r1.c.id.label('id'),
+            r1.c.date.label('date'),
+            RaceClass.name.label('class_name'))
+        .join(r2, and_(r1.c.class_id == r2.c.class_id, r1.c.date < r2.c.date), isouter=True)
+        .join(RaceClass, RaceClass.id == r1.c.class_id)
+        .filter(r2.c.id.is_(None)))
+    races = latest_races.all()
     return render_template('index.html', races=races)
 
 
