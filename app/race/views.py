@@ -7,7 +7,7 @@ from sqlalchemy import extract
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
                      Participant, RaceOfficial, RaceMarshal, Prime, Course,\
-                     NotificationEmail
+                     NotificationEmail, AcaMembership
 from . import race
 from .forms import RaceEditForm, RaceAddForm, ParticipantAddForm,\
                    ParticipantEditForm, PrimeAddForm,\
@@ -292,6 +292,7 @@ def delete(id):
 def add_participant(id):
     race = Race.query.get_or_404(id)
     form = ParticipantAddForm(race)
+    year = datetime.now().year
     form.name.render_kw = {'data-provide': 'typeahead', 'data-items':'4',
                            'autocomplete':'off',
                            'data-source':json.dumps([racer.name for racer in
@@ -308,7 +309,7 @@ def add_participant(id):
             team_id = Team.query.filter_by(name=form.team_name.data)\
                                 .first().id
         else:
-            if (Race.query.get(race_id).date.year == datetime.now().year) and\
+            if (Race.query.get(race_id).date.year == year) and\
             Racer.query.get(racer_id).current_team:
                 team_id = Racer.query.get(racer_id).current_team.id
             else:
@@ -323,9 +324,15 @@ def add_participant(id):
         disqualified = form.disqualified.data
         #Let's check to see if we are in a points race
         if Race.query.get(race_id).points_race and\
-           Race.query.get(race_id).date.year == datetime.now().year:
+           Race.query.get(race_id).date.year == year:
             mar_point_dict = {1: 3, 2: 2, 3: 1}
-            if Racer.query.get(racer_id).aca_member:
+            membership_info = (
+                AcaMembership.query.with_entities(AcaMembership.paid.label('paid'))
+                .join(Racer)
+                .filter(Racer.id == racer_id)
+                .filter(AcaMembership.year == year).one_or_none())
+            membership_paid = membership_info and membership_info.paid
+            if membership_paid:
                 points = form.points.data
                 #Check to see if we manually specified mar points
                 #if not, guess at them
