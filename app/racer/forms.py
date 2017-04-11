@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, DateField, IntegerField,\
-                    BooleanField
+from wtforms import StringField, SubmitField, DateField, IntegerField, \
+    BooleanField, SelectField
 from wtforms import ValidationError
 from wtforms.validators import Required, Optional
+
 from ..models import Racer, Team
+
 
 class RacerForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
@@ -12,12 +14,13 @@ class RacerForm(FlaskForm):
                           description="MM/DD/YYYY",
                           format='%m/%d/%Y')
     current_team = StringField('Current Team', validators=[Optional()])
-    aca_member = BooleanField('Current ACA Member', validators=[Optional()])
-
+    aca_membership = SelectField('Current ACA Membership')
+    paid = BooleanField('Paid', validators=[Optional()])
 
     def validate_current_team(self, field):
         if Team.query.filter_by(name=field.data).first() is None:
             raise ValidationError('Team does not exist!')
+
 
 class RacerEditForm(RacerForm):
     submit = SubmitField('Save')
@@ -28,8 +31,9 @@ class RacerEditForm(RacerForm):
 
     def validate_usac_license(self, field):
         if field.data != self.racer.usac_license and \
-            Racer.query.filter_by(usac_license=field.data).first():
+                Racer.query.filter_by(usac_license=field.data).first():
             raise ValidationError('USAC license already in use!')
+
 
 class RacerAddForm(RacerForm):
     submit = SubmitField('Add')
@@ -38,7 +42,13 @@ class RacerAddForm(RacerForm):
         if Racer.query.filter_by(usac_license=field.data).first():
             raise ValidationError('USAC license already in use.')
 
+
 class RacerSearchForm(FlaskForm):
     name = StringField('Name', validators=[Required()])
     submit = SubmitField('Search')
 
+
+class RacerHead2HeadForm(FlaskForm):
+    name1 = StringField('Name 1', validators=[Required()])
+    name2 = StringField('Name 2', validators=[Required()])
+    submit = SubmitField('Compare')

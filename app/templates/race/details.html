@@ -5,25 +5,50 @@
 {% endblock %}
 
 {% block page_content %}
+    <meta property="og:url"           content="{{url_for('race.details', id=race.id, _external=True)}}" />
+    <meta property="og:type"          content="The Oval" />
+    <meta property="og:title"         content="ACA Oval {{race.race_class.name}} Race for {{race.date.strftime('%B %-d, %Y')}}" />
+    <meta property="og:description"   content="The Oval {{race.date.strftime('%B %-d, %Y')}}" />
+
+
 <h6>
-<ul class="breadcrumb"> 
-  <li><a href="{{url_for('main.index')}}">Home</a></li> 
+<ul class="breadcrumb">
+  <li><a href="{{url_for('main.index')}}">Home</a></li>
   <li><a href="{{url_for('race.index')}}">Races</a></li>
   <li class="active">{{race.date.strftime('%B %-d, %Y')}}</li>
 </ul>
 </h6>
 <div class="page-header">
     <h4><small>{{race.date.strftime('%B %-d, %Y')}}</small></h4>
-    {% if race.course and not race.course.is_default %}
-      <div class="pull-left">
-      <h1>Class {{race.race_class.name}} Race {%if race.laps %} - {{race.laps}} laps{%endif%} [{{race.course.name|title}}]</h1>
+    <div class="pull-left">
+      {% if race.course and not race.course.is_default %}
+        <h1>Class {{race.race_class.name}} Race {%if race.laps %} - {{race.laps}} laps{%endif%} [{{race.course.name|title}}]</h1>
+      {% else %}
+        <h1>Class {{race.race_class.name}} Race {%if race.laps %}- {{race.laps}} laps {%endif%}</h1>
+      {% endif %}
+      <div id="fb-root"></div>
+      <script>(function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));</script>
+      <!-- Your share button code -->
+      <div class="fb-share-button"
+        style="vertical-align:top;align:right"
+        data-href="{{request.url}}"
+        data-layout="button_count"
+        data-size="small"
+        data-mobile-iframe="true">
+        <a class="fb-xfbml-parse-ignore"
+        target="_blank"
+        href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('race.details',id=race.id,_external=True)|urlencode|replace("/", "%2F")}}&amp;src=sdkpreparse">Share</a>
       </div>
-    {% else %}
-      <div class="pull-left">
-      <h1>Class {{race.race_class.name}} Race {%if race.laps %}- {{race.laps}} laps {%endif%}</h1>
-      </div>
-    {% endif %}
-    <div class="pull-right">
+    </div>
+
+
+      <div class="pull-right">
       <h4 class="text-right">
         {%if race.fast_lap %}
           Fast lap: {{(race.fast_lap|string)[2:]}}
@@ -39,10 +64,10 @@
         {%endif%}
       </h4>
     </div>
-    
+
 
 <div class="clearfix"></div>
-   
+
 {% if current_user.is_authenticated and current_user.has_role('official') %}
     <div class="btn-toolbar" role="group">
     <a class="btn btn-default" href="{{ url_for('race.edit',id=race.id)}}"><span class="glyphicon glyphicon-pencil"></span> Edit race details</a>
@@ -328,4 +353,20 @@ Marshals
     </pre>
   {%endif%}
 {%endif%}
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+this.page.url = "{{url_for('race.details',id=race.id, _external=True)}}";  
+this.page.identifier = "{{race.id}}"; 
+};
+(function() {
+var d = document, s = d.createElement('script');
+s.src = 'https://{{config['DISQUS_ID']}}.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+
 {% endblock %}

@@ -1,16 +1,17 @@
-import requests
-import json
-import pytz
 from datetime import timedelta, datetime, date
-from . import db
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from . import login_manager
+
+import pytz
 from flask import current_app
-from sqlalchemy.ext.hybrid import hybrid_property
+from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import func, extract
+from sqlalchemy.ext.hybrid import hybrid_property
 from stravalib import Client
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from . import db
+from . import login_manager
+
 
 class Official(db.Model):
     __tablename__ = 'official'
@@ -78,6 +79,17 @@ class NotificationEmail(db.Model):
     def __repr__(self):
         return '<Email %r>' % self.name
 
+
+class AcaMembership(db.Model):
+    __tablename__ = 'aca_membership'
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer)
+    racer_id = db.Column(db.Integer, db.ForeignKey('racer.id', ondelete='CASCADE'))
+    season_pass = db.Column(db.Integer, db.ForeignKey('race_class.id'), default=None)
+    paid = db.Column(db.Boolean, nullable=False, default=False)
+    __table_args__ = (db.UniqueConstraint('racer_id', 'year', name='uniq_member_year'),)
+
+
 class Racer(db.Model):
     __tablename__ = 'racer'
     id = db.Column(db.Integer, primary_key=True)
@@ -89,7 +101,6 @@ class Racer(db.Model):
     _strava_email = db.Column('strava_email', db.String(200))
     strava_profile_last_fetch = db.Column(db.DateTime(timezone=True))
     birthdate = db.Column(db.Date)
-    aca_member = db.Column(db.Boolean, default=False)
     current_team_id = db.Column(db.Integer, db.ForeignKey('team.id'))
     participants = db.relationship('Participant', cascade='all,delete',
                                    backref='racer')
