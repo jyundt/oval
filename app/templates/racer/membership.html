@@ -49,7 +49,11 @@
 <td><a href="{{url_for('racer.details',id=member.racer_id)}}">{{member.name}}</a></td>
 <td>
   <center>
-    {{member.season_pass_class or ''}}
+    {% if member.season_pass %}
+    <center>
+      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    </center>
+    {% endif %}
   </center>
 </td>
 <td>
