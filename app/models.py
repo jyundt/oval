@@ -85,7 +85,7 @@ class AcaMembership(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
     racer_id = db.Column(db.Integer, db.ForeignKey('racer.id', ondelete='CASCADE'))
-    season_pass = db.Column(db.Integer, db.ForeignKey('race_class.id'), default=None)
+    season_pass = db.Column(db.Boolean, nullable=False, default=False)
     paid = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (db.UniqueConstraint('racer_id', 'year', name='uniq_member_year'),)
 

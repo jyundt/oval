@@ -222,9 +222,7 @@ def details(id):
     current_year = datetime.date.today().year
     current_membership = (
         AcaMembership.query.with_entities(
-            AcaMembership.paid,
-            RaceClass.name.label('season_pass'))
-        .join(RaceClass, RaceClass.id == AcaMembership.season_pass, isouter=True)
+            AcaMembership.paid, AcaMembership.season_pass)
         .filter(AcaMembership.year == current_year)
         .filter(AcaMembership.racer_id == racer.id)
     ).first()
@@ -259,10 +257,7 @@ def details(id):
 
 
 def get_membership_choices():
-    race_classes = RaceClass.query
-    return (
-        [('none', 'Not a member'), ('member', 'ACA member')] +
-        [(str(race_class.id), 'Season Pass: %s' % race_class.name) for race_class in race_classes])
+    return [('none', 'Not a member'), ('member', 'ACA member'), ('season_pass', "Season pass")]
 
 
 def handle_racer_form(form, current_year, racer=None, current_membership=None):
@@ -272,8 +267,8 @@ def handle_racer_form(form, current_year, racer=None, current_membership=None):
     current_team_id = (
         Team.query.filter_by(name=form.current_team.data).first().id
         if form.current_team.data else None)
-    is_member = form.aca_membership.data == 'member' or form.aca_membership.data.isdigit()
-    season_pass = int(form.aca_membership.data) if form.aca_membership.data.isdigit() else None
+    is_member = form.aca_membership.data in ['member', 'season_pass']
+    season_pass = form.aca_membership.data == 'season_pass'
     paid = form.paid.data
 
     if racer:
@@ -360,8 +355,8 @@ def edit(id):
         form.current_team.data = Team.query.get(racer.current_team_id).name
     if current_membership:
         form.aca_membership.data = (
-            str(current_membership.season_pass)
-            if current_membership.season_pass is not None
+            'season_pass'
+            if current_membership.season_pass
             else 'member')
         form.paid.data = current_membership.paid
 
@@ -396,10 +391,8 @@ def membership_list():
     members = (
         AcaMembership.query.with_entities(
             AcaMembership.racer_id, Racer.name,
-            RaceClass.name.label('season_pass_class'),
-            AcaMembership.paid)
+            AcaMembership.season_pass, AcaMembership.paid)
         .join(Racer, AcaMembership.racer_id == Racer.id)
-        .join(RaceClass, AcaMembership.season_pass == RaceClass.id, isouter=True)
         .filter(AcaMembership.year == year)
         .order_by(Racer.name)).all()
 
