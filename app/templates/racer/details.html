@@ -14,12 +14,8 @@
 </h6>
 <div class="page-header">
     <h1>{{racer.name}}
-    {% if current_membership %}
-      {% if current_membership.season_pass %}
-        <h4><span class="label label-info">Season Pass</span></h4>
-      {% elif current_membership.paid %}
-        <h4><span class="label label-info">ACA Member</span></h4>
-      {% endif %}
+    {% if current_membership and current_membership.paid %}
+      <h4><span class="label label-info">{{"Season Pass" if current_membership.season_pass else "ACA Member"}}</span></h4>
     {% endif %}
     </h1>
 {% if current_user.is_authenticated and (current_user.has_role('official') or current_user.has_role('moderator')) %}
