@@ -230,7 +230,7 @@ def index():
         .join(r2, and_(r1.c.class_id == r2.c.class_id, r1.c.date < r2.c.date), isouter=True)
         .join(RaceClass, RaceClass.id == r1.c.class_id)
         .filter(r2.c.id.is_(None))
-        .order_by(r1.c.date, RaceClass.id))
+        .order_by(r1.c.date.desc(), RaceClass.id))
     races = latest_races.all()
     return render_template('index.html', races=races)
 
