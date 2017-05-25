@@ -20,8 +20,13 @@ class Config:
     STRAVA_CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
     STRAVA_CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
     SLACK_OAUTH_API_TOKEN = os.environ.get('SLACK_OAUTH_API_TOKEN')
+    SLACK_OAUTH_API_TOKEN = os.environ.get('SLACK_OAUTH_API_TOKEN')
     DISQUS_ID = os.environ.get('DISQUS_ID') or 'the-oval-dev'
-    AUDIT_LOG= 'audit.log'
+    S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
+    S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
+    S3_BUCKET = os.environ.get('S3_BUCKET')
+    AUDIT_LOG = 'audit.log'
+    MAX_CONTENT_LENGTH = 1024*1024*20
 
     @staticmethod
     def init_app(app):

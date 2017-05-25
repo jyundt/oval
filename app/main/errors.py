@@ -22,6 +22,10 @@ def page_not_found(e):
 def method_not_allowed(e):
     return render_template('405.html'), 405
 
+@main.app_errorhandler(413)
+def file_too_large(e):
+    return render_template('413.html'), 413
+
 @main.app_errorhandler(500)
 def internal_server_error(e):
     token = current_app.config['SLACK_OAUTH_API_TOKEN']
