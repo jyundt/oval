@@ -126,12 +126,16 @@ function updateDocument() {
       row += '<a href="/racer/' + racer.id + '">' + racer.name + '</a>'
       if (racer.strava_id) {
         row += '<style>'
-        row += '.strava-badge- { display: inline-block; height: 24px;} '
+        row += '.strava-badge- { display: inline-block; height: 24px; } '
         row += '.strava-badge- img { visibility: hidden; height: 24px; }'
         row += '.strava-badge-:hover { background-position: 0 -37px; }'
         row += '.strava-badge-follow { height: 24px; width: 24px; background: url(http://badges.strava.com/echelon-sprite-24.png) no-repeat 0 0; }'
         row += '</style>'
         row += '<a href="http://strava.com/athletes/' + racer.strava_id + '/badge" class="strava-badge- strava-badge-follow" target="_blank"><img src="http://badges.strava.com/echelon-sprite-24.png" alt="Strava" /></a>'
+      }
+
+      if (racer.points_eligible){
+        row += '<span class="glyphicon glyphicon-ok" area-hidden="true" style="padding-left: 1em;"></span>'
       }
       row += '</td>'
 
@@ -139,6 +143,7 @@ function updateDocument() {
       if (racer.current_team_id) {
         row += '<a href="/team/' + racer.current_team_id + '">' + racer.current_team_name + '</a>'
       }
+
       row += '</td>'
 
       row += '</tr>'
