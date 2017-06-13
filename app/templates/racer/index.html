@@ -65,6 +65,7 @@
   </div>
 </fieldset>
 
+<h5><span class="glyphicon glyphicon-ok" area-hidden="true"></span> = paid ACA member, eligble for season points</h5>
 <div id="racers-table-div" class="table-responsive">
 <table id="racers-table" class="table table-striped table-bordered">
 <thead>
@@ -123,10 +124,10 @@ function updateDocument() {
       var row = '<tr>'
 
       row += '<td>'
-      row += '<a href="/racer/' + racer.id + '">' + racer.name + '</a>'
+      row += '<a style="padding-right: 1em;" href="/racer/' + racer.id + '">' + racer.name + '</a>'
       if (racer.strava_id) {
         row += '<style>'
-        row += '.strava-badge- { display: inline-block; height: 24px; } '
+        row += '.strava-badge- { display: inline-block; height: 24px; padding-right: 3em;} '
         row += '.strava-badge- img { visibility: hidden; height: 24px; }'
         row += '.strava-badge-:hover { background-position: 0 -37px; }'
         row += '.strava-badge-follow { height: 24px; width: 24px; background: url(http://badges.strava.com/echelon-sprite-24.png) no-repeat 0 0; }'
@@ -135,7 +136,7 @@ function updateDocument() {
       }
 
       if (racer.points_eligible){
-        row += '<span class="glyphicon glyphicon-ok" area-hidden="true" style="padding-left: 1em;"></span>'
+        row += '<span class="glyphicon glyphicon-ok" area-hidden="true"></span>'
       }
       row += '</td>'
 
