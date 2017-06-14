@@ -4,8 +4,7 @@
 
 {% block page_content %}
 <div class="page-header">
-  <h1>The Oval</h1>
-  <h5>Bud Harris Cycling Track</h5>
+  <img src="{{url_for('static', filename='oval_app_logo.png')}}" class="img-responsive" />
 </div>
 
 {% if races %}
@@ -44,7 +43,5 @@ Recent Results
 <div style="font-size: larger">
   Check out the <a href="{{url_for('main.standings')}}">results page</a> to see historical race results.
 </div>
-<img src="{{url_for('static', filename='oval-image.jpg')}}" class="img-responsive img-rounded">
-(Image from PGH Citiparks)
 </div>
 {% endblock %}

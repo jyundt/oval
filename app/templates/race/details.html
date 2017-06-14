@@ -80,6 +80,7 @@
         <li><a href="{{url_for('race.add_marshal',id=race.id)}}">Marshal</a></li>
       </ul>
     </div>
+    <a class="btn btn-default" href="{{url_for('race.add_attachment',id=race.id)}}"><span class="glyphicon glyphicon-paperclip"></span> Upload attachment</a>
     <a class="btn btn-default" href="{{url_for('race.download_text',id=race.id)}}"><span class="glyphicon glyphicon-download"></span> Download txt results</a>
     <button type=button class="btn btn-danger" data-toggle="modal" data-target="#delete"><span class="glyphicon glyphicon-remove"></span> Delete race</button>
     {{ macros.confirm_delete_modal(race,'race.delete')}}
@@ -308,6 +309,49 @@ DNF Riders
 </table>
 </div>
 {%endif%}
+
+{% if current_user.is_authenticated and current_user.has_role('official') and attachments|length > 0 %}
+<h3>
+Attachments
+</h3>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th></th>
+<th>Filename</th>
+<th>Description</th>
+<th>File Type</th>
+</tr>
+</thead>
+<tbody>
+{% for attachment in attachments %}
+<tr>
+<td class="col-md-1" >
+<a role="button" class="btn btn-default btn-xs"  href="{{url_for('race.edit_attachment',race_id=race.id,attachment_id=attachment.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
+<button type=button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#attachment{{attachment.id}}"><span class="glyphicon glyphicon-remove"></span></button>
+{{ macros.confirm_delete_attachment_modal(attachment,race,'race.delete_attachment')}}
+<a role="button" class="btn btn-default btn-xs"  href="{{url_for('race.download_attachment',race_id=race.id,attachment_id=attachment.id)}}"><span class="glyphicon glyphicon-download-alt"></span></a>
+<a role="button" class="btn btn-default btn-xs"  href="{{url_for('race.view_attachment',race_id=race.id,attachment_id=attachment.id)}}"><span class="glyphicon glyphicon-eye-open"></span></a>
+</td>
+<td>{{attachment.filename}}</td>
+<td>{{attachment.description}}</td>
+<td>
+{% if attachment.mimetype == "image/jpeg" %}
+Image
+{% elif attachment.mimetype == "application/pdf" %}
+PDF
+{% else %}
+-
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endif %}
+
 
 
 {% if race.officials |length>0 %}
