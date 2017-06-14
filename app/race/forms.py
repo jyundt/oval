@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, SubmitField, DateField, IntegerField,\
                     SelectField, DateTimeField, BooleanField, TextAreaField
 from wtforms import ValidationError
@@ -151,3 +152,13 @@ class RaceOfficialForm(FlaskForm):
 class RaceOfficialAddForm(RaceOfficialForm):
     submit = SubmitField('Add')
 
+
+class AttachmentForm(FlaskForm):
+    description = StringField('Description', validators=[Required()])
+
+class AttachmentAddForm(AttachmentForm):
+    attachment = FileField(validators=[FileRequired()])
+    submit = SubmitField('Upload')
+
+class AttachmentEditForm(AttachmentForm):
+    submit = SubmitField('Save')

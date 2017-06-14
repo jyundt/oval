@@ -221,6 +221,8 @@ class Race(db.Model):
     starters = db.Column(db.Integer)
     notes = db.Column(db.Text)
     points_race = db.Column(db.Boolean, default=False)
+    attachments = db.relationship('RaceAttachment', cascade='all, delete',\
+                                  backref='race')
     participants = db.relationship('Participant', cascade='all,delete',\
                                    backref='race')
     officials = db.relationship('RaceOfficial', cascade='all,delete',\
@@ -286,6 +288,17 @@ class Prime(db.Model):
     def __repr__(self):
         return '<Prime %r>' % self.name
 
+class RaceAttachment(db.Model):
+    __tablename__ = 'race_attachment'
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(32), unique=True)
+    race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
+    description = db.Column(db.String(200), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    mimetype = db.Column(db.String(64), nullable=False)
+
+    def __repr__(self):
+        return '<RaceAttachment %r' % self.id
 
 class Admin(UserMixin, db.Model):
     __tablename = 'admin'
