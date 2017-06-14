@@ -83,7 +83,10 @@
             {% endif %}
           </td>
           <td>{{result['course_name']}}</td>
-          <td>{{result['starters']}}</td>
+          <td>
+            {% if result['starters'] is not none %}
+              {{result['starters']}}
+            {% endif %}
           <td>
             {% if result['fast_lap'] is not none %}
               {{result['fast_lap']}}
