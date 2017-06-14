@@ -89,6 +89,14 @@ class AcaMembership(db.Model):
     paid = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (db.UniqueConstraint('racer_id', 'year', name='uniq_member_year'),)
 
+    @property
+    def name(self):
+        racer_name = Racer.query.get(self.racer_id).name
+        return '%s|%s' % (racer_name, self.year)
+
+    def __repr__(self):
+        return '<AcaMembership %r>' % self.name
+
 
 class Racer(db.Model):
     __tablename__ = 'racer'
@@ -189,6 +197,13 @@ class Racer(db.Model):
             return race_age
         else:
             return None
+
+    @hybrid_property
+    def points_eligible(self):
+        year = date.today().year
+        member = AcaMembership.query.filter_by(racer_id=self.id, year=year)\
+                                    .one_or_none()
+        return member and member.paid
 
     def __repr__(self):
         return '<Racer %r>' % self.name
