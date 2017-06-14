@@ -184,7 +184,7 @@ def head2head():
 
         @staticmethod
         def result_comp(place1, place2):
-            if place1 == place2:
+            if place1 == place2 or not place1:
                 return False
             if not place2:
                 return True
