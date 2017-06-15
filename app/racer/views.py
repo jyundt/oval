@@ -69,6 +69,7 @@ def filter_():
         'id': racer.id,
         'name': racer.name,
         'strava_id': racer.strava_id,
+        'points_eligible': racer.points_eligible,
         'current_team_id': racer.current_team_id,
         'current_team_name': racer.current_team.name if racer.current_team else ''}
                   for racer in racers]

@@ -89,6 +89,14 @@ class AcaMembership(db.Model):
     paid = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (db.UniqueConstraint('racer_id', 'year', name='uniq_member_year'),)
 
+    @property
+    def name(self):
+        racer_name = Racer.query.get(self.racer_id).name
+        return '%s|%s' % (racer_name, self.year)
+
+    def __repr__(self):
+        return '<AcaMembership %r>' % self.name
+
 
 class Racer(db.Model):
     __tablename__ = 'racer'
@@ -190,6 +198,13 @@ class Racer(db.Model):
         else:
             return None
 
+    @hybrid_property
+    def points_eligible(self):
+        year = date.today().year
+        member = AcaMembership.query.filter_by(racer_id=self.id, year=year)\
+                                    .one_or_none()
+        return member and member.paid
+
     def __repr__(self):
         return '<Racer %r>' % self.name
 
@@ -221,6 +236,8 @@ class Race(db.Model):
     starters = db.Column(db.Integer)
     notes = db.Column(db.Text)
     points_race = db.Column(db.Boolean, default=False)
+    attachments = db.relationship('RaceAttachment', cascade='all, delete',\
+                                  backref='race')
     participants = db.relationship('Participant', cascade='all,delete',\
                                    backref='race')
     officials = db.relationship('RaceOfficial', cascade='all,delete',\
@@ -286,6 +303,17 @@ class Prime(db.Model):
     def __repr__(self):
         return '<Prime %r>' % self.name
 
+class RaceAttachment(db.Model):
+    __tablename__ = 'race_attachment'
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(32), unique=True)
+    race_id = db.Column(db.Integer, db.ForeignKey('race.id'))
+    description = db.Column(db.String(200), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    mimetype = db.Column(db.String(64), nullable=False)
+
+    def __repr__(self):
+        return '<RaceAttachment %r' % self.id
 
 class Admin(UserMixin, db.Model):
     __tablename = 'admin'

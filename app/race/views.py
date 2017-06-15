@@ -1,4 +1,6 @@
 import json
+import boto3
+import hashlib
 from flask import render_template, session, redirect, url_for, flash, abort,\
                   request, current_app, make_response
 from sqlalchemy import and_
@@ -7,15 +9,16 @@ from sqlalchemy import extract
 from .. import db
 from ..models import Official, Marshal, RaceClass, Racer, Team, Race,\
                      Participant, RaceOfficial, RaceMarshal, Prime, Course,\
-                     NotificationEmail, AcaMembership
+                     NotificationEmail, AcaMembership, RaceAttachment
 from . import race
 from .forms import RaceEditForm, RaceAddForm, ParticipantAddForm,\
                    ParticipantEditForm, PrimeAddForm,\
                    PrimeEditForm, RaceMarshalAddForm, RaceOfficialAddForm,\
-                   RaceSearchForm
+                   RaceSearchForm, AttachmentAddForm, AttachmentEditForm
 from datetime import timedelta, datetime
 from ..decorators import roles_accepted
 from ..email import send_email
+from werkzeug.utils import secure_filename
 
 @race.route('/')
 def index():
@@ -126,11 +129,17 @@ def details(id):
     primes = Prime.query.join(Participant)\
                         .join(Race)\
                         .filter(Race.id == id).all()
+
+    attachments = RaceAttachment.query.join(Race)\
+                                      .filter(Race.id == id)\
+                                      .order_by(RaceAttachment.id)\
+                                      .all()
     return render_template('race/details.html', race=race,
                            participants=participants,
                            mar_list=mar_list,
                            dnf_list=dnf_list,
-                           primes=primes)
+                           primes=primes,
+                           attachments=attachments)
 
 
 @race.route('/add/', methods=['GET', 'POST'])
@@ -709,4 +718,186 @@ def download_text(id):
                                               race.date.strftime('%m%d%y') +\
                                               '_' + race.race_class.name +\
                                               '.txt'
+    return response
+
+@race.route('/<int:id>/attachment/add/', methods=['GET', 'POST'])
+@roles_accepted('official')
+def add_attachment(id):
+    race = Race.query.get_or_404(id)
+    form = AttachmentAddForm()
+
+    if form.validate_on_submit():
+        description = form.description.data
+        attachment = form.attachment.data
+        attachment_name = secure_filename(attachment.filename)
+        attachment_mimetype = attachment.mimetype
+        if not (attachment_mimetype == "image/jpeg" or \
+           attachment_mimetype == "application/pdf"):
+            flash ('Unsupported attachment type!')
+            return redirect(url_for('race.add_attachment', id=race.id))
+
+   
+        attachment_hash = hashlib.md5(attachment.stream.read())
+        attachment_md5 = attachment_hash.hexdigest()
+        previous_attachment = RaceAttachment.query\
+                                            .filter_by(key=attachment_md5)\
+                                            .first()
+        
+        if previous_attachment:
+            previous_race = Race.query.get(previous_attachment.race_id)
+            flash ('Cannot attach file, already associated with ' +
+                   previous_race.name + ' race!')
+            return redirect(url_for('race.add_attachment', id=race.id))
+            
+        
+        #Let's get back to the start of the file, otherwise we are at EOF
+        attachment.stream.seek(0)
+        s3_secret_key = current_app.config['S3_SECRET_KEY']
+        s3_access_key = current_app.config['S3_ACCESS_KEY']
+        s3_bucket_name = current_app.config['S3_BUCKET']
+
+        #This could probably use some better error handling...but...mneh
+        try: 
+            s3_resource = boto3.resource('s3', use_ssl=True,
+                                         aws_secret_access_key=s3_secret_key,
+                                         aws_access_key_id=s3_access_key)
+            s3_bucket = s3_resource.Bucket(s3_bucket_name)
+            s3_bucket.put_object(Body=attachment.stream,
+                                 Key=attachment_md5,
+                                 ContentMD5=attachment_hash.digest()
+                                                           .encode('base64')
+                                                           .strip())
+
+        except Exception as e:
+            flash('Failed to upload attachment!')
+            current_app.logger.info('%s[%d] %s', race.name, race.id, e)
+            return redirect(url_for('race.add_attachment', id=race.id))
+
+        race_attachment = RaceAttachment(key=attachment_md5, race_id=race.id,
+                                         description=description,
+                                         filename=attachment_name,
+                                         mimetype=attachment_mimetype)
+
+        db.session.add(race_attachment)
+        db.session.commit()
+        flash('Attachment for ' + str(race.name) + ' added!')
+        current_app.logger.info('%s[%d]:[%d] %s',race.name,race.id,
+                                race_attachment.id, race_attachment.filename)
+        return redirect(url_for('race.details', id=race.id))
+    return render_template('add.html', form=form, type='attachment')
+
+@race.route('/<int:race_id>/attachment/edit/<int:attachment_id>/',
+            methods=['GET', 'POST'])
+@roles_accepted('official')
+def edit_attachment(race_id, attachment_id):
+    race = Race.query.get_or_404(race_id)
+    attachment = RaceAttachment.query.get_or_404(attachment_id)
+    if attachment.race_id != race_id:
+        abort(404)
+    form = AttachmentEditForm()
+    if form.validate_on_submit():
+        description = form.description.data 
+        attachment.description = description
+
+        db.session.commit()
+        flash('Attachment for ' + str(race.name) + ' updated!')
+        current_app.logger.info('%s[%d]:[%d] %s',race.name,race.id,
+                                attachment.id, attachment.filename)
+        return redirect(url_for('race.details', id=race.id))
+
+    form.description.data = attachment.description
+    return render_template('edit.html', item=attachment, form=form, type='attachment')
+
+@race.route('/<int:race_id>/attachment/delete/<int:attachment_id>')
+@roles_accepted('official')
+def delete_attachment(race_id, attachment_id):
+    race = Race.query.get_or_404(race_id)
+    attachment = RaceAttachment.query.get_or_404(attachment_id)
+    if attachment.race_id != race_id:
+        abort(404)
+
+    s3_secret_key = current_app.config['S3_SECRET_KEY']
+    s3_access_key = current_app.config['S3_ACCESS_KEY']
+    s3_bucket_name = current_app.config['S3_BUCKET']
+
+    try:
+        s3_resource = boto3.resource('s3', use_ssl=True,
+                                     aws_secret_access_key=s3_secret_key,
+                                     aws_access_key_id=s3_access_key)
+        s3_resource.Object(s3_bucket_name, attachment.key).delete()
+    except Exception as e:
+        flash('Failed to delete attachment!')
+        current_app.logger.info('%s[%d] %s', race.name, race.id, e)
+        return redirect(url_for('race.details', id=race.id))
+
+
+    current_app.logger.info('%s[%d]:[%d] %s',race.name,race.id,
+                            attachment.id, attachment.filename)
+    db.session.delete(attachment)
+    flash('Attachment for ' + str(race.name) + ' deleted!')
+    return redirect(url_for('race.details', id=race.id))
+
+
+@race.route('/<int:race_id>/attachment/download/<int:attachment_id>')
+@roles_accepted('official')
+def download_attachment(race_id, attachment_id):
+    race = Race.query.get_or_404(race_id)
+    attachment = RaceAttachment.query.get_or_404(attachment_id)
+    if attachment.race_id != race_id:
+        abort(404)
+
+    s3_secret_key = current_app.config['S3_SECRET_KEY']
+    s3_access_key = current_app.config['S3_ACCESS_KEY']
+    s3_bucket_name = current_app.config['S3_BUCKET']
+
+    try:
+        s3_resource = boto3.resource('s3', use_ssl=True,
+                                     aws_secret_access_key=s3_secret_key,
+                                     aws_access_key_id=s3_access_key)
+        file = s3_resource.Object(s3_bucket_name, attachment.key)\
+                          .get()['Body']\
+                          .read()
+                          
+    except Exception as e:
+        flash('Failed to download attachment!')
+        current_app.logger.info('%s[%d] %s', race.name, race.id, e)
+        return redirect(url_for('race.details', id=race.id))
+
+    response = make_response(file)
+    response.headers['Content-Type'] = "application/octet-stream"
+    response.headers['Content-Disposition'] = "inline; filename=" + \
+                                              attachment.filename
+                                         
+    return response
+
+@race.route('/<int:race_id>/attachment/view/<int:attachment_id>')
+@roles_accepted('official')
+def view_attachment(race_id, attachment_id):
+    race = Race.query.get_or_404(race_id)
+    attachment = RaceAttachment.query.get_or_404(attachment_id)
+    if attachment.race_id != race_id:
+        abort(404)
+
+    s3_secret_key = current_app.config['S3_SECRET_KEY']
+    s3_access_key = current_app.config['S3_ACCESS_KEY']
+    s3_bucket_name = current_app.config['S3_BUCKET']
+
+    try:
+        s3_resource = boto3.resource('s3', use_ssl=True,
+                                     aws_secret_access_key=s3_secret_key,
+                                     aws_access_key_id=s3_access_key)
+        file = s3_resource.Object(s3_bucket_name, attachment.key)\
+                          .get()['Body']\
+                          .read()
+                          
+    except Exception as e:
+        flash('Failed to open attachment!')
+        current_app.logger.info('%s[%d] %s', race.name, race.id, e)
+        return redirect(url_for('race.details', id=race.id))
+
+    response = make_response(file)
+    response.headers['Content-Type'] = attachment.mimetype
+    response.headers['Content-Disposition'] = "inline; filename=" + \
+                                              attachment.filename
+                                         
     return response
