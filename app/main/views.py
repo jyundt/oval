@@ -3,19 +3,18 @@ from itertools import groupby
 from operator import itemgetter, and_
 
 import datetime
-from ranking import Ranking
 
 from flask import render_template, redirect, request, url_for, current_app, flash
+from slackclient import SlackClient
 from sqlalchemy import extract, or_
 from sqlalchemy import func
 
 from app import db
+from app.util import sort_and_rank
 from . import main
 from .forms import FeedbackForm
 from ..email import send_feedback_email
 from ..models import Course, RaceClass, Racer, Team, Race, Participant
-
-from slackclient import SlackClient
 
 
 def _gen_default(year, race_class_id, race_calendar):
@@ -60,10 +59,6 @@ def _make_result(name, id_, rank, total_pts, pts, race_calendar, team_name, team
     return result
 
 
-def _sort_and_rank(items, key):
-    return Ranking(sorted(items, key=key, reverse=True), key=key, start=1)
-
-
 def _gen_team_standings(race_info, race_calendar):
     """Return team standings with individual race and total points
     """
@@ -91,7 +86,7 @@ def _gen_team_standings(race_info, race_calendar):
 
     # Filter to only teams that have points, and
     # rank by total team points.
-    ranked_teams = _sort_and_rank(
+    ranked_teams = sort_and_rank(
         filter(itemgetter(2), team_agg_info),
         key=itemgetter(2))
 
@@ -152,13 +147,13 @@ def _gen_ind_standings(race_info, race_calendar):
 
     # Filter to only racers that have any points,
     # rank by total points then by placings.
-    ranked_racers = _sort_and_rank(
+    ranked_racers = sort_and_rank(
         filter(itemgetter(2), racer_agg_info),
         key=itemgetter(2, 3))
 
     results = []
     for rank, (racer_id, racer_name, racer_points, _) in ranked_racers:
-        team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
+        team = racer_teams[racer_id][-1] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
@@ -192,13 +187,13 @@ def _gen_mar_standings(race_info, race_calendar):
 
     # Filter to only racers that have any mar points,
     # rank by total points.
-    ranked_racers = _sort_and_rank(
+    ranked_racers = sort_and_rank(
         filter(itemgetter(2), racer_agg_info),
         key=itemgetter(2))
 
     results = []
     for rank, (racer_id, racer_name, racer_points) in ranked_racers:
-        team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
+        team = racer_teams[racer_id][-1] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_mar_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])

@@ -180,13 +180,14 @@ def add():
         laps = form.laps.data
         starters = form.starters.data
         points_race = form.points_race.data
+        picnic_race = form.picnic_race.data
         notes = form.notes.data
 
         race = Race(date=date, fast_lap=fast_lap, average_lap=average_lap,
                     slow_lap=slow_lap, weather=weather, class_id=class_id,
                     usac_permit=usac_permit, laps=laps, course_id=course_id,
                     winning_time=winning_time, points_race=points_race,
-                    starters=starters, notes=notes)
+                    starters=starters, notes=notes, picnic_race=picnic_race)
         db.session.add(race)
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' created!')
@@ -247,6 +248,7 @@ def edit(id):
         starters = form.starters.data
         notes = form.notes.data
         points_race = form.points_race.data
+        picnic_race = form.picnic_race.data
         race.date = date
         race.fast_lap = fast_lap
         race.average_lap = average_lap
@@ -260,6 +262,7 @@ def edit(id):
         race.starters = starters
         race.notes = notes
         race.points_race = points_race
+        race.picnic_race = picnic_race
         db.session.commit()
         flash('Race for ' + race.date.strftime('%m/%d/%Y') + ' updated!')
         current_app.logger.info('%s[%d]', race.name, race.id)
@@ -284,6 +287,7 @@ def edit(id):
     form.starters.data = race.starters
     form.notes.data = race.notes
     form.points_race.data = race.points_race
+    form.picnic_race.data = race.picnic_race
     return render_template('edit.html', item=race, form=form, type='race')
 
 @race.route('/delete/<int:id>/')

@@ -31,6 +31,7 @@ class RaceForm(FlaskForm):
     starters = IntegerField('# of Starters', validators=[Optional()])
     notes = TextAreaField('Race notes', validators=[Optional()])
     points_race = BooleanField('Points Race', validators=[Optional()])
+    picnic_race = BooleanField('Picnic Race', validators=[Optional()])
 
 class RaceAddForm(RaceForm):
     submit = SubmitField('Add')

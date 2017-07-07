@@ -236,6 +236,7 @@ class Race(db.Model):
     starters = db.Column(db.Integer)
     notes = db.Column(db.Text)
     points_race = db.Column(db.Boolean, default=False)
+    picnic_race = db.Column(db.Boolean, default=False)
     attachments = db.relationship('RaceAttachment', cascade='all, delete',\
                                   backref='race')
     participants = db.relationship('Participant', cascade='all,delete',\
