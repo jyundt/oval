@@ -158,7 +158,7 @@ def _gen_ind_standings(race_info, race_calendar):
 
     results = []
     for rank, (racer_id, racer_name, racer_points, _) in ranked_racers:
-        team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
+        team = racer_teams[racer_id][-1] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
@@ -198,7 +198,7 @@ def _gen_mar_standings(race_info, race_calendar):
 
     results = []
     for rank, (racer_id, racer_name, racer_points) in ranked_racers:
-        team = racer_teams[racer_id][0] if racer_id in racer_teams else (None, None)
+        team = racer_teams[racer_id][-1] if racer_id in racer_teams else (None, None)
         result = _make_result(name=racer_name, id_=racer_id, rank=rank, total_pts=racer_points,
                               pts=racer_race_mar_points[racer_id], race_calendar=race_calendar,
                               team_name=team[0], team_id=team[1])
