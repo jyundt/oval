@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='bootstrap-slider.min.css')}}">
+{% endblock %}
+
+{% block title %}Career Stats{% endblock %}
+
+{% block page_content %}
+
+<h6>
+<ul class="breadcrumb">
+  <li><a href="{{url_for('main.index')}}">Home</a></li>
+  <li class="active">Career Stats</li>
+</ul>
+</h6>
+<div class="page-header">
+  <h1>Career Stats</h1>
+</div>
+
+{% if race_classes %}
+  <ul class="nav nav-tabs">
+  {% for race_class_id, race_class_name in race_classes %}
+    {% if selected_race_class_id == race_class_id %}
+    <li role="presentation" class="active">
+    {% else %}
+    <li role="presentation">
+    {% endif %}
+      <a href="{{url_for('.index', race_class_id=race_class_id)}}">{{race_class_name}}</a>
+    </li>
+  {% endfor %}
+  </ul>
+{% endif %}
+
+<p></p>
+
+{% if individual_points %}
+<div class="panel panel-default">
+  <div class="panel-heading" role="tab" id="headingIndPoints">
+    <h4 class="panel-title">
+      <a role="button" data-toggle="collapse" href="#collapseIndPoints" aria-expanded="true" aria-controls="collapseIndPoints">
+        Career points
+      </a>
+    </h4>
+  </div>
+  <div id="collapseIndPoints" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingIndPoints">
+    <div class="panel-body">
+      <div class="table-responsive">
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Total points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for racer_points in individual_points %}
+            <tr>
+              <td>{{racer_points.rank}}</td>
+              <td><a href="{{url_for('racer.details', id=racer_points['racer_id'])}}">{{racer_points['racer_name']}}</a></td>
+              <td>{{racer_points['points']}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if mar_points %}
+<div class="panel panel-default">
+  <div class="panel-heading" role="tab" id="headingMarPoints">
+    <h4 class="panel-title">
+      <a role="button" data-toggle="collapse" href="#collapseMarPoints" aria-expanded="true" aria-controls="collapseMarPoints">
+        Career MAR points
+      </a>
+    </h4>
+  </div>
+  <div id="collapseMarPoints" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingMarPoints">
+    <div class="panel-body">
+      <div class="table-responsive">
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Total MAR points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for racer_points in mar_points %}
+            <tr>
+              <td>{{racer_points.rank}}</td>
+              <td><a href="{{url_for('racer.details', id=racer_points['racer_id'])}}">{{racer_points['racer_name']}}</a></td>
+              <td>{{racer_points['mar_points']}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+{% if wins %}
+<div class="panel panel-default">
+  <div class="panel-heading" role="tab" id="headingWins">
+    <h4 class="panel-title">
+      <a role="button" data-toggle="collapse" href="#collapseWins" aria-expanded="true" aria-controls="collapseWins">
+        Career wins
+      </a>
+    </h4>
+  </div>
+  <div id="collapseWins" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingWins">
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Wins</th>
+              <th>Points race wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for racer_wins in wins %}
+              <tr>
+                <td>{{racer_wins.rank}}</td>
+                <td><a href="{{url_for('racer.details', id=racer_wins['racer_id'])}}">{{racer_wins['racer_name']}}</a></td>
+                <td>{{racer_wins['wins']}}</td>
+                <td>{{racer_wins['points_wins']}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if trifectas %}
+<div class="panel panel-default">
+  <div class="panel-heading" role="tab" id="headingTrifectas">
+    <h4 class="panel-title">
+      <a role="button" data-toggle="collapse" href="#collapseTrifectas" aria-expanded="true" aria-controls="collapseTrifectas">
+        Trifectas
+      </a>
+    </h4>
+  </div>
+  <div id="collapseTrifectas" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTrifectas">
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trifecta in trifectas %}
+              <tr>
+                <td><a href="{{url_for('race.details', id=trifecta['race_id'])}}">{{trifecta['race_date'].strftime('%m/%d/%Y')}}</a></td>
+                <td><a href="{{url_for('racer.details', id=trifecta['racer_id'])}}">{{trifecta['racer_name']}}</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div>
+  Note: statistics displayed are since {{earliest_date.strftime('%m/%d/%Y')}}.
+</div>
+
+{%endblock%}
