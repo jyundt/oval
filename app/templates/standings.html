@@ -61,6 +61,7 @@
       {% if standings_type != 'Team' %}
       <th>Team</th>
       {% endif %}
+      <th>Total Points</th>
       {% for race in race_calendar %}
       <th><a href="{{url_for('race.details', id=race[1])}}">{{ race[0].strftime('%m/%d') }}</a></th>
       {% endfor %}
@@ -81,6 +82,7 @@
       <td>-</td>
       {%endif%}
       {%endif%}
+      <td>{{result['total_pts']}}</td>
       {% for date_, points in result['race_pts'].iteritems() %}
       <td>{{points}}</td>
       {% endfor %}
