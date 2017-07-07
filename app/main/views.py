@@ -410,3 +410,7 @@ def send_feedback():
 def serve_static():
     return current_app.send_static_file('robots.txt')
 
+@main.route('/favicon.ico')
+def serve_favicon():
+    return current_app.send_static_file('favicon.ico')
+
