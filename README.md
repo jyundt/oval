@@ -92,5 +92,14 @@ You can use the flask development server for launching a local webserver:
 
 For real deployments, use a real application server (like uwsgi).
 
+## Branching
+Releases are sequentially numbered.  Release branches are named `releases/<N>`.  New features
+should generally be committed/merged to `master`.  When ready to release, create the new
+release branch and deploy.  If making any bugfixes to currently-release code,
+make the fix on the current release branch then merge that branch to master with
+the `--no-ff` option.  When a release branch is closed (the next one is release and no
+further deployments are expected) it should be tagged as `released/<N>` and the branch
+deleted.
+
 ## Provide feedback!
 Any and all feedback would be greatly appreciated.
