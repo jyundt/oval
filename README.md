@@ -92,5 +92,20 @@ You can use the flask development server for launching a local webserver:
 
 For real deployments, use a real application server (like uwsgi).
 
+## Releasing
+
+### New features
+Any new feature or bugfix should have a corresponding PR (and hopefully a GH Issue). PRs with multiple commits should be squashed prior to merging. One feature/bugfix = one PR = one commit if possible.
+
+### SemVer-ish
+Releases will attempt to follow [semantic versioning](http://semver.org/). However, historically release have been pretty capriciously numbered. Use your best judgment when labelling a new release
+
+### Cutting a release
+Ready to cut a new release? If so, follow these steps:
+* Verify all desired changes have been merged into `master`
+* Open a PR to merge `master` to `release`
+* Once PR is approved and `release` has been updated, create and push a new git tag with the release version number
+* Merge `release` back to `master` to verify `master` is up to date
+
 ## Provide feedback!
 Any and all feedback would be greatly appreciated.
