@@ -64,11 +64,15 @@ MAR Place	Name	Team
 {%- endif -%}
 
 
-{%- if primes|length >0 -%}
+{%- if primes|length >0 or point_prime_winner-%}
 {{nl}}
 Primes
 Name	Prime
 {{nl}}
+{%- if point_prime_winner -%}
+{{point_prime_winner.racer.name}}	Point Prime
+{{nl}}
+{%- endif -%}
 {%- for prime in primes -%}
 {{prime.participant.racer.name}}	{{ prime.name }}
 {{nl}}

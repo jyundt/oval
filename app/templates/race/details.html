@@ -217,7 +217,7 @@ MAR
 {%endif%}
 
 
-{%if primes|length >0%}
+{%if primes|length >0 or point_prime_winner%}
 <h3>
 Primes
 </h3>
@@ -230,6 +230,12 @@ Primes
 </tr>
 </thead>
 <tbody>
+{% if point_prime_winner %}
+<tr>
+<td><a href="{{url_for('racer.details', id=point_prime_winner.racer.id)}}">{{point_prime_winner.racer.name}}</a></td>
+<td>Point Prime</td>
+</tr>
+{% endif %}
 {% for prime in primes%}
 <tr>
 <td><a href="{{url_for('racer.details',id=prime.participant.racer.id)}}">{{prime.participant.racer.name}}</a></td>
