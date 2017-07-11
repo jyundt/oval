@@ -82,6 +82,24 @@ def index():
                 func.sum(case([(Race.points_race, 1)], else_=0)).desc()),
             key=lambda r: r.wins, start=1)]
 
+    mar_wins = [{
+        'racer_id': r.racer_id, 'racer_name': r.racer_name, 'rank': rank,
+        'mar_wins': r.mar_wins, 'mar_points_wins': r.mar_points_wins}
+        for rank, r in Ranking(
+            Racer.query.with_entities(
+                Racer.id.label('racer_id'), Racer.name.label('racer_name'),
+                func.count(1).label('mar_wins'),
+                func.sum(case([(Race.points_race, 1)], else_=0)).label('mar_points_wins'))
+            .join(Participant, Participant.racer_id == Racer.id)
+            .join(Race, Race.id == Participant.race_id)
+            .filter(Race.class_id == race_class_id)
+            .filter(Participant.mar_place == 1)
+            .group_by(Racer.id)
+            .order_by(
+                func.count(1).label('mar_wins').desc(),
+                func.sum(case([(Race.points_race, 1)], else_=0)).desc()),
+            key=lambda r: r.mar_wins, start=1)]
+
     trifectas = (
         Racer.query.with_entities(
             Racer.id.label('racer_id'), Racer.name.label('racer_name'),
@@ -98,4 +116,4 @@ def index():
         'stats/index.html', selected_race_class_id=race_class_id,
         race_classes=race_classes, earliest_date=earliest_date,
         individual_points=individual_points, mar_points=mar_points,
-        wins=wins, trifectas=trifectas)
+        wins=wins, mar_wins=mar_wins, trifectas=trifectas)
