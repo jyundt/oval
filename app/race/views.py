@@ -132,10 +132,10 @@ def details(id):
                         .filter(Race.id == id).all()
 
     #Let's make a temporary point_prime Prime for display only
-    point_prime_winner = Participant.query.join(Race)\
-                                          .filter(Race.id == id)\
-                                          .filter(Participant.point_prime)\
-                                          .first()
+    point_prime_winners = Participant.query.join(Race)\
+                                           .filter(Race.id == id)\
+                                           .filter(Participant.point_prime)\
+                                           .all()
 
     attachments = RaceAttachment.query.join(Race)\
                                       .filter(Race.id == id)\
@@ -147,7 +147,7 @@ def details(id):
                            dnf_list=dnf_list,
                            primes=primes,
                            attachments=attachments,
-                           point_prime_winner=point_prime_winner)
+                           point_prime_winners=point_prime_winners)
 
 
 @race.route('/add/', methods=['GET', 'POST'])
@@ -709,16 +709,16 @@ def download_text(id):
                         .join(Race)\
                         .filter(Race.id == id).all()
 
-    point_prime_winner = Participant.query.join(Race)\
-                                          .filter(Race.id == id)\
-                                          .filter(Participant.point_prime)\
-                                          .first()
+    point_prime_winners = Participant.query.join(Race)\
+                                           .filter(Race.id == id)\
+                                           .filter(Participant.point_prime)\
+                                           .all()
     textfile = render_template('race/details.txt', race=race,
                                participants=participants,
                                mar_list=mar_list,
                                dnf_list=dnf_list,
                                primes=primes,
-                               point_prime_winner=point_prime_winner)
+                               point_prime_winners=point_prime_winners)
     response = make_response(textfile)
     response.headers['Content-Type'] = "application/octet-stream"
     response.headers['Content-Disposition'] = "inline; filename=cr" +\
