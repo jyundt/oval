@@ -126,9 +126,16 @@ def details(id):
                                           .having(Participant.mar_place > 0)\
                                           .order_by(Participant.mar_place)\
                                           .all()
+
     primes = Prime.query.join(Participant)\
                         .join(Race)\
                         .filter(Race.id == id).all()
+
+    #Let's make a temporary point_prime Prime for display only
+    point_prime_winners = Participant.query.join(Race)\
+                                           .filter(Race.id == id)\
+                                           .filter(Participant.point_prime)\
+                                           .all()
 
     attachments = RaceAttachment.query.join(Race)\
                                       .filter(Race.id == id)\
@@ -139,7 +146,8 @@ def details(id):
                            mar_list=mar_list,
                            dnf_list=dnf_list,
                            primes=primes,
-                           attachments=attachments)
+                           attachments=attachments,
+                           point_prime_winners=point_prime_winners)
 
 
 @race.route('/add/', methods=['GET', 'POST'])
@@ -399,17 +407,6 @@ def add_participant(id):
         flash('Racer ' + participant.racer.name + ' added to race!')
         current_app.logger.info('%s[%d]:%s[%d]', race.name, race.id,
                                 participant.racer.name, participant.id)
-        #Let's also add a Prime of "Point Prime" if necessary
-        if point_prime:
-            participant_id = participant.id
-            name = "Point Prime"
-            prime = Prime(name=name, participant_id=participant_id)
-            db.session.add(prime)
-            db.session.commit()
-            flash('Prime for ' + prime.participant.racer.name + ' added!')
-            current_app.logger.info('%s[%d]:%s[%d]:%s[%d]', race.name, race.id,
-                                    participant.racer.name, participant.id,
-                                    prime.name, prime.id)
  
         if 'submit' in request.form:
             return redirect(url_for('race.details', id=race.id))
@@ -711,11 +708,17 @@ def download_text(id):
     primes = Prime.query.join(Participant)\
                         .join(Race)\
                         .filter(Race.id == id).all()
+
+    point_prime_winners = Participant.query.join(Race)\
+                                           .filter(Race.id == id)\
+                                           .filter(Participant.point_prime)\
+                                           .all()
     textfile = render_template('race/details.txt', race=race,
                                participants=participants,
                                mar_list=mar_list,
                                dnf_list=dnf_list,
-                               primes=primes)
+                               primes=primes,
+                               point_prime_winners=point_prime_winners)
     response = make_response(textfile)
     response.headers['Content-Type'] = "application/octet-stream"
     response.headers['Content-Disposition'] = "inline; filename=cr" +\
