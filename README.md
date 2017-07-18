@@ -95,16 +95,23 @@ For real deployments, use a real application server (like uwsgi).
 ## Releasing
 
 ### New features
-Any new feature or bugfix should have a corresponding PR (and hopefully a GH Issue). PRs with multiple commits should be squashed prior to merging. One feature/bugfix = one PR = one commit if possible.
+Any new feature or bugfix should have a corresponding GitHub pull request (and hopefully a GitHub Issue). PRs with multiple commits should be squashed prior to merging. One feature/bugfix = one PR = one commit if possible.
 
-### SemVer-ish
-Releases will attempt to follow [semantic versioning](http://semver.org/). However, historically release have been pretty capriciously numbered. Use your best judgment when labelling a new release
+### Timestamp Versioning
+Releases are labeled based on release date: `vYYYYMMDD`, e.g. `v20170718`. Older releases (v.1.2.7 and prior) were a mix of incremental and semver (much to the dismay of @johnwheffner) and do not follow this convention. Unless otherwise noted, all release dates are based on UTC.
 
 ### Cutting a release
 Ready to cut a new release? If so, follow these steps:
 * Verify all desired changes have been merged into `master`
 * Open a PR to merge `master` to `release`
-* Once PR is approved and `release` has been updated, create and push a new git tag with the release version number
+* Once PR is approved and `release` has been updated, create and push a new git [lightweight tag](//git-scm.com/book/en/v2/Git-Basics-Tagging#_lightweight_tags) with the release version number (e.g. vYYYMMDD) based on the current UTC date
+* Merge `release` back to `master` to verify `master` is up to date
+
+### Hotfixes
+Bugs happen. To create a hotfix (quick patch to address a specific bug), do the following:
+* Create a new branch off of `release` (**not** `master`)
+* Open a new PR to merge your new hotfix branch into `release`
+* Create a new git lwt labeled `vYYYMMDD-hotfix`
 * Merge `release` back to `master` to verify `master` is up to date
 
 ## Provide feedback!
