@@ -146,6 +146,45 @@
 </div>
 {% endif %}
 
+{% if mar_wins %}
+<div class="panel panel-default">
+  <div class="panel-heading" role="tab" id="headingMarWins">
+    <h4 class="panel-title">
+      <a role="button" data-toggle="collapse" href="#collapseMarWins" aria-expanded="true" aria-controls="collapseMarWins">
+        Career MAR wins
+      </a>
+    </h4>
+  </div>
+  <div id="collapseMarWins" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingMarWins">
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>MAR Wins</th>
+              <th>Points race MAR wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for racer_wins in mar_wins %}
+              <tr>
+                <td>{{racer_wins.rank}}</td>
+                <td><a href="{{url_for('racer.details', id=racer_wins['racer_id'])}}">{{racer_wins['racer_name']}}</a></td>
+                <td>{{racer_wins['mar_wins']}}</td>
+                <td>{{racer_wins['mar_points_wins']}}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
 {% if trifectas %}
 <div class="panel panel-default">
   <div class="panel-heading" role="tab" id="headingTrifectas">
