@@ -111,7 +111,7 @@ def _gen_ind_standings(race_info, race_calendar):
 
     # A list of per-race points for each racer
     racer_race_points = {
-        racer_id: list((ri.points, ri.race_date) for ri in g)
+        racer_id: list((ri.points if not ri.points_dropped else '(%d)' % ri.points or 0, ri.race_date) for ri in g)
         for racer_id, g in groupby(racer_race_info, key=lambda ri: ri.racer_id)}
 
     # Team info for each racer
@@ -141,7 +141,7 @@ def _gen_ind_standings(race_info, race_calendar):
     racer_agg_info = [(
             racer_id,
             racer_name,
-            sum(r.points or 0 for r in g),
+            sum(r.points if r.points and not r.points_dropped else 0 for r in g),
             placing_counts(r.place for r in g))
         for (racer_id, racer_name), g in race_info_gby_racer]
 
@@ -268,7 +268,8 @@ def standings():
                 Racer.id.label('racer_id'), Racer.name.label('racer_name'),
                 Race.date.label('race_date'), Participant.points,
                 Participant.team_points, Participant.mar_points,
-                Team.id.label('team_id'), Team.name.label('team_name'), Participant.place)
+                Team.id.label('team_id'), Team.name.label('team_name'), Participant.place,
+                Participant.points_dropped)
                 .join(Participant)
                 .join(Team, isouter=True)
                 .join(Race)

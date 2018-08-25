@@ -343,6 +343,7 @@ def add_participant(id):
         dns = form.dns.data
         relegated = form.relegated.data
         disqualified = form.disqualified.data
+        points_dropped = form.points_dropped.data
         #Let's check to see if we are in a points race
         if Race.query.get(race_id).points_race and\
            Race.query.get(race_id).date.year == year:
@@ -401,6 +402,7 @@ def add_participant(id):
                                   point_prime=point_prime, dnf=dnf, dns=dns,
                                   relegated=relegated,
                                   disqualified=disqualified,
+                                  points_dropped=points_dropped,
                                   race_id=race_id, place=place)
         db.session.add(participant)
         db.session.commit()
@@ -480,6 +482,7 @@ def edit_participant(race_id, participant_id):
         dns = form.dns.data
         relegated = form.relegated.data
         disqualified = form.disqualified.data
+        points_dropped = form.points_dropped.data
         participant.racer_id = racer_id
         participant.team_id = team_id
         participant.place = place
@@ -491,6 +494,7 @@ def edit_participant(race_id, participant_id):
         participant.dnf = dnf
         participant.dns = dns
         participant.relegated = relegated
+        participant.points_dropped = points_dropped
         participant.disqualified = disqualified
         db.session.commit()
         flash('Racer ' + participant.racer.name + ' updated in race!')
@@ -509,6 +513,7 @@ def edit_participant(race_id, participant_id):
     form.dns.data = participant.dns
     form.relegated.data = participant.relegated
     form.disqualified.data = participant.disqualified
+    form.points_dropped.data = participant.points_dropped
     if participant.team:
         form.team_name.data = participant.team.name
     return render_template('edit.html', item=participant, form=form,
