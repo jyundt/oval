@@ -111,6 +111,7 @@ class ParticipantForm(FlaskForm):
     dns = BooleanField('DNS', validators=[Optional()])
     relegated = BooleanField('Relegated', validators=[Optional()])
     disqualified = BooleanField('Disqualified', validators=[Optional()])
+    points_dropped = BooleanField('Points Dropped', validators=[Optional()])
 
     def __init__(self, race, *args, **kwargs):
         super(ParticipantForm, self).__init__(*args, **kwargs)
