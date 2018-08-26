@@ -271,6 +271,7 @@ class Participant(db.Model):
     dns = db.Column(db.Boolean, default=False)
     relegated = db.Column(db.Boolean, default=False)
     disqualified = db.Column(db.Boolean, default=False)
+    points_dropped = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<Participant %r>' % self.id
