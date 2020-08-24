@@ -21,12 +21,17 @@ def index():
         race_class.id: race_class for race_class in
         RaceClass.query}
 
-    recent_date = datetime.date.today() - datetime.timedelta(days=365)
-    recent_seasons = set(int(val[0]) for val in
-                         Race.query.with_entities(extract('year', Race.date))
-                         .filter(Race.date >= recent_date)
-                         .group_by(extract('year', Race.date)))
-    season_range_default = [min(recent_seasons), max(recent_seasons)]
+    year_ago = datetime.date.today() - datetime.timedelta(days=365)
+    last_year_seasons_query = (Race.query.with_entities(extract('year', Race.date))
+                               .filter(Race.date >= year_ago)
+                               .group_by(extract('year', Race.date)))
+    most_recent_season_query = (Race.query.with_entities(extract('year', Race.date))
+                                .group_by(extract('year', Race.date))
+                                .order_by(extract('year', Race.date).desc())
+                                .limit(1))
+    recent_seasons_query = last_year_seasons_query.union(most_recent_season_query)
+    recent_seasons = set(int(val[0]) for val in recent_seasons_query)
+    season_range_default = [min(recent_seasons), max(recent_seasons)] if recent_seasons else [1970, 1970]
 
     return render_template(
         'racer/index.html',
